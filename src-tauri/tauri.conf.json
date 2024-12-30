@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "raindrops-v3-react",
+  "productName": "Rainmeter Editor",
   "version": "0.1.0",
-  "identifier": "com.raindrops-v3-react.app",
+  "identifier": "com.raindmeter-editor.app",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "raindrops-v3-react",
+        "title": "Rainmeter Editor",
         "width": 1024,
         "height": 640
       }

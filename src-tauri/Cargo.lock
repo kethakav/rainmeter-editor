@@ -2981,7 +2981,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "raindrops-v3-react"
+name = "rainmeter-editor"
 version = "0.1.0"
 dependencies = [
  "image",

@@ -1,7 +1,7 @@
 [package]
-name = "raindrops-v3-react"
+name = "rainmeter-editor"
 version = "0.1.0"
-description = "A Tauri App"
+description = "A GUI based editor for creating rainmeter skins"
 authors = ["you"]
 edition = "2021"
 

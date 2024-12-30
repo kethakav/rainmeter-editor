@@ -39,7 +39,7 @@ const Topbar: React.FC = () => {
   return (
     <TooltipProvider>
       <div className="h-16 bg-secondary border-gray-200 flex items-center justify-between px-6">
-        <div className="text-xl text-secondary-foreground font-semibold">Raindrops Editor</div>
+        <div className="text-xl text-secondary-foreground font-semibold">Rainmeter Editor</div>
         <div>
           <Tooltip>
             <TooltipTrigger asChild>
