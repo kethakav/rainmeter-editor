@@ -28,8 +28,13 @@
       ]
     },
     "dialog:default",
+    "dialog:allow-ask",
+    "dialog:allow-message",
     "fs:default",
     "fs:allow-read-text-file",
-    "fs:allow-resource-read-recursive"
+    "fs:allow-resource-read-recursive",
+    "updater:default",
+    "updater:allow-check",
+    "updater:allow-download-and-install"
   ]
 }

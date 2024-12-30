@@ -28,5 +28,7 @@ walkdir = "2.4"
 zip = "0.6"
 rust-ini = "0.21"
 image = { version = "0.24", features = ["bmp"] }
+tauri-plugin-updater = "2"
+tauri-plugin-process = "2"
 
 
