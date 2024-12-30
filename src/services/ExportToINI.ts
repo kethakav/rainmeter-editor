@@ -542,7 +542,7 @@ export const handleCreateDirectory = async (metadata: { name: string; author: st
     directory: true,
   });
 
-  let newDirectoryName = 'RaindropsSkin';
+  let newDirectoryName = 'rmEditorSkin';
 
   if (selectedDirectory) {
     // Specify the new directory name
