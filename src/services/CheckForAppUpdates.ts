@@ -7,14 +7,14 @@ export async function checkForAppUpdates(onUserClick: boolean) {
   try {
     const update = await check();
 
-    if (update === null) {
-      await message("Failed to check for updates.\nPlease try again later.", {
-        title: "Error",
-        kind: "error",
-        okLabel: "OK",
-      });
-      return;
-    }
+    // if (update === null) {
+    //   await message("Failed to check for updates.\nPlease try again later.", {
+    //     title: "Error",
+    //     kind: "error",
+    //     okLabel: "OK",
+    //   });
+    //   return;
+    // }
 
     if (update?.available) {
       const yes = await ask(
