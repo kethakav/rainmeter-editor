@@ -1,0 +1,467 @@
+//LayerManager.ts
+// import { useToolContext } from '@/context/ToolContext';
+import { arrayMove } from '@dnd-kit/sortable';
+import { Canvas, Circle, FabricObject, FabricObjectProps, Rect, Triangle, IText, FabricImage } from 'fabric';
+
+// Enum for layer types
+enum LayerType {
+  TEXT = 'text',
+  SHAPE = 'shape',
+  IMAGE = 'image'
+}
+
+// Interface for layer properties
+interface LayerConfig {
+  id: string;
+  // mmtype: string;
+  type: LayerType;
+  fabricObject: FabricObject;
+  visible: boolean;
+  locked: boolean;
+  name: string;
+  measure: string;
+  fontName: string;
+}
+
+class LayerManager {
+    private static instance: LayerManager | null = null;
+    public canvas: Canvas | null = null;
+
+    public activeTool: string = 'select';
+  
+    public layers: LayerConfig[] = [];
+
+    private listeners: (() => void)[] = [];
+  
+    private constructor() {} // Make the constructor private
+
+    
+  
+    public static getInstance(): LayerManager {
+      if (!LayerManager.instance) {
+        LayerManager.instance = new LayerManager();
+      }
+      return LayerManager.instance;
+    }
+  
+    public setCanvas(canvas: Canvas) {
+      this.canvas = canvas;
+    }
+
+    public getCanvas() {
+        return this.canvas;
+    }
+
+    private toolChangeListeners: (() => void)[] = [];
+
+  setActiveTool(tool: string) {
+    this.activeTool = tool;
+    // Notify tool change listeners
+    this.toolChangeListeners.forEach(listener => listener());
+  }
+
+  // Add methods to subscribe and unsubscribe to tool changes
+  subscribeToToolChanges(listener: () => void) {
+    this.toolChangeListeners.push(listener);
+  }
+
+  unsubscribeFromToolChanges(listener: () => void) {
+    this.toolChangeListeners = this.toolChangeListeners.filter(l => l !== listener);
+  }
+
+  addLayerWithMouse(x: number, y: number) {
+    if(this.canvas) {
+      if (this.activeTool === 'text') {
+        this.addTextLayer("New Text", x, y);
+        this.setActiveTool('select');
+      }
+      if (this.activeTool === 'image') {
+        this.addImageLayer(x, y);
+        this.setActiveTool('select');
+      }
+    }
+
+    return;
+  }
+
+  // Add a new layer to the stack
+  addLayer(type: LayerType, fabricObject: FabricObject) {
+    if (this.canvas) {
+      const newLayer: LayerConfig = {
+        id: this.generateUniqueId(),
+        // mmtype,
+        type,
+        fabricObject,
+        visible: true,
+        locked: false,
+        name: this.generateLayerName(type),
+        measure: "custom-text",
+        fontName: "null"
+      };
+
+      // Add to canvas and layers array
+      this.canvas.add(fabricObject);
+      this.layers.push(newLayer);
+      this.notifyListeners();
+
+      // Select the newly added layer
+      this.selectLayer(newLayer.id);
+
+    //   return newLayer;
+    }
+    // return null; // Return null if canvas is not set
+  }
+
+  // Add text layer
+  addTextLayer(text: string = 'New Text', x: number, y: number) {
+    
+    if (this.canvas) {
+        const textObject = new IText(text, {
+        left: x,
+        top: y,
+        fill: 'black',
+        fontSize: 24,
+        hasControls: false,
+        });
+        console.log(this.layers);
+
+        this.addLayer(LayerType.TEXT, textObject);
+    } else {
+        return null;
+    }
+  }
+
+  public updateFontForSelectedLayer(font: string) {
+    if (this.canvas) {
+      console.log("update font");
+      const activeObject = this.canvas.getActiveObject();
+      if (activeObject) {
+        const activeLayer = this.getLayerByFabricObject(activeObject);
+        if (activeLayer) {
+          activeLayer.fontName = font; // Update the font
+        }
+        activeObject.set('fontFamily', font); // Update the font
+        this.canvas.renderAll(); // Re-render the canvas to reflect changes
+      }
+    }
+  }
+
+  public getLayerByFabricObject(fabricObject: FabricObject) {
+    return this.layers.find(layer => layer.fabricObject === fabricObject);
+  }
+
+  public updateMeasureForSelectedLayer(measure: string) {
+
+    if (this.canvas) {
+      console.log("update measure", measure);
+      const activeObject = this.canvas.getActiveObject();
+      if (activeObject) {
+        const actLayer = this.getLayerByFabricObject(activeObject);
+        if (actLayer) {
+          actLayer.measure = measure;
+          if (measure === "date-yyyy-mm-dd") {
+            activeObject.set('text', "2000-01-01");
+          }
+          if (measure === "date-mm-dd-yy") {
+            activeObject.set('text', "01-01-00");
+          }
+          if (measure === "custom-text") {
+            activeObject.set('text', "Custom Text");
+          }
+          if (measure === "short-weekday") {
+            activeObject.set('text', "Mon");
+          }
+          if (measure === "full-weekday") {
+            activeObject.set('text', "Monday");
+          }
+          if (measure === "short-month") {
+            activeObject.set('text', "Jan");
+          }
+          if (measure === "full-month") {
+            activeObject.set('text', "January");
+          }
+          if (measure === "zero-day") {
+            activeObject.set('text', "01");
+          }
+          if (measure === "space-day") {
+            activeObject.set('text', "1");
+          }
+          if (measure === "short-year") {
+            activeObject.set('text', "00");
+          }
+          if (measure === "full-year") {
+            activeObject.set('text', "2000");
+          }
+          if (measure === "hour-24") {
+            activeObject.set('text', "15");
+          }
+          if (measure === "hour-12") {
+            activeObject.set('text', "03");
+          }
+          if (measure === "month-number") {
+            activeObject.set('text', "01");
+          }
+          if (measure === "minute-number") {
+            activeObject.set('text', "01");
+          }
+          if (measure === "second-number") {
+            activeObject.set('text', "01");
+          }
+          if (measure === "am-pm") {
+            activeObject.set('text', "AM");
+          }
+          this.canvas.renderAll(); // Re-render the canvas to reflect changes
+        }
+      }
+      // if (activeObject) {
+      //   activeObject.set('fontFamily', measure); // Update the font
+      //   this.canvas.renderAll(); // Re-render the canvas to reflect changes
+      // }
+    }
+  }
+
+  addImageLayer(x: number, y: number) {
+    if(this.canvas) {
+      const imageObject = new FabricImage('im1', {
+        left: x,
+        top: y,
+        scaleX: 0.5,
+        scaleY: 0.5
+      });
+      this.addLayer(LayerType.IMAGE, imageObject);
+    } else {
+        return null;
+    }
+  }
+
+
+
+  subscribeToLayerChanges(listener: () => void) {
+    this.listeners.push(listener);
+  }
+
+  unsubscribeFromLayerChanges(listener: () => void) {
+    this.listeners = this.listeners.filter(l => l !== listener);
+  }
+
+  private notifyListeners() {
+    this.listeners.forEach(listener => listener());
+  }
+
+  // Notify subscribers of layer changes
+  private notifyLayerChange() {
+    this.listeners.forEach(listener => listener());
+}
+
+  // Add shape layer
+  addShapeLayer(type: 'rect' | 'circle' | 'triangle', options: Partial<FabricObjectProps> = {}) {
+    if (this.canvas) {
+        let shapeObject: FabricObject;
+    
+        switch(type) {
+        case 'rect':
+            shapeObject = new Rect({
+            width: 100,
+            height: 100,
+            fill: 'blue',
+            left: 100,
+            top: 100,
+            ...options
+            });
+            break;
+        case 'circle':
+            shapeObject = new Circle({
+            radius: 50,
+            fill: 'green',
+            left: 100,
+            top: 100,
+            ...options
+            });
+            break;
+        case 'triangle':
+            shapeObject = new Triangle({
+            width: 100,
+            height: 100,
+            fill: 'red',
+            left: 100,
+            top: 100,
+            ...options
+            });
+            break;
+        }
+
+        this.addLayer(LayerType.SHAPE, shapeObject);
+    } 
+    // else {
+    //     return null;
+    // }
+  }
+
+  // Add image layer
+//   addImageLayer(imageSource: string): Promise<LayerConfig> {
+//     return new Promise((resolve, reject) => {
+//       fabric.Image.fromURL(imageSource, (img) => {
+//         img.set({
+//           left: 100,
+//           top: 100,
+//           scaleX: 0.5,
+//           scaleY: 0.5
+//         });
+
+//         const layer = this.addLayer(LayerType.IMAGE, img);
+//         resolve(layer);
+//       }, (error) => {
+//         console.error('Error loading image:', error);
+//         reject(error);
+//       });
+//     });
+//   }
+
+
+  // Remove a layer by ID
+  removeLayer(layerId: string): void {
+    if (this.canvas) {
+        const layerIndex = this.layers.findIndex(layer => layer.id === layerId);
+    
+        if (layerIndex !== -1) {
+        const layer = this.layers[layerIndex];
+        
+        // Remove from canvas
+        this.canvas.remove(layer.fabricObject);
+        
+        // Remove from layers array
+        this.layers.splice(layerIndex, 1);
+        
+        // Render canvas
+        this.canvas.renderAll();
+        }
+    }
+  }
+
+  public getSelectedLayerId(): string | null {
+    const activeObject = this.canvas?.getActiveObject();
+    const layer = this.layers.find(layer => layer.fabricObject === activeObject);
+    return layer?.id ?? null;
+  }
+
+  // Method to move a layer in the layers array
+  public moveLayer(layerId: string, direction: 'up' | 'down') {
+    const layerIndex = this.layers.findIndex(layer => layer.id === layerId);
+    if (layerIndex === -1) return; // Layer not found
+
+    if (direction === 'up' && layerIndex > 0) {
+        // Move layer up
+        const newOrder = arrayMove(this.layers, layerIndex, layerIndex - 1);
+        this.layers = newOrder;
+    } else if (direction === 'down' && layerIndex < this.layers.length - 1) {
+        // Move layer down
+        const newOrder = arrayMove(this.layers, layerIndex, layerIndex + 1);
+        this.layers = newOrder;
+    }
+
+    console.log("tt");
+    this.updateCanvasLayerOrder();
+    // Notify any subscribers that layers have changed
+    this.notifyLayerChange();
+}
+
+  // Select a layer by ID
+  public selectLayer(layerId: string): void {
+    if (this.canvas) {
+      console.log(layerId);
+        const layer = this.layers.find(l => l.id === layerId);
+    
+        if (layer) {
+        // Deselect all objects
+        this.canvas.discardActiveObject();
+        
+        // Select the specific object
+        this.canvas.setActiveObject(layer.fabricObject);
+        this.canvas.renderAll();
+        }
+    }
+  }
+
+  // Accepts reordered layers array and updates the internal layers order
+  public reorderLayers(newOrder: string[]): void {
+    this.layers = newOrder.map(id => this.layers.find(layer => layer.id === id)!);
+    this.notifyLayerChange(); // Notify subscribers about the updated order
+  }
+
+  // Toggle layer visibility
+  toggleLayerVisibility(layerId: string): void {
+    if (this.canvas) {
+        const layer = this.layers.find(l => l.id === layerId);
+    
+        if (layer) {
+        layer.visible = !layer.visible;
+        layer.fabricObject.set('visible', layer.visible);
+        this.canvas.renderAll();
+        }
+    }
+  }
+
+  // Lock/unlock layer
+  toggleLayerLock(layerId: string): void {
+    if (this.canvas) {
+        const layer = this.layers.find(l => l.id === layerId);
+    
+        if (layer) {
+        layer.locked = !layer.locked;
+        layer.fabricObject.set('selectable', !layer.locked);
+        this.canvas.renderAll();
+        }
+    }
+  }
+
+  public updateCanvasLayerOrder(): void {
+    console.log("updating canvas");
+    const selected = this.canvas?.getActiveObject();
+    if (this.canvas) {
+      // Remove all objects
+      this.canvas.getObjects().forEach(obj => {
+        if(this.canvas) {
+            this.canvas.remove(obj)
+        }
+    });
+      
+      // Re-add in the correct order
+      this.layers.forEach(layer => {
+        if (this.canvas) {
+          this.canvas.add(layer.fabricObject)
+        }
+    });
+    if(selected) {
+      this.canvas.setActiveObject(selected);
+    }
+      this.canvas.renderAll();
+    } else {
+      console.warn('Canvas is not set. Unable to update layer order.');
+    }
+  }
+  
+
+  // Generate unique ID for layers
+  private generateUniqueId(): string {
+    return `layer_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  // Generate default layer name
+  private generateLayerName(type: LayerType): string {
+    const typeCount = this.layers.filter(l => l.type === type).length;
+    const typeLabels = {
+      [LayerType.TEXT]: 'Text',
+      [LayerType.SHAPE]: 'Shape',
+      [LayerType.IMAGE]: 'Image'
+    };
+    
+    return `${typeLabels[type]} ${typeCount + 1}`;
+  }
+
+  // Get all layers
+  getLayers(): LayerConfig[] {
+    return [...this.layers];
+  }
+}
+
+export const layerManager = LayerManager.getInstance();
