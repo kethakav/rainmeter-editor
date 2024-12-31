@@ -193,6 +193,7 @@ async function fontExistsInPublic(fontName: string): Promise<boolean> {
 
 // Modify the exportSkin function
 export const exportSkin = async (exportPath: string, metadata: { name: string; author: string; version: string; description: string }) => {
+  const scaleCorrection = 1.4;
   const layers = layerManager.getLayers();
   const exporter = new RainmeterSkinExporter({
     name: metadata.name,
@@ -231,8 +232,8 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
           FontSize: text.fontSize.toString(),
           FontColor: layer.fabricObject.fill ? hexToRgb(layer.fabricObject.fill) : '0,0,0',
           StringStyle: stringStyle,
-          X: adjustedX.toString(),
-          Y: adjustedY.toString(),
+          X: (adjustedX * scaleCorrection).toString(),
+          Y: (adjustedY * scaleCorrection).toString(),
           AntiAlias: "1",
           Text: '%1',
         }
@@ -277,8 +278,8 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
               FontSize: text.fontSize.toString(),
               FontColor: layer.fabricObject.fill ? hexToRgb(layer.fabricObject.fill) : '0,0,0',
               StringStyle: stringStyle,
-              X: adjustedX.toString(),
-              Y: adjustedY.toString(),
+              X: (adjustedX * scaleCorrection).toString(),
+              Y: (adjustedY * scaleCorrection).toString(),
               AntiAlias: "1",
               Text: text.text,
             }
