@@ -12,6 +12,7 @@ import ExportModal from './ExportModal'
 import { checkForAppUpdates } from '@/services/CheckForAppUpdates';
 import { version as appVersion } from '../../package.json';
 import { Badge } from './ui/badge';
+import { FaDiscord } from 'react-icons/fa';
 
 const Topbar: React.FC = () => {
   const [version, setVersion] = useState('1.0.0'); // Add version state
@@ -26,6 +27,13 @@ const Topbar: React.FC = () => {
 
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const { toast } = useToast();
+
+  useEffect(() => {
+    toast({
+      title: "Join our discord!",
+      description: "Click the Discord icon to join our community.",
+    });
+  }, [toast]);
 
   const handleExport = async (metadata: { name: string; author: string; version: string; description: string }) => {
     const success = await handleCreateDirectory(metadata);
@@ -52,7 +60,10 @@ const Topbar: React.FC = () => {
         <div className="text-xl text-secondary-foreground font-semibold">
           Rainmeter Editor <Badge variant="outline">v{version}</Badge>
         </div>
-        <div>
+        <div className='flex items-center space-x-5'>
+          <a href="https://discord.gg/tzY82KkS4H" target="_blank" rel="noopener noreferrer">
+            <FaDiscord className="w-5 h-5 text-secondary-foreground hover:text-primary" />
+          </a>
           <Tooltip>
             <TooltipTrigger asChild>
               <Button variant="default" onClick={() => setIsExportModalOpen(true)}>
