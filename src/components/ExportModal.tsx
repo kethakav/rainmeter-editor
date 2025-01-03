@@ -10,9 +10,10 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
 
 interface ExportModalProps {
-  onExport: (metadata: { name: string; author: string; version: string; description: string }) => Promise<boolean>;
+  onExport: (metadata: { name: string; author: string; version: string; description: string}, allowScrollResize: boolean) => Promise<boolean>;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -22,15 +23,17 @@ const ExportModal: React.FC<ExportModalProps> = ({ onExport, open, onOpenChange 
   const [author, setAuthor] = useState('')
   const [version, setVersion] = useState('')
   const [description, setDescription] = useState('')
+  const [allowScrollResize, setAllowScrollResize] = useState(false)
 
   const handleExport = async () => {
-    const success = await onExport({ name, author, version, description })
+    const success = await onExport({ name, author, version, description }, allowScrollResize)
     if (success) {
       onOpenChange(false)
       setName('')
       setAuthor('')
       setVersion('')
       setDescription('')
+      setAllowScrollResize(false)
     }
   }
 
@@ -88,6 +91,24 @@ const ExportModal: React.FC<ExportModalProps> = ({ onExport, open, onOpenChange 
               className="col-span-3"
             />
           </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <div className="col-span-1" />
+            
+            <div className='col-span-3'>
+              <Checkbox 
+                id="allowScrollResize" 
+                checked={allowScrollResize}
+                onCheckedChange={(checked) => setAllowScrollResize(checked as boolean)}
+              />
+              <label
+                htmlFor="allowScrollResize"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 ml-2"
+              >
+                Allow Mouse Scroll Resize
+              </label>
+            </div>
+            
+          </div>
         </div>
         <DialogFooter>
           <Button type="submit" onClick={handleExport}>Export</Button>
@@ -98,4 +119,3 @@ const ExportModal: React.FC<ExportModalProps> = ({ onExport, open, onOpenChange 
 }
 
 export default ExportModal
-

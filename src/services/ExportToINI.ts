@@ -16,6 +16,10 @@ interface RainmeterMetadata {
     description: string;
 }
 
+interface RainmeterSkinProperties {
+  allowScrollResize: boolean
+}
+
 interface RainmeterVariable {
   key: string;
   value: string;
@@ -43,6 +47,7 @@ class RainmeterSkinExporter {
   private baseTemplate: string;
   private layers: RainmeterSkinLayer[] = [];
   private metadata: RainmeterMetadata;
+  public properties: RainmeterSkinProperties = { allowScrollResize: false };
   private variables: RainmeterVariable[] = [];
 
   constructor(metadata: RainmeterMetadata) {
@@ -59,6 +64,10 @@ Description=${this.metadata.description}
 
 [Rainmeter]
 Update=1000
+BackgroundMode=2
+SolidColor=0,0,0,1
+DynamicWindowSize=1
+AccurateText=1
 `;
   }
 
@@ -75,6 +84,15 @@ Update=1000
   export(): string {
     let exportContent = this.baseTemplate;
 
+    // Add scoll resizing here ==================================================================
+
+    if (this.properties.allowScrollResize) {
+      exportContent += 'MouseScrollUpAction=[!SetVariable Scale "(#Scale#+#ScrollMouseIncrement#)"][!WriteKeyValue Variables Scale "(#Scale#+#ScrollMouseIncrement#)"][!Refresh] \n';
+      exportContent += 'MouseScrollDownAction=[!SetVariable Scale "(#Scale#-#ScrollMouseIncrement# < 0.2 ? 0.2 : #Scale#-#ScrollMouseIncrement#)"][!WriteKeyValue Variables Scale "(#Scale#-#ScrollMouseIncrement# < 0.2 ? 0.2 : #Scale#-#ScrollMouseIncrement#)"][!Refresh]\n';
+      exportContent += '\n';
+    } else {
+      exportContent += '\n';
+    }
     // Add Variables section
     if (this.variables.length > 0) {
       exportContent += '[Variables]\n';
@@ -121,67 +139,6 @@ Update=1000
     return exportContent;
   }
 }
-  
-// Example Usage in a Vue Component
-export function useRainmeterSkinExporter() {
-  const createDayOfWeekSkin = async () => {
-      const exporter = new RainmeterSkinExporter({
-          name: 'Day Of The Week',
-          author: 'Your Name',
-          version: '1.0',
-          description: 'Displays the current day of the week'
-      });
-  
-      exporter
-          .addVariable('FontName', 'Roboto')
-          .addVariable('FontSize', '72')
-          .addVariable('FontColor', '255,255,255')
-          .addLayer({
-              measure: {
-                  type: 'Time',
-                  name: 'MeasureDay',
-                  options: {
-                      Format: '%A'
-                  }
-              }
-          })
-          .addLayer({
-              meter: {
-                  type: 'String',
-                  name: 'MeterDay',
-                  measureName: 'MeasureDay',
-                  options: {
-                      FontSize: '#FontSize#',
-                      FontFace: '#FontName#',
-                      FontColor: '#FontColor#',
-                      Align: 'C',
-                      X: '0',
-                      Y: '0',
-                      AntiAlias: '1',
-                      Text: '"%1"'
-                  }
-              }
-          });
-  
-      const iniContent = exporter.export();
-  
-      // Show a save dialog to the user
-      // const filePath = await save({ filters: [{ name: 'INI files', extensions: ['ini'] }] });
-  
-      if (BaseDirectory.AppData) {
-          // Write the file to the selected path
-          await writeTextFile('test.ini', iniContent, {
-              baseDir: BaseDirectory.LocalData,
-          });
-          // await writeTextFile(filePath, iniContent);
-      }
-      return iniContent;
-  };
-
-  return {
-    createDayOfWeekSkin
-  };
-}
 
 // Add a function to check if the font file exists in the public/fonts directory
 async function fontExistsInPublic(fontName: string): Promise<boolean> {
@@ -192,8 +149,8 @@ async function fontExistsInPublic(fontName: string): Promise<boolean> {
 
 
 // Modify the exportSkin function
-export const exportSkin = async (exportPath: string, metadata: { name: string; author: string; version: string; description: string }) => {
-  const scaleCorrection = 1.4;
+export const exportSkin = async (exportPath: string, metadata: { name: string; author: string; version: string; description: string }, allowScrollResize: boolean) => {
+  const scaleCorrection = 1.35;
   const layers = layerManager.getLayers();
   const exporter = new RainmeterSkinExporter({
     name: metadata.name,
@@ -202,6 +159,8 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
     description: metadata.description,
   });
 
+  exporter.properties.allowScrollResize = allowScrollResize;
+  
   const systemFonts = localFontManager.getCachedFonts();
 
   const fontsToCopy = new Set<string>(); // To track fonts to copy
@@ -220,6 +179,9 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
     return min;
   }, Infinity);
 
+  exporter.addVariable('Scale', '1.0');
+  exporter.addVariable('ScrollMouseIncrement', '0.05');
+
   const addMeterLayer = (exporter: RainmeterSkinExporter, layer: any, text: IText, fontFace: string, stringStyle: string, adjustedX: number, adjustedY: number) => {
     
     exporter.addLayer({
@@ -229,11 +191,11 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
         measureName: 'Measure' + layer.name,
         options: {
           FontFace: fontFace,
-          FontSize: text.fontSize.toString(),
+          FontSize: ('(' + text.fontSize.toString() + ' * #Scale#)'),
           FontColor: layer.fabricObject.fill ? hexToRgb(layer.fabricObject.fill) : '0,0,0',
           StringStyle: stringStyle,
-          X: (adjustedX * scaleCorrection).toString(),
-          Y: (adjustedY * scaleCorrection).toString(),
+          X: ('(' + (adjustedX * scaleCorrection).toString() + ' * #Scale#)'),
+          Y: ('(' + (adjustedY * scaleCorrection).toString() + ' * #Scale#)'),
           AntiAlias: "1",
           Text: '%1',
         }
@@ -275,11 +237,11 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
             name: layer.name,
             options: {
               FontFace: fontFace,
-              FontSize: text.fontSize.toString(),
+              FontSize: ('(' + text.fontSize.toString() + ' * #Scale#)'),
               FontColor: layer.fabricObject.fill ? hexToRgb(layer.fabricObject.fill) : '0,0,0',
               StringStyle: stringStyle,
-              X: (adjustedX * scaleCorrection).toString(),
-              Y: (adjustedY * scaleCorrection).toString(),
+              X: ('(' + (adjustedX * scaleCorrection).toString() + ' * #Scale#)'),
+              Y: ('(' + (adjustedY * scaleCorrection).toString() + ' * #Scale#)'),
               AntiAlias: "1",
               Text: text.text,
             }
@@ -534,9 +496,8 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
   return iniContent;
 }
 
-export const handleCreateDirectory = async (metadata: { name: string; author: string; version: string; description: string }): Promise<boolean> => {
+export const handleCreateDirectory = async (metadata: { name: string; author: string; version: string; description: string },  allowScrollResize: boolean): Promise<boolean> => {
   // Open dialog for the user to select a directory
-
   
   const selectedDirectory = await open({
     title: 'Select a Directory',
@@ -562,7 +523,7 @@ export const handleCreateDirectory = async (metadata: { name: string; author: st
       await mkdir(ResDirectoryPath);
       await mkdir(FontDirectoryPath);
 
-      const iniContent = await exportSkin(FontDirectoryPath, metadata);
+      const iniContent = await exportSkin(FontDirectoryPath, metadata, allowScrollResize);
 
       // await copyFile(await resourceDir() + "/_up_/public/fonts/Tuesday Night.otf", `${FontDirectoryPath}/Tuesday Night.otf`);
 

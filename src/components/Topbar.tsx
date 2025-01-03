@@ -35,8 +35,8 @@ const Topbar: React.FC = () => {
     });
   }, [toast]);
 
-  const handleExport = async (metadata: { name: string; author: string; version: string; description: string }) => {
-    const success = await handleCreateDirectory(metadata);
+  const handleExport = async (metadata: { name: string; author: string; version: string; description: string},  allowScrollResize: boolean ) => {
+    const success = await handleCreateDirectory(metadata, allowScrollResize);
 
     if (success) {
         toast({
