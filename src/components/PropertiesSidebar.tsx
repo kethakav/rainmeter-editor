@@ -128,6 +128,12 @@ const PropertiesSidebar: React.FC = () => {
 
   const handleInputChange = (field: string, value: string) => {
     setLayerProperties(prev => ({ ...prev, [field]: value }));
+    if (field === 'x' || field === 'y') {
+      updateLayerPosition(field as 'x' | 'y', value);
+    }
+    if (field === 'fontSize') {
+      updateFontSize(value);
+    }
   };
 
   const handleFontChange = async (font: string) => {
