@@ -1,5 +1,5 @@
 // ExportToINI.ts
-import { writeTextFile, BaseDirectory, copyFile } from '@tauri-apps/plugin-fs';
+import { copyFile } from '@tauri-apps/plugin-fs';
 import { layerManager } from './LayerManager';
 import { IText, TFiller } from 'fabric';
 import { open} from '@tauri-apps/plugin-dialog';
