@@ -91,7 +91,7 @@ const ExportModal: React.FC<ExportModalProps> = ({ onExport, open, onOpenChange 
               className="col-span-3"
             />
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
+          <div className="grid grid-cols-4 items-center gap-4 border-t pt-4">
             <div className="col-span-1" />
             
             <div className='col-span-3'>
