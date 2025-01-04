@@ -32,6 +32,12 @@ class LayerManager {
     public layers: LayerConfig[] = [];
 
     private listeners: (() => void)[] = [];
+
+    private layerCounts: { [key in LayerType]: number } = {
+      [LayerType.TEXT]: 0,
+      [LayerType.SHAPE]: 0,
+      [LayerType.IMAGE]: 0
+    };
   
     private constructor() {} // Make the constructor private
 
@@ -448,14 +454,14 @@ class LayerManager {
 
   // Generate default layer name
   private generateLayerName(type: LayerType): string {
-    const typeCount = this.layers.filter(l => l.type === type).length;
+    this.layerCounts[type] += 1;
     const typeLabels = {
       [LayerType.TEXT]: 'Text',
       [LayerType.SHAPE]: 'Shape',
       [LayerType.IMAGE]: 'Image'
     };
     
-    return `${typeLabels[type]} ${typeCount + 1}`;
+    return `${typeLabels[type]} ${this.layerCounts[type]}`;
   }
 
   // Get all layers
