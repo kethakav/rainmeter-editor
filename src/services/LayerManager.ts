@@ -249,6 +249,19 @@ class LayerManager {
           if (measure === "cpu-core-8") {
             activeObject.set('text', "80%");
           }
+          // DISK ==============================================================================
+          if (measure === "disk-c-label") {
+            activeObject.set('text', "Windows");
+          }
+          if (measure === "disk-c-total-space") {
+            activeObject.set('text', "123456789 B");
+          }
+          if (measure === "disk-c-free-space") {
+            activeObject.set('text', "123456789 B");
+          }
+          if (measure === "disk-c-used-space") {
+            activeObject.set('text', "123456789 B");
+          }
           // RAM =============================================================================
 
           this.canvas.renderAll(); // Re-render the canvas to reflect changes

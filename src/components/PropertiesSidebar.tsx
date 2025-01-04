@@ -45,6 +45,30 @@ const PropertiesSidebar: React.FC = () => {
     // preloadCustomFonts();
   }, []);
 
+  const getMeasureTypeAndCategory = (measure: string) => {
+    if (measure === 'custom-text') {
+      return { type: 'custom-text', category: '' };
+    }
+    
+    if (measure.startsWith('time-')) {
+      return { type: 'time-date', category: 'time' };
+    }
+    
+    if (measure.startsWith('date-')) {
+      return { type: 'time-date', category: 'date' };
+    }
+    
+    if (measure.startsWith('cpu-')) {
+      return { type: 'cpu', category: measure };
+    }
+    
+    if (measure.startsWith('disk-')) {
+      return { type: 'disk', category: measure };
+    }
+
+    return { type: 'custom-text', category: '' };
+  };
+
 
   useEffect(() => {
     const updateLayerProperties = () => {
@@ -52,14 +76,20 @@ const PropertiesSidebar: React.FC = () => {
         const selectedLayer = layerManager.getLayers().find(layer => layer.id === selectedLayerId);
         if (selectedLayer) {
           const text = selectedLayer.fabricObject as IText;
+          const measure = selectedLayer.measure || 'custom-text';
+          const { type, category: newCategory } = getMeasureTypeAndCategory(measure);
+          
           setLayerProperties({
             x: selectedLayer.fabricObject.left.toString(),
             y: selectedLayer.fabricObject.top.toString(),
             color: selectedLayer.fabricObject.fill ? selectedLayer.fabricObject.fill.toString() : 'black',
-            font: text.fontFamily || 'Arial', // Ensure a default font is always set
-            measure: selectedLayer.measure || 'custom-text',
+            font: text.fontFamily || 'Arial',
+            measure: measure,
             fontSize: text.fontSize.toString(),
           });
+          
+          setMeasureType(type);
+          setCategory(newCategory);
         }
       }
     };
@@ -169,6 +199,10 @@ const PropertiesSidebar: React.FC = () => {
       setCategory('cpu-average');
       handleMeasureChange('cpu-average');
     }
+    if (value === 'disk') {
+      setCategory('disk-c-label');
+      handleMeasureChange('disk-c-label');
+    }
   };
 
   const handleCategoryChange = (value: string) => {
@@ -180,6 +214,9 @@ const PropertiesSidebar: React.FC = () => {
       handleMeasureChange('time-hour-minute-24');
     }
     if (value === 'cpu-average' || value === 'cpu-core-1' || value === 'cpu-core-2' || value === 'cpu-core-3' || value === 'cpu-core-4' || value === 'cpu-core-5' || value === 'cpu-core-6' || value === 'cpu-core-7' || value === 'cpu-core-8') {
+      handleMeasureChange(value);
+    }
+    if (value === 'disk-c-label' || value === 'disk-c-total-space' || value === 'disk-c-free-space' || value === 'disk-c-used-space') {
       handleMeasureChange(value);
     }
   };
@@ -415,10 +452,10 @@ const PropertiesSidebar: React.FC = () => {
                         </Label>
                         <Select onValueChange={handleCategoryChange} value={category}>
                           <SelectTrigger id="category-select">
-                            <SelectValue defaultValue="time" placeholder="Select Category" />
+                            <SelectValue defaultValue="cpu-average" placeholder="Average CPU Usage" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="cpu-average">Average Usage</SelectItem>
+                            <SelectItem value="cpu-average">Average CPU Usage</SelectItem>
                             <SelectItem value="cpu-core-1">Core 1 Usage</SelectItem>
                             <SelectItem value="cpu-core-2">Core 2 Usage</SelectItem>
                             <SelectItem value="cpu-core-3">Core 3 Usage</SelectItem>
@@ -427,6 +464,25 @@ const PropertiesSidebar: React.FC = () => {
                             <SelectItem value="cpu-core-6">Core 6 Usage</SelectItem>
                             <SelectItem value="cpu-core-7">Core 7 Usage</SelectItem>
                             <SelectItem value="cpu-core-8">Core 8 Usage</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+
+                    {measureType === 'disk' && (
+                      <div className="space-y-2">
+                        <Label htmlFor="category-select" className="block text-sm font-medium text-gray-700 mb-1">
+                          Disk
+                        </Label>
+                        <Select onValueChange={handleCategoryChange} value={category}>
+                          <SelectTrigger id="category-select">
+                            <SelectValue defaultValue="disk-c-label" placeholder="Disk C Label" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="disk-c-label">Disk C Label</SelectItem>
+                            <SelectItem value="disk-c-total-space">Disk C Total Space</SelectItem>
+                            <SelectItem value="disk-c-free-space">Disk C Free Space</SelectItem>
+                            <SelectItem value="disk-c-used-space">Disk C Used Space</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>

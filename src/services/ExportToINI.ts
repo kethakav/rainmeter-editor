@@ -26,7 +26,7 @@ interface RainmeterVariable {
 }
 
 interface RainmeterMeasure {
-  type: 'Time' | 'Calc' | 'String' | 'Plugin' | 'CPU';
+  type: 'Time' | 'Calc' | 'String' | 'Plugin' | 'CPU' | 'FreeDiskSpace';
   name: string;
   options: Record<string, string>;
 }
@@ -639,6 +639,69 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
           }
         });
         addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1%');
+        if (font) {
+          fontsToCopy.add(font.src); // Track the font
+        }
+      } else if (layer.measure === "disk-c-label") { // DISK ====================================================
+        exporter.addLayer({
+          measure: {
+            type: 'FreeDiskSpace',
+            name: 'Measure' + layer.name,
+            options: {
+              Drive: 'C:',
+              Label: '1',
+              UpdateDivider: '5',
+            }
+          }
+        });
+        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
+        if (font) {
+          fontsToCopy.add(font.src); // Track the font
+        }
+      } else if (layer.measure === "disk-c-total-space") { 
+        exporter.addLayer({
+          measure: {
+            type: 'FreeDiskSpace',
+            name: 'Measure' + layer.name,
+            options: {
+              Drive: 'C:',
+              Total: '1',
+              UpdateDivider: '5',
+            }
+          }
+        });
+        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1 B');
+        if (font) {
+          fontsToCopy.add(font.src); // Track the font
+        }
+      } else if (layer.measure === "disk-c-free-space") { 
+        exporter.addLayer({
+          measure: {
+            type: 'FreeDiskSpace',
+            name: 'Measure' + layer.name,
+            options: {
+              Drive: 'C:',
+              UpdateDivider: '5',
+            }
+          }
+        });
+        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1 B');
+        if (font) {
+          fontsToCopy.add(font.src); // Track the font
+        }
+      } else if (layer.measure === "disk-c-used-space") { 
+        exporter.addLayer({
+          measure: {
+            type: 'FreeDiskSpace',
+            name: 'Measure' + layer.name,
+            options: {
+              Drive: 'C:',
+              InvertMeasure: '1',
+              UpdateDivider: '5',
+            }
+          }
+        });
+        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1 B');
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
