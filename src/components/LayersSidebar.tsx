@@ -22,6 +22,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { layerManager } from '@/services/LayerManager';
 import { useLayerContext } from '@/context/LayerContext';
 import { Card, CardContent, CardHeader } from './ui/card';
+import { FaTrash } from 'react-icons/fa'; // Import the trash icon
 
 interface Layer {
   id: string;
@@ -32,9 +33,10 @@ interface SortableItemProps {
   layer: Layer;
   isSelected: boolean;
   onSelect: (id: string) => void;
+  onDelete: (id: string) => void;
 }
 
-const SortableItem: React.FC<SortableItemProps> = ({ layer, isSelected, onSelect }) => {
+const SortableItem: React.FC<SortableItemProps> = ({ layer, isSelected, onSelect, onDelete }) => {
   const {
     attributes,
     listeners,
@@ -53,6 +55,11 @@ const SortableItem: React.FC<SortableItemProps> = ({ layer, isSelected, onSelect
     onSelect(layer.id);
   };
 
+  const handleDelete = () => {
+    layerManager.removeLayer(layer.id);
+    onDelete(layer.id);
+  };
+
   return (
     <div ref={setNodeRef} style={style} className="flex items-center">
       <div {...attributes} {...listeners} className="mr-2 cursor-move">
@@ -64,6 +71,13 @@ const SortableItem: React.FC<SortableItemProps> = ({ layer, isSelected, onSelect
         onClick={handleClick}
       >
         {layer.name}
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={handleDelete}
+      >
+        <FaTrash />
       </Button>
     </div>
   );
@@ -96,7 +110,6 @@ const LayersSidebar: React.FC = () => {
         layerManager.reorderLayers(newLayerOrder.map(layer => layer.id).reverse());
         setLayers(newLayerOrder);
         layerManager.updateCanvasLayerOrder();
-        console.log("reordered");
       }
     }
   };
@@ -123,6 +136,10 @@ const LayersSidebar: React.FC = () => {
     );
   }, [selectedLayerId]);
 
+  const handleDeleteLayer = () => {
+    setLayers(layerManager.getLayers().reverse());
+  };
+
   return (
     <Card className='w-50 m-4 rounded-2xl'>
       <CardHeader className='font-semibold text-xl border-b'>Layers</CardHeader>
@@ -146,6 +163,7 @@ const LayersSidebar: React.FC = () => {
                     layer={layer}
                     isSelected={layer.id === selectedLayerId}
                     onSelect={setSelectedLayerId}
+                    onDelete={handleDeleteLayer}
                   />
                 ))}
               </SortableContext>
@@ -155,7 +173,6 @@ const LayersSidebar: React.FC = () => {
       </div>
       </CardContent>
     </Card>
-    
   );
 };
 
