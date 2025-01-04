@@ -164,58 +164,93 @@ class LayerManager {
       if (activeObject) {
         const actLayer = this.getLayerByFabricObject(activeObject);
         if (actLayer) {
-          actLayer.measure = measure;
+          actLayer.measure = measure; // Update the measure in the layerConfig
+          // Time ========================================================================
+          if (measure === "time-hour-minute-24") {
+            activeObject.set('text', "15:15");
+          }
+          if (measure === "time-hour-minute-12") {
+            activeObject.set('text', "03:15 PM");
+          }
+          if (measure === "time-hour-24") {
+            activeObject.set('text', "15");
+          }
+          if (measure === "time-hour-12") {
+            activeObject.set('text', "03");
+          }
+          if (measure === "time-minute") {
+            activeObject.set('text', "30");
+          }
+          if (measure === "time-second") {
+            activeObject.set('text', "45");
+          }
+          if (measure === "time-am-pm") {
+            activeObject.set('text', "PM");
+          }
+          // Date ========================================================================
           if (measure === "date-yyyy-mm-dd") {
-            activeObject.set('text', "2000-01-01");
+            activeObject.set('text', "2025-01-01");
           }
           if (measure === "date-mm-dd-yy") {
-            activeObject.set('text', "01-01-00");
+            activeObject.set('text', "01-01-25");
           }
           if (measure === "custom-text") {
             activeObject.set('text', "Custom Text");
           }
-          if (measure === "short-weekday") {
-            activeObject.set('text', "Mon");
+          if (measure === "date-month-number") {
+            activeObject.set('text', "01");
           }
-          if (measure === "full-weekday") {
-            activeObject.set('text', "Monday");
-          }
-          if (measure === "short-month") {
-            activeObject.set('text', "Jan");
-          }
-          if (measure === "full-month") {
+          if (measure === "date-month-full") {
             activeObject.set('text', "January");
           }
-          if (measure === "zero-day") {
+          if (measure === "date-month-short") {
+            activeObject.set('text', "Jan");
+          }
+          if (measure === "date-day-number") {
             activeObject.set('text', "01");
           }
-          if (measure === "space-day") {
-            activeObject.set('text', "1");
+          if (measure === "date-day-full") {
+            activeObject.set('text', "Monday");
           }
-          if (measure === "short-year") {
-            activeObject.set('text', "00");
+          if (measure === "date-day-short") {
+            activeObject.set('text', "Mon");
           }
-          if (measure === "full-year") {
-            activeObject.set('text', "2000");
+          if (measure === "date-year-short") {
+            activeObject.set('text', "25");
           }
-          if (measure === "hour-24") {
-            activeObject.set('text', "15");
+          if (measure === "date-year-full") {
+            activeObject.set('text', "2025");
           }
-          if (measure === "hour-12") {
-            activeObject.set('text', "03");
+          // CPU =============================================================================
+          if (measure === "cpu-average") {
+            activeObject.set('text', "69%");
           }
-          if (measure === "month-number") {
-            activeObject.set('text', "01");
+          if (measure === "cpu-core-1") {
+            activeObject.set('text', "10%");
           }
-          if (measure === "minute-number") {
-            activeObject.set('text', "01");
+          if (measure === "cpu-core-2") {
+            activeObject.set('text', "20%");
           }
-          if (measure === "second-number") {
-            activeObject.set('text', "01");
+          if (measure === "cpu-core-3") {
+            activeObject.set('text', "30%");
           }
-          if (measure === "am-pm") {
-            activeObject.set('text', "AM");
+          if (measure === "cpu-core-4") {
+            activeObject.set('text', "40%");
           }
+          if (measure === "cpu-core-5") {
+            activeObject.set('text', "50%");
+          }
+          if (measure === "cpu-core-6") {
+            activeObject.set('text', "60%");
+          }
+          if (measure === "cpu-core-7") {
+            activeObject.set('text', "70%");
+          }
+          if (measure === "cpu-core-8") {
+            activeObject.set('text', "80%");
+          }
+          // RAM =============================================================================
+
           this.canvas.renderAll(); // Re-render the canvas to reflect changes
         }
       }

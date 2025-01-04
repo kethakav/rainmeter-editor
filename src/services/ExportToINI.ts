@@ -26,7 +26,7 @@ interface RainmeterVariable {
 }
 
 interface RainmeterMeasure {
-  type: 'Time' | 'Calc' | 'String' | 'Plugin';
+  type: 'Time' | 'Calc' | 'String' | 'Plugin' | 'CPU';
   name: string;
   options: Record<string, string>;
 }
@@ -35,6 +35,13 @@ interface RainmeterMeter {
   type: 'String' | 'Image' | 'Shape';
   name: string;
   measureName?: string;
+  measureName2?: string;
+  measureName3?: string;
+  measureName4?: string;
+  measureName5?: string;
+  measureName6?: string;
+  measureName7?: string;
+  measureName8?: string;
   options: Record<string, string | TFiller>;
 }
 
@@ -128,6 +135,28 @@ AccurateText=1
         if (meter.measureName) {
           exportContent += `MeasureName=${meter.measureName}\n`;
         }
+        if (meter.measureName2) {
+          exportContent += `MeasureName2=${meter.measureName2}\n`;
+        }
+        if (meter.measureName3) {
+          exportContent += `MeasureName3=${meter.measureName3}\n`;
+        }
+        if (meter.measureName4) {
+          exportContent += `MeasureName4=${meter.measureName4}\n`;
+        }
+        if (meter.measureName5) {
+          exportContent += `MeasureName5=${meter.measureName5}\n`;
+        }
+        if (meter.measureName6) {
+          exportContent += `MeasureName6=${meter.measureName6}\n`;
+        }
+        if (meter.measureName7) {
+          exportContent += `MeasureName7=${meter.measureName7}\n`;
+        }
+        if (meter.measureName8) {
+          exportContent += `MeasureName8=${meter.measureName8}\n`;
+        }
+
         
         Object.entries(meter.options).forEach(([key, value]) => {
           exportContent += `${key}=${value}\n`;
@@ -182,7 +211,7 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
   exporter.addVariable('Scale', '1.0');
   exporter.addVariable('ScrollMouseIncrement', '0.05');
 
-  const addMeterLayer = (exporter: RainmeterSkinExporter, layer: any, text: IText, fontFace: string, stringStyle: string, adjustedX: number, adjustedY: number) => {
+  const addMeterLayerOneMeasure = (exporter: RainmeterSkinExporter, layer: any, text: IText, fontFace: string, stringStyle: string, adjustedX: number, adjustedY: number, strCont: string) => {
     
     exporter.addLayer({
       meter: {
@@ -197,7 +226,7 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
           X: ('(' + (adjustedX * scaleCorrection).toString() + ' * #Scale#)'),
           Y: ('(' + (adjustedY * scaleCorrection).toString() + ' * #Scale#)'),
           AntiAlias: "1",
-          Text: '%1',
+          Text: strCont,
         }
       }
     });
@@ -250,7 +279,7 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
-      } else if (layer.measure === "date-yyyy-mm-dd") {
+      } else if (layer.measure === "date-yyyy-mm-dd") { // Date ====================================================
         exporter.addLayer({
           measure: {
             type: 'Time',
@@ -260,7 +289,7 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
             }
           }
         });
-        addMeterLayer(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY);
+        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
@@ -274,151 +303,11 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
             }
           }
         });
-        addMeterLayer(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY);
+        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
-      } else if (layer.measure === "short-weekday") {
-        exporter.addLayer({
-          measure: {
-            type: 'Time',
-            name: 'Measure' + layer.name,
-            options: {
-              Format: '%a',
-            }
-          }
-        });
-        addMeterLayer(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY);
-        if (font) {
-          fontsToCopy.add(font.src); // Track the font
-        }
-      } else if (layer.measure === "full-weekday") {
-        exporter.addLayer({
-          measure: {
-            type: 'Time',
-            name: 'Measure' + layer.name,
-            options: {
-              Format: '%A',
-            }
-          }
-        });
-        addMeterLayer(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY);
-        if (font) {
-          fontsToCopy.add(font.src); // Track the font
-        }
-      } else if (layer.measure === "short-month") {
-        exporter.addLayer({
-          measure: {
-            type: 'Time',
-            name: 'Measure' + layer.name,
-            options: {
-              Format: '%b',
-            }
-          }
-        });
-        addMeterLayer(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY);
-        if (font) {
-          fontsToCopy.add(font.src); // Track the font
-        }
-      } else if (layer.measure === "full-month") {
-        exporter.addLayer({
-          measure: {
-            type: 'Time',
-            name: 'Measure' + layer.name,
-            options: {
-              Format: '%B',
-            }
-          }
-        });
-        addMeterLayer(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY);
-        if (font) {
-          fontsToCopy.add(font.src); // Track the font
-        }
-      } else if (layer.measure === "zero-day") {
-        exporter.addLayer({
-          measure: {
-            type: 'Time',
-            name: 'Measure' + layer.name,
-            options: {
-              Format: '%d',
-            }
-          }
-        });
-        addMeterLayer(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY);
-        if (font) {
-          fontsToCopy.add(font.src); // Track the font
-        }
-      } else if (layer.measure === "space-day") {
-        exporter.addLayer({
-          measure: {
-            type: 'Time',
-            name: 'Measure' + layer.name,
-            options: {
-              Format: '%e',
-            }
-          }
-        });
-        addMeterLayer(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY);
-        if (font) {
-          fontsToCopy.add(font.src); // Track the font
-        }
-      } else if (layer.measure === "short-year") {
-        exporter.addLayer({
-          measure: {
-            type: 'Time',
-            name: 'Measure' + layer.name,
-            options: {
-              Format: '%g',
-            }
-          }
-        });
-        addMeterLayer(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY);
-        if (font) {
-          fontsToCopy.add(font.src); // Track the font
-        }
-      } else if (layer.measure === "full-year") {
-        exporter.addLayer({
-          measure: {
-            type: 'Time',
-            name: 'Measure' + layer.name,
-            options: {
-              Format: '%G',
-            }
-          }
-        });
-        addMeterLayer(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY);
-        if (font) {
-          fontsToCopy.add(font.src); // Track the font
-        }
-      } else if (layer.measure === "hour-24") {
-        exporter.addLayer({
-          measure: {
-            type: 'Time',
-            name: 'Measure' + layer.name,
-            options: {
-              Format: '%H',
-            }
-          }
-        });
-        addMeterLayer(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY);
-        if (font) {
-          fontsToCopy.add(font.src); // Track the font
-        }
-      } else if (layer.measure === "hour-12") {
-        exporter.addLayer({
-          measure: {
-            type: 'Time',
-            name: 'Measure' + layer.name,
-            options: {
-              Format: '%I',
-            }
-          }
-        });
-        addMeterLayer(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY);
-        if (font) {
-          fontsToCopy.add(font.src); // Track the font
-        }
-      } else if (layer.measure === "month-number") {
+      } else if (layer.measure === "date-month-number") {
         exporter.addLayer({
           measure: {
             type: 'Time',
@@ -428,11 +317,165 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
             }
           }
         });
-        addMeterLayer(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY);
+        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
-      } else if (layer.measure === "minute-number") {
+      } else if (layer.measure === "date-month-full") {
+        exporter.addLayer({
+          measure: {
+            type: 'Time',
+            name: 'Measure' + layer.name,
+            options: {
+              Format: '%B',
+            }
+          }
+        });
+        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
+        if (font) {
+          fontsToCopy.add(font.src); // Track the font
+        }
+      } else if (layer.measure === "date-month-short") {
+        exporter.addLayer({
+          measure: {
+            type: 'Time',
+            name: 'Measure' + layer.name,
+            options: {
+              Format: '%b',
+            }
+          }
+        });
+        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
+        if (font) {
+          fontsToCopy.add(font.src); // Track the font
+        }
+      } else if (layer.measure === "date-day-number") {
+        exporter.addLayer({
+          measure: {
+            type: 'Time',
+            name: 'Measure' + layer.name,
+            options: {
+              Format: '%d',
+            }
+          }
+        });
+        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
+        if (font) {
+          fontsToCopy.add(font.src); // Track the font
+        }
+      } else if (layer.measure === "date-day-full") {
+        exporter.addLayer({
+          measure: {
+            type: 'Time',
+            name: 'Measure' + layer.name,
+            options: {
+              Format: '%A',
+            }
+          }
+        });
+        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
+        if (font) {
+          fontsToCopy.add(font.src); // Track the font
+        }
+      } else if (layer.measure === "date-day-short") {
+        exporter.addLayer({
+          measure: {
+            type: 'Time',
+            name: 'Measure' + layer.name,
+            options: {
+              Format: '%a',
+            }
+          }
+        });
+        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
+        if (font) {
+          fontsToCopy.add(font.src); // Track the font
+        }
+      } else if (layer.measure === "date-year-short") {
+        exporter.addLayer({
+          measure: {
+            type: 'Time',
+            name: 'Measure' + layer.name,
+            options: {
+              Format: '%g',
+            }
+          }
+        });
+        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
+        if (font) {
+          fontsToCopy.add(font.src); // Track the font
+        }
+      } else if (layer.measure === "date-year-full") {
+        exporter.addLayer({
+          measure: {
+            type: 'Time',
+            name: 'Measure' + layer.name,
+            options: {
+              Format: '%G',
+            }
+          }
+        });
+        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
+        if (font) {
+          fontsToCopy.add(font.src); // Track the font
+        }
+      } else if (layer.measure === "time-hour-minute-24") { // Time ====================================================
+        exporter.addLayer({
+          measure: {
+            type: 'Time',
+            name: 'Measure' + layer.name,
+            options: {
+              Format: '%H:%M',
+            }
+          }
+        });
+        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
+        if (font) {
+          fontsToCopy.add(font.src); // Track the font
+        }
+      } else if (layer.measure === "time-hour-minute-24") {
+        exporter.addLayer({
+          measure: {
+            type: 'Time',
+            name: 'Measure' + layer.name,
+            options: {
+              Format: '%I:%M %p',
+            }
+          }
+        });
+        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
+        if (font) {
+          fontsToCopy.add(font.src); // Track the font
+        }
+      } else if (layer.measure === "time-hour-24") {
+        exporter.addLayer({
+          measure: {
+            type: 'Time',
+            name: 'Measure' + layer.name,
+            options: {
+              Format: '%H',
+            }
+          }
+        });
+        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
+        if (font) {
+          fontsToCopy.add(font.src); // Track the font
+        }
+      } else if (layer.measure === "time-hour-12") {
+        exporter.addLayer({
+          measure: {
+            type: 'Time',
+            name: 'Measure' + layer.name,
+            options: {
+              Format: '%I',
+            }
+          }
+        });
+        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
+        if (font) {
+          fontsToCopy.add(font.src); // Track the font
+        }
+      } else if (layer.measure === "time-minute") {
         exporter.addLayer({
           measure: {
             type: 'Time',
@@ -442,11 +485,11 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
             }
           }
         });
-        addMeterLayer(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY);
+        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
-      } else if (layer.measure === "second-number") {
+      } else if (layer.measure === "time-second") {
         exporter.addLayer({
           measure: {
             type: 'Time',
@@ -456,11 +499,11 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
             }
           }
         });
-        addMeterLayer(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY);
+        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
-      } else if (layer.measure === "am-pm") {
+      } else if (layer.measure === "time-am-pm") {
         exporter.addLayer({
           measure: {
             type: 'Time',
@@ -470,7 +513,132 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
             }
           }
         });
-        addMeterLayer(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY);
+        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
+        if (font) {
+          fontsToCopy.add(font.src); // Track the font
+        }
+      } else if (layer.measure === "cpu-average") { // CPU ====================================================
+        exporter.addLayer({
+          measure: {
+            type: 'CPU',
+            name: 'Measure' + layer.name,
+            options: {
+            }
+          }
+        });
+        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1%');
+        if (font) {
+          fontsToCopy.add(font.src); // Track the font
+        }
+      } else if (layer.measure === "cpu-core-1") {
+        exporter.addLayer({
+          measure: {
+            type: 'CPU',
+            name: 'Measure' + layer.name,
+            options: {
+              Processor: '1',
+            }
+          }
+        });
+        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1%');
+        if (font) {
+          fontsToCopy.add(font.src); // Track the font
+        }
+      } else if (layer.measure === "cpu-core-2") {
+        exporter.addLayer({
+          measure: {
+            type: 'CPU',
+            name: 'Measure' + layer.name,
+            options: {
+              Processor: '2',
+            }
+          }
+        });
+        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1%');
+        if (font) {
+          fontsToCopy.add(font.src); // Track the font
+        }
+      } else if (layer.measure === "cpu-core-3") {
+        exporter.addLayer({
+          measure: {
+            type: 'CPU',
+            name: 'Measure' + layer.name,
+            options: {
+              Processor: '3',
+            }
+          }
+        });
+        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1%');
+        if (font) {
+          fontsToCopy.add(font.src); // Track the font
+        }
+      } else if (layer.measure === "cpu-core-4") {
+        exporter.addLayer({
+          measure: {
+            type: 'CPU',
+            name: 'Measure' + layer.name,
+            options: {
+              Processor: '4',
+            }
+          }
+        });
+        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1%');
+        if (font) {
+          fontsToCopy.add(font.src); // Track the font
+        }
+      } else if (layer.measure === "cpu-core-5") {
+        exporter.addLayer({
+          measure: {
+            type: 'CPU',
+            name: 'Measure' + layer.name,
+            options: {
+              Processor: '5',
+            }
+          }
+        });
+        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1%');
+        if (font) {
+          fontsToCopy.add(font.src); // Track the font
+        }
+      } else if (layer.measure === "cpu-core-6") {
+        exporter.addLayer({
+          measure: {
+            type: 'CPU',
+            name: 'Measure' + layer.name,
+            options: {
+              Processor: '6',
+            }
+          }
+        });
+        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1%');
+        if (font) {
+          fontsToCopy.add(font.src); // Track the font
+        }
+      } else if (layer.measure === "cpu-core-7") {
+        exporter.addLayer({
+          measure: {
+            type: 'CPU',
+            name: 'Measure' + layer.name,
+            options: {
+              Processor: '7',
+            }
+          }
+        });
+        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1%');
+        if (font) {
+          fontsToCopy.add(font.src); // Track the font
+        }
+      } else if (layer.measure === "cpu-core-8") {
+        exporter.addLayer({
+          measure: {
+            type: 'CPU',
+            name: 'Measure' + layer.name,
+            options: {
+              Processor: '8',
+            }
+          }
+        });
+        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1%');
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
