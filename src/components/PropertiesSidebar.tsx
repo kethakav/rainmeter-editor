@@ -718,22 +718,6 @@ const PropertiesSidebar: React.FC = () => {
                         onFocus={() => setIsInputFocused(true)}
                       />
                     </div>
-                    {/* Source */}
-                    <div className="space-y-2">
-                      <Label htmlFor="image-source">Source</Label>
-                      <Input
-                        id="image-source"
-                        type="text"
-                        placeholder="Image URL"
-                        value={imageLayerProperties.source}
-                        onChange={e => handleImageInputChange('source', e.target.value)}
-                        onBlur={() => {
-                          // updateImageSource(imageLayerProperties.source);
-                          setIsInputFocused(false);
-                        }}
-                        onFocus={() => setIsInputFocused(true)}
-                      />
-                    </div>
                     {/* Measure Type (if applicable for images) */}
                     {/* Uncomment and modify if image layers have measure types */}
                     {/* 
