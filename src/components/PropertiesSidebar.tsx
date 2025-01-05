@@ -11,23 +11,32 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { IText } from 'fabric';
+import { FabricImage, IText } from 'fabric';
 import { localFontManager } from '@/services/LocalFontManager';
 import { SingleFontLoad } from '@/services/singleFontLoad';
 import { Card, CardContent, CardHeader } from './ui/card';
 
 const PropertiesSidebar: React.FC = () => {
-  const { selectedLayerId } = useLayerContext();
+  const { selectedLayerId, selectedLayer } = useLayerContext();
   const xInputRef = useRef<HTMLInputElement>(null);
   const yInputRef = useRef<HTMLInputElement>(null);
 
-  const [layerProperties, setLayerProperties] = useState({
+  const [textLayerProperties, setTextLayerProperties] = useState({
     x: '',
     y: '',
     color: '#000000',
     font: 'Arial',
     measure: 'custom-text',
     fontSize: '12',
+  });
+
+  const [imageLayerProperties, setImageLayerProperties] = useState({
+    x: '',
+    y: '',
+    height: '',
+    width: '',
+    source: '',
+    measure: 'static-image',
   });
 
   const [isInputFocused, setIsInputFocused] = useState(false);
@@ -49,19 +58,19 @@ const PropertiesSidebar: React.FC = () => {
     if (measure === 'custom-text') {
       return { type: 'custom-text', category: '' };
     }
-    
+
     if (measure.startsWith('time-')) {
       return { type: 'time-date', category: 'time' };
     }
-    
+
     if (measure.startsWith('date-')) {
       return { type: 'time-date', category: 'date' };
     }
-    
+
     if (measure.startsWith('cpu-')) {
       return { type: 'cpu', category: measure };
     }
-    
+
     if (measure.startsWith('disk-')) {
       return { type: 'disk', category: measure };
     }
@@ -69,27 +78,47 @@ const PropertiesSidebar: React.FC = () => {
     return { type: 'custom-text', category: '' };
   };
 
-
   useEffect(() => {
     const updateLayerProperties = () => {
       if (selectedLayerId) {
-        const selectedLayer = layerManager.getLayers().find(layer => layer.id === selectedLayerId);
-        if (selectedLayer) {
-          const text = selectedLayer.fabricObject as IText;
-          const measure = selectedLayer.measure || 'custom-text';
-          const { type, category: newCategory } = getMeasureTypeAndCategory(measure);
-          
-          setLayerProperties({
-            x: selectedLayer.fabricObject.left.toString(),
-            y: selectedLayer.fabricObject.top.toString(),
-            color: selectedLayer.fabricObject.fill ? selectedLayer.fabricObject.fill.toString() : 'black',
-            font: text.fontFamily || 'Arial',
-            measure: measure,
-            fontSize: text.fontSize.toString(),
-          });
-          
-          setMeasureType(type);
-          setCategory(newCategory);
+        const layer = layerManager.getLayers().find(layer => layer.id === selectedLayerId);
+        if (layer) {
+          if (layer.type === 'text') {
+            const text = layer.fabricObject as IText;
+            const measure = layer.measure || 'custom-text';
+            const { type, category: newCategory } = getMeasureTypeAndCategory(measure);
+
+            setTextLayerProperties({
+              x: text.left?.toString() || '0',
+              y: text.top?.toString() || '0',
+              color: text.fill?.toString() || '#000000',
+              font: text.fontFamily || 'Arial',
+              measure: measure,
+              fontSize: text.fontSize?.toString() || '12',
+            });
+
+            setMeasureType(type);
+            setCategory(newCategory);
+          } else if (layer.type === 'image') {
+            const image = layer.fabricObject as FabricImage;
+            const measure = layer.measure || 'static-image';
+            console.log(image.width);
+            console.log(image.height);
+
+            setImageLayerProperties({
+              x: image.left?.toString() || '0',
+              y: image.top?.toString() || '0',
+              height: (image.scaleY * image.height)?.toString() || '100',
+              width: (image.scaleX * image.width)?.toString() || '100',
+              source: layer.imageSrc || '',
+              measure: measure,
+            });
+
+            // Optionally, manage measureType and category for images if applicable
+            // For now, we'll reset them
+            setMeasureType('');
+            setCategory('');
+          }
         }
       }
     };
@@ -97,52 +126,43 @@ const PropertiesSidebar: React.FC = () => {
     updateLayerProperties();
 
     const canvas = layerManager.getCanvas();
-    if(canvas) {
+    if (canvas) {
       canvas.on('selection:created', updateLayerProperties);
+      canvas.on('selection:updated', updateLayerProperties);
       canvas.on('object:modified', updateLayerProperties);
+      canvas.on('object:added', updateLayerProperties);
     }
 
     const handleGlobalKeyDown = (event: KeyboardEvent) => {
       if (!isInputFocused && selectedLayerId) {
         const stepSize = event.shiftKey ? 10 : 1;
-        const selectedLayer = layerManager.getLayers().find(layer => layer.id === selectedLayerId);
+        const layer = layerManager.getLayers().find(layer => layer.id === selectedLayerId);
         const canvas = layerManager.getCanvas();
 
-        if (selectedLayer && canvas) {
-          switch(event.key) {
+        if (layer && canvas) {
+          switch (event.key) {
             case 'ArrowUp':
               event.preventDefault();
-              selectedLayer.fabricObject.set({ 
-                top: selectedLayer.fabricObject.top - stepSize 
-              });
-              canvas.renderAll();
-              updateLayerProperties();
+              layer.fabricObject.top = (layer.fabricObject.top || 0) - stepSize;
               break;
             case 'ArrowDown':
               event.preventDefault();
-              selectedLayer.fabricObject.set({ 
-                top: selectedLayer.fabricObject.top + stepSize 
-              });
-              canvas.renderAll();
-              updateLayerProperties();
+              layer.fabricObject.top = (layer.fabricObject.top || 0) + stepSize;
               break;
             case 'ArrowLeft':
               event.preventDefault();
-              selectedLayer.fabricObject.set({ 
-                left: selectedLayer.fabricObject.left - stepSize 
-              });
-              canvas.renderAll();
-              updateLayerProperties();
+              layer.fabricObject.left = (layer.fabricObject.left || 0) - stepSize;
               break;
             case 'ArrowRight':
               event.preventDefault();
-              selectedLayer.fabricObject.set({ 
-                left: selectedLayer.fabricObject.left + stepSize 
-              });
-              canvas.renderAll();
-              updateLayerProperties();
+              layer.fabricObject.left = (layer.fabricObject.left || 0) + stepSize;
               break;
+            default:
+              return; // Exit for keys that are not arrow keys
           }
+          layer.fabricObject.setCoords();
+          canvas.renderAll();
+          updateLayerProperties();
         }
       }
     };
@@ -150,18 +170,21 @@ const PropertiesSidebar: React.FC = () => {
     window.addEventListener('keydown', handleGlobalKeyDown as unknown as EventListener);
 
     return () => {
-      if(canvas) {
+      if (canvas) {
         canvas.off('selection:created', updateLayerProperties);
+        canvas.off('selection:updated', updateLayerProperties);
         canvas.off('object:modified', updateLayerProperties);
+        canvas.off('object:added', updateLayerProperties);
       }
       window.removeEventListener('keydown', handleGlobalKeyDown as unknown as EventListener);
     };
   }, [selectedLayerId, isInputFocused]);
 
-  const handleInputChange = (field: string, value: string) => {
-    setLayerProperties(prev => ({ ...prev, [field]: value }));
+  // Handlers for Text Layer
+  const handleTextInputChange = (field: keyof typeof textLayerProperties, value: string) => {
+    setTextLayerProperties(prev => ({ ...prev, [field]: value }));
     if (field === 'x' || field === 'y') {
-      updateLayerPosition(field as 'x' | 'y', value);
+      updateTextLayerPosition(field, value);
     }
     if (field === 'fontSize') {
       updateFontSize(value);
@@ -172,9 +195,9 @@ const PropertiesSidebar: React.FC = () => {
     // Update the font in the canvas
     await SingleFontLoad(font);
     layerManager.updateFontForSelectedLayer(font);
-    
+
     // Update the font in the component's state to reflect the change in the dropdown
-    setLayerProperties(prev => ({
+    setTextLayerProperties(prev => ({
       ...prev,
       font: font
     }));
@@ -183,7 +206,7 @@ const PropertiesSidebar: React.FC = () => {
   const handleMeasureChange = (measure: string) => {
     console.log(measure);
     layerManager.updateMeasureForSelectedLayer(measure);
-    setLayerProperties(prev => ({
+    setTextLayerProperties(prev => ({
       ...prev,
       measure: measure
     }));
@@ -206,55 +229,51 @@ const PropertiesSidebar: React.FC = () => {
   };
 
   const handleCategoryChange = (value: string) => {
-    setCategory(value); 
-    if (value === 'date') {
-      handleMeasureChange('date-yyyy-mm-dd');
-    }
-    if (value === 'time') {
-      handleMeasureChange('time-hour-minute-24');
-    }
-    if (value === 'cpu-average' || value === 'cpu-core-1' || value === 'cpu-core-2' || value === 'cpu-core-3' || value === 'cpu-core-4' || value === 'cpu-core-5' || value === 'cpu-core-6' || value === 'cpu-core-7' || value === 'cpu-core-8') {
-      handleMeasureChange(value);
-    }
-    if (value === 'disk-c-label' || value === 'disk-c-total-space' || value === 'disk-c-free-space' || value === 'disk-c-used-space') {
-      handleMeasureChange(value);
-    }
+    setCategory(value);
+    handleMeasureChange(value);
   };
 
-  const updateLayerPosition = (field: 'x' | 'y', value: string) => {
+  const updateTextLayerPosition = (field: 'x' | 'y', value: string) => {
     const canvas = layerManager.getCanvas();
-    const selectedLayer = layerManager.getLayers().find(layer => layer.id === selectedLayerId);
+    const layer = layerManager.getLayers().find(layer => layer.id === selectedLayerId);
 
-    if (selectedLayer) {
+    if (layer) {
       const numValue = Number(value);
 
       if (field === 'x') {
-        selectedLayer.fabricObject.set({ left: numValue });
+        layer.fabricObject.left = numValue;
       } else if (field === 'y') {
-        selectedLayer.fabricObject.set({ top: numValue });
+        layer.fabricObject.top = numValue;
       }
+
+      layer.fabricObject.setCoords();
+      canvas?.renderAll();
     }
-    canvas?.renderAll();
   };
 
   const updateFontSize = (value: string) => {
     const canvas = layerManager.getCanvas();
-    const selectedLayer = layerManager.getLayers().find(layer => layer.id === selectedLayerId);
+    const layer = layerManager.getLayers().find(layer => layer.id === selectedLayerId);
 
-    if (selectedLayer) {
+    if (layer && layer.type === 'text') {
       const numValue = Number(value);
-      const txt = selectedLayer.fabricObject as IText;
+      const txt = layer.fabricObject as IText;
       txt.set({ fontSize: numValue });
+      txt.setCoords();
       canvas?.renderAll();
+      setTextLayerProperties(prev => ({
+        ...prev,
+        fontSize: numValue.toString()
+      }));
     }
-  }
+  };
 
-  const handleKeyDown = (field: 'x' | 'y' | 'fontSize', event: KeyboardEvent<HTMLInputElement>) => {
+  const handleTextKeyDown = (field: 'x' | 'y' | 'fontSize', event: KeyboardEvent<HTMLInputElement>) => {
     const stepSize = event.shiftKey ? 10 : 1;
 
     if (event.key === 'Enter') {
       if (field === 'x' || field === 'y') {
-        updateLayerPosition(field, (event.target as HTMLInputElement).value);
+        updateTextLayerPosition(field, (event.target as HTMLInputElement).value);
         (event.target as HTMLInputElement).blur();
       } else if (field === 'fontSize') {
         updateFontSize((event.target as HTMLInputElement).value);
@@ -263,161 +282,242 @@ const PropertiesSidebar: React.FC = () => {
     } else if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
       event.preventDefault();
 
-      const currentValue = Number(layerProperties[field]);
-      const newValue = event.key === 'ArrowUp' 
-        ? currentValue + stepSize 
+      const currentValue = Number(textLayerProperties[field]);
+      const newValue = event.key === 'ArrowUp'
+        ? currentValue + stepSize
         : currentValue - stepSize;
 
-      const updatedProperties = { 
-        ...layerProperties, 
-        [field]: newValue.toString() 
-      };
+      setTextLayerProperties(prev => ({
+        ...prev,
+        [field]: newValue.toString()
+      }));
 
-      setLayerProperties(updatedProperties);
       if (field === 'x' || field === 'y') {
-        updateLayerPosition(field, newValue.toString());
+        updateTextLayerPosition(field, newValue.toString());
       } else if (field === 'fontSize') {
         updateFontSize(newValue.toString());
       }
     }
   };
 
-  const handlePositionBlur = (field: 'x' | 'y') => {
-    updateLayerPosition(field, layerProperties[field]);
+  const handleTextPositionBlur = (field: 'x' | 'y') => {
+    updateTextLayerPosition(field, textLayerProperties[field]);
   };
 
   const handleColorChange = (value: string) => {
     const canvas = layerManager.getCanvas();
-    const selectedLayer = layerManager.getLayers().find(layer => layer.id === selectedLayerId);
+    const layer = layerManager.getLayers().find(layer => layer.id === selectedLayerId);
 
-    if (selectedLayer) {
-      selectedLayer.fabricObject.set({ fill: value });
-      setLayerProperties(prev => ({ ...prev, color: value }));
+    if (layer && layer.type === 'text') {
+      layer.fabricObject.fill = value;
+      setTextLayerProperties(prev => ({ ...prev, color: value }));
+      layer.fabricObject.setCoords();
       canvas?.renderAll();
+    }
+  };
+
+  // Handlers for Image Layer
+  const handleImageInputChange = (field: keyof typeof imageLayerProperties, value: string) => {
+    setImageLayerProperties(prev => ({ ...prev, [field]: value }));
+    if (field === 'x' || field === 'y') {
+      updateImageLayerPosition(field, value);
+    }
+    if (field === 'width' || field === 'height') {
+      updateImageLayerDimensions(field, value);
+    }
+    if (field === 'source') {
+      // updateImageSource(value);
+    }
+  };
+
+  const updateImageLayerPosition = (field: 'x' | 'y', value: string) => {
+    const canvas = layerManager.getCanvas();
+    const layer = layerManager.getLayers().find(layer => layer.id === selectedLayerId);
+
+    if (layer) {
+      const numValue = Number(value);
+
+      if (field === 'x') {
+        layer.fabricObject.left = numValue;
+      } else if (field === 'y') {
+        layer.fabricObject.top = numValue;
+      }
+
+      layer.fabricObject.setCoords();
+      canvas?.renderAll();
+    }
+  };
+
+  const updateImageLayerDimensions = (field: 'width' | 'height', value: string) => {
+    const canvas = layerManager.getCanvas();
+    const layer = layerManager.getLayers().find(layer => layer.id === selectedLayerId);
+
+    if (layer && layer.type === 'image') {
+      const numValue = Number(value);
+      if (field === 'width') {
+        layer.fabricObject.scaleX = numValue / (layer.fabricObject.width || 1);
+        setImageLayerProperties(prev => ({
+          ...prev,
+          width: numValue.toString()
+        }));
+      } else if (field === 'height') {
+        layer.fabricObject.scaleY = numValue / (layer.fabricObject.height || 1);
+        setImageLayerProperties(prev => ({
+          ...prev,
+          height: numValue.toString()
+        }));
+      }
+
+      layer.fabricObject.setCoords();
+      canvas?.renderAll();
+    }
+  };
+
+  // const updateImageSource = (source: string) => {
+  //   const canvas = layerManager.getCanvas();
+  //   const layer = layerManager.getLayers().find(layer => layer.id === selectedLayerId);
+
+  //   // if (layer && layer.type === 'image') {
+  //   //   layer.fabricObject.setSrc(source, () => {
+  //   //     canvas?.renderAll();
+  //   //   });
+  //   //   setImageLayerProperties(prev => ({
+  //   //     ...prev,
+  //   //     source: source
+  //   //   }));
+  //   // }
+  // };
+
+  const handleImageKeyDown = (field: 'x' | 'y' | 'width' | 'height', event: KeyboardEvent<HTMLInputElement>) => {
+    const stepSize = event.shiftKey ? 10 : 1;
+
+    if (event.key === 'Enter') {
+      if (field === 'x' || field === 'y') {
+        updateImageLayerPosition(field, (event.target as HTMLInputElement).value);
+        (event.target as HTMLInputElement).blur();
+      } else if (field === 'width' || field === 'height') {
+        updateImageLayerDimensions(field, (event.target as HTMLInputElement).value);
+        (event.target as HTMLInputElement).blur();
+      }
+    } else if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+      event.preventDefault();
+
+      const currentValue = Number(imageLayerProperties[field]);
+      const newValue = event.key === 'ArrowUp'
+        ? currentValue + stepSize
+        : currentValue - stepSize;
+
+      setImageLayerProperties(prev => ({
+        ...prev,
+        [field]: newValue.toString()
+      }));
+
+      if (field === 'x' || field === 'y') {
+        updateImageLayerPosition(field, newValue.toString());
+      } else if (field === 'width' || field === 'height') {
+        updateImageLayerDimensions(field, newValue.toString());
+      }
     }
   };
 
   return (
     <>
-      {selectedLayerId ? (
+      {selectedLayerId && selectedLayer?.type === 'text' && (
         <Card className='w-50 m-4 rounded-2xl'>
-          <CardHeader className='font-semibold text-xl border-b'>Properties</CardHeader>
+          <CardHeader className='font-semibold text-xl border-b'>Text Properties</CardHeader>
           <CardContent>
             <div className="overflow-y-auto mt-6" style={{ maxHeight: 'calc(100vh - 256px)' }}>
               <ScrollArea className="h-full">
                 <div className="px-4 pb-4">
                   <div className="space-y-4">
+                    {/* X Position */}
                     <div className="space-y-2">
-                      <Label htmlFor="x">X</Label>
+                      <Label htmlFor="text-x">X</Label>
                       <Input
-                      ref={xInputRef}
-                      id="x"
-                      placeholder="X"
-                      value={layerProperties.x}
-                      onChange={e => handleInputChange('x', e.target.value)}
-                      onKeyDown={e => handleKeyDown('x', e)}
-                      onBlur={() => {
-                        handlePositionBlur('x');
-                        setIsInputFocused(false);
-                      }}
-                      onFocus={() => setIsInputFocused(true)}
+                        ref={xInputRef}
+                        id="text-x"
+                        placeholder="X"
+                        value={textLayerProperties.x}
+                        onChange={e => handleTextInputChange('x', e.target.value)}
+                        onKeyDown={e => handleTextKeyDown('x', e)}
+                        onBlur={() => {
+                          handleTextPositionBlur('x');
+                          setIsInputFocused(false);
+                        }}
+                        onFocus={() => setIsInputFocused(true)}
                       />
                     </div>
+                    {/* Y Position */}
                     <div className="space-y-2">
-                      <Label htmlFor="y">Y</Label>
+                      <Label htmlFor="text-y">Y</Label>
                       <Input
-                      ref={yInputRef}
-                      id="y"
-                      placeholder="Y"
-                      value={layerProperties.y}
-                      onChange={e => handleInputChange('y', e.target.value)}
-                      onKeyDown={e => handleKeyDown('y', e)}
-                      onBlur={() => {
-                        handlePositionBlur('y');
-                        setIsInputFocused(false);
-                      }}
-                      onFocus={() => setIsInputFocused(true)}
+                        ref={yInputRef}
+                        id="text-y"
+                        placeholder="Y"
+                        value={textLayerProperties.y}
+                        onChange={e => handleTextInputChange('y', e.target.value)}
+                        onKeyDown={e => handleTextKeyDown('y', e)}
+                        onBlur={() => {
+                          handleTextPositionBlur('y');
+                          setIsInputFocused(false);
+                        }}
+                        onFocus={() => setIsInputFocused(true)}
                       />
                     </div>
+                    {/* Font Size */}
                     <div className="space-y-2">
-                      <Label htmlFor="font-size">Font Size</Label>
+                      <Label htmlFor="text-font-size">Font Size</Label>
                       <Input
-                      id="font-size"
-                      placeholder="Font Size"
-                      value={layerProperties.fontSize}
-                      onChange={e => handleInputChange('fontSize', e.target.value)}
-                      onKeyDown={e => handleKeyDown('fontSize', e)}
-                      onBlur={() => {
-                        updateFontSize(layerProperties.fontSize);
-                        setIsInputFocused(false);
-                      }}
-                      onFocus={() => setIsInputFocused(true)}
+                        id="text-font-size"
+                        placeholder="Font Size"
+                        value={textLayerProperties.fontSize}
+                        onChange={e => handleTextInputChange('fontSize', e.target.value)}
+                        onKeyDown={e => handleTextKeyDown('fontSize', e)}
+                        onBlur={() => {
+                          updateFontSize(textLayerProperties.fontSize);
+                          setIsInputFocused(false);
+                        }}
+                        onFocus={() => setIsInputFocused(true)}
                       />
                     </div>
+                    {/* Color */}
                     <div className="space-y-2">
-                      <Label htmlFor="color">Color</Label>
+                      <Label htmlFor="text-color">Color</Label>
                       <Input
-                      id="color"
-                      type="color"
-                      className="h-10"
-                      value={layerProperties.color}
-                      onChange={e => handleColorChange(e.target.value)}
+                        id="text-color"
+                        type="color"
+                        className="h-10"
+                        value={textLayerProperties.color}
+                        onChange={e => handleColorChange(e.target.value)}
                       />
                     </div>
+                    {/* Font Select */}
                     <div className="space-y-2">
                       <Label htmlFor="font-select" className="block text-sm font-medium text-gray-700 mb-1">
-                      Font
+                        Font
                       </Label>
-                      <Select 
-                      value={layerProperties.font}
-                      onValueChange={handleFontChange}
+                      <Select
+                        value={textLayerProperties.font}
+                        onValueChange={handleFontChange}
                       >
-                      <SelectTrigger id="font-select">
-                        <SelectValue placeholder="Select a font">{layerProperties.font}</SelectValue>
-                      </SelectTrigger>
-                      <SelectContent>
-                        {systemFonts.map(font => (
-                        <SelectItem key={font} value={font}>{font}</SelectItem>
-                        ))}
-                      </SelectContent>
-                      </Select>
-                    </div>
-                    {/* <div className="space-y-2">
-                      <Label htmlFor="measure-select" className="block text-sm font-medium text-gray-700 mb-1">
-                        Measure
-                      </Label>
-                      <Select onValueChange={handleMeasureChange} value={layerProperties.measure}>
-                        <SelectTrigger id="measure-select">
-                          <SelectValue defaultValue="custom-text" placeholder="Custom Text" />
+                        <SelectTrigger id="font-select">
+                          <SelectValue placeholder="Select a font" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="custom-text">Custom Text</SelectItem>
-                          <SelectItem value="date-yyyy-mm-dd">Date YYYY-MM-DD (2000-01-01)</SelectItem>
-                          <SelectItem value="date-mm-dd-yy">Date MM/DD/YY (01/01/00)</SelectItem>
-                          <SelectItem value="short-weekday">Short Weekday (Mon)</SelectItem>
-                          <SelectItem value="full-weekday">Full Weekday (Monday)</SelectItem>
-                          <SelectItem value="short-month">Short Month (Jan)</SelectItem>
-                          <SelectItem value="full-month">Full Month (January)</SelectItem>
-                          <SelectItem value="zero-day">Day of Month (01)</SelectItem>
-                          <SelectItem value="space-day">Day of Month (1)</SelectItem>
-                          <SelectItem value="short-year">Short Year (00)</SelectItem>
-                          <SelectItem value="full-year">Full Year (2000)</SelectItem>
-                          <SelectItem value="hour-24">Hour 24 (00 - 23)</SelectItem>
-                          <SelectItem value="hour-12">Hour 12 (00 - 11)</SelectItem>
-                          <SelectItem value="month-number">Month number (01)</SelectItem>
-                          <SelectItem value="minute-number">Minute (01)</SelectItem>
-                          <SelectItem value="second-number">Second (01)</SelectItem>
-                          <SelectItem value="am-pm">AM / PM Indicator (AM)</SelectItem>
+                          {systemFonts.map(font => (
+                            <SelectItem key={font} value={font}>{font}</SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
-                    </div> */}
+                    </div>
+                    {/* Measure Type */}
                     <div className="space-y-2">
-                      <Label htmlFor="measure-type-select" className="block text-sm font-medium text-gray-700 mb-1">
+                      <Label htmlFor="text-measure-type-select" className="block text-sm font-medium text-gray-700 mb-1">
                         Measure Type
                       </Label>
                       <Select onValueChange={handleMeasureTypeChange} value={measureType}>
                         <SelectTrigger id="measure-type-select">
-                          <SelectValue defaultValue="custom-text" placeholder="Custom Text" />
+                          <SelectValue placeholder="Select Measure Type" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="custom-text">Custom Text</SelectItem>
@@ -428,14 +528,15 @@ const PropertiesSidebar: React.FC = () => {
                       </Select>
                     </div>
 
+                    {/* Category based on Measure Type */}
                     {measureType === 'time-date' && (
                       <div className="space-y-2">
-                        <Label htmlFor="category-select" className="block text-sm font-medium text-gray-700 mb-1">
+                        <Label htmlFor="text-category-select" className="block text-sm font-medium text-gray-700 mb-1">
                           Category
                         </Label>
                         <Select onValueChange={handleCategoryChange} value={category}>
-                          <SelectTrigger id="category-select">
-                            <SelectValue defaultValue="time" placeholder="Select Category" />
+                          <SelectTrigger id="text-category-select">
+                            <SelectValue placeholder="Select Category" />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="time">Time</SelectItem>
@@ -447,12 +548,12 @@ const PropertiesSidebar: React.FC = () => {
 
                     {measureType === 'cpu' && (
                       <div className="space-y-2">
-                        <Label htmlFor="category-select" className="block text-sm font-medium text-gray-700 mb-1">
+                        <Label htmlFor="text-category-select" className="block text-sm font-medium text-gray-700 mb-1">
                           Category
                         </Label>
                         <Select onValueChange={handleCategoryChange} value={category}>
-                          <SelectTrigger id="category-select">
-                            <SelectValue defaultValue="cpu-average" placeholder="Average CPU Usage" />
+                          <SelectTrigger id="text-category-select">
+                            <SelectValue placeholder="Select Category" />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="cpu-average">Average CPU Usage</SelectItem>
@@ -471,12 +572,12 @@ const PropertiesSidebar: React.FC = () => {
 
                     {measureType === 'disk' && (
                       <div className="space-y-2">
-                        <Label htmlFor="category-select" className="block text-sm font-medium text-gray-700 mb-1">
+                        <Label htmlFor="text-category-select" className="block text-sm font-medium text-gray-700 mb-1">
                           Disk
                         </Label>
                         <Select onValueChange={handleCategoryChange} value={category}>
-                          <SelectTrigger id="category-select">
-                            <SelectValue defaultValue="disk-c-label" placeholder="Disk C Label" />
+                          <SelectTrigger id="text-category-select">
+                            <SelectValue placeholder="Select Disk Property" />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="disk-c-label">Disk C Label</SelectItem>
@@ -488,14 +589,15 @@ const PropertiesSidebar: React.FC = () => {
                       </div>
                     )}
 
+                    {/* Measure based on Measure Type and Category */}
                     {measureType === 'time-date' && category === 'time' && (
                       <div className="space-y-2">
-                        <Label htmlFor="measure-select" className="block text-sm font-medium text-gray-700 mb-1">
+                        <Label htmlFor="text-measure-select" className="block text-sm font-medium text-gray-700 mb-1">
                           Measure
                         </Label>
-                        <Select onValueChange={handleMeasureChange} value={layerProperties.measure}>
-                          <SelectTrigger id="measure-select">
-                            <SelectValue defaultValue="time-hour-minute-24" placeholder="15:15 (24 hr)" />
+                        <Select onValueChange={handleMeasureChange} value={textLayerProperties.measure}>
+                          <SelectTrigger id="text-measure-select">
+                            <SelectValue placeholder="Select Measure" />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="time-hour-minute-24">15:15 (Time 24 hr)</SelectItem>
@@ -512,12 +614,12 @@ const PropertiesSidebar: React.FC = () => {
 
                     {measureType === 'time-date' && category === 'date' && (
                       <div className="space-y-2">
-                        <Label htmlFor="measure-select" className="block text-sm font-medium text-gray-700 mb-1">
+                        <Label htmlFor="text-measure-select" className="block text-sm font-medium text-gray-700 mb-1">
                           Measure
                         </Label>
-                        <Select onValueChange={handleMeasureChange} value={layerProperties.measure}>
-                          <SelectTrigger id="measure-select">
-                            <SelectValue defaultValue="date-yyyy-mm-dd" placeholder="2025-01-01 (yyyy-mm-dd)" />
+                        <Select onValueChange={handleMeasureChange} value={textLayerProperties.measure}>
+                          <SelectTrigger id="text-measure-select">
+                            <SelectValue placeholder="Select Measure" />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="date-yyyy-mm-dd">2025-01-01 (yyyy-mm-dd)</SelectItem>
@@ -534,15 +636,132 @@ const PropertiesSidebar: React.FC = () => {
                         </Select>
                       </div>
                     )}
-
-
                   </div>
                 </div>
               </ScrollArea>
             </div>
           </CardContent>
         </Card>
-      ) : null}
+      )}
+
+      {selectedLayerId && selectedLayer?.type === 'image' && (
+        <Card className='w-50 m-4 rounded-2xl'>
+          <CardHeader className='font-semibold text-xl border-b'>Image Properties</CardHeader>
+          <CardContent>
+            <div className="overflow-y-auto mt-6" style={{ maxHeight: 'calc(100vh - 256px)' }}>
+              <ScrollArea className="h-full">
+                <div className="px-4 pb-4">
+                  <div className="space-y-4">
+                    {/* X Position */}
+                    <div className="space-y-2">
+                      <Label htmlFor="image-x">X</Label>
+                      <Input
+                        ref={xInputRef}
+                        id="image-x"
+                        placeholder="X"
+                        value={imageLayerProperties.x}
+                        onChange={e => handleImageInputChange('x', e.target.value)}
+                        onKeyDown={e => handleImageKeyDown('x', e)}
+                        onBlur={() => {
+                          updateImageLayerPosition('x', imageLayerProperties.x);
+                          setIsInputFocused(false);
+                        }}
+                        onFocus={() => setIsInputFocused(true)}
+                      />
+                    </div>
+                    {/* Y Position */}
+                    <div className="space-y-2">
+                      <Label htmlFor="image-y">Y</Label>
+                      <Input
+                        ref={yInputRef}
+                        id="image-y"
+                        placeholder="Y"
+                        value={imageLayerProperties.y}
+                        onChange={e => handleImageInputChange('y', e.target.value)}
+                        onKeyDown={e => handleImageKeyDown('y', e)}
+                        onBlur={() => {
+                          updateImageLayerPosition('y', imageLayerProperties.y);
+                          setIsInputFocused(false);
+                        }}
+                        onFocus={() => setIsInputFocused(true)}
+                      />
+                    </div>
+                    {/* Width */}
+                    <div className="space-y-2">
+                      <Label htmlFor="image-width">Width</Label>
+                      <Input
+                        id="image-width"
+                        placeholder="Width"
+                        value={imageLayerProperties.width}
+                        onChange={e => handleImageInputChange('width', e.target.value)}
+                        onKeyDown={e => handleImageKeyDown('width', e)}
+                        onBlur={() => {
+                          updateImageLayerDimensions('width', imageLayerProperties.width);
+                          setIsInputFocused(false);
+                        }}
+                        onFocus={() => setIsInputFocused(true)}
+                      />
+                    </div>
+                    {/* Height */}
+                    <div className="space-y-2">
+                      <Label htmlFor="image-height">Height</Label>
+                      <Input
+                        id="image-height"
+                        placeholder="Height"
+                        value={imageLayerProperties.height}
+                        onChange={e => handleImageInputChange('height', e.target.value)}
+                        onKeyDown={e => handleImageKeyDown('height', e)}
+                        onBlur={() => {
+                          updateImageLayerDimensions('height', imageLayerProperties.height);
+                          setIsInputFocused(false);
+                        }}
+                        onFocus={() => setIsInputFocused(true)}
+                      />
+                    </div>
+                    {/* Source */}
+                    <div className="space-y-2">
+                      <Label htmlFor="image-source">Source</Label>
+                      <Input
+                        id="image-source"
+                        type="text"
+                        placeholder="Image URL"
+                        value={imageLayerProperties.source}
+                        onChange={e => handleImageInputChange('source', e.target.value)}
+                        onBlur={() => {
+                          // updateImageSource(imageLayerProperties.source);
+                          setIsInputFocused(false);
+                        }}
+                        onFocus={() => setIsInputFocused(true)}
+                      />
+                    </div>
+                    {/* Measure Type (if applicable for images) */}
+                    {/* Uncomment and modify if image layers have measure types */}
+                    {/* 
+                    <div className="space-y-2">
+                      <Label htmlFor="image-measure-type-select" className="block text-sm font-medium text-gray-700 mb-1">
+                        Measure Type
+                      </Label>
+                      <Select onValueChange={handleMeasureTypeChange} value={measureType}>
+                        <SelectTrigger id="image-measure-type-select">
+                          <SelectValue placeholder="Select Measure Type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="custom-text">Custom Text</SelectItem>
+                          <SelectItem value="time-date">Time/Date</SelectItem>
+                          <SelectItem value="cpu">CPU</SelectItem>
+                          <SelectItem value="disk">Disk</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    */}
+                    {/* Additional properties based on measureType and category can be added here */}
+                  </div>
+                </div>
+              </ScrollArea>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </>
   );
 };

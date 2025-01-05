@@ -6,7 +6,7 @@ import { useLayerContext } from '@/context/LayerContext';
 
 const CanvasRenderer: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const { setSelectedLayerId } = useLayerContext();
+  const { setSelectedLayerId, setSelectedLayer } = useLayerContext();
 
   useEffect(() => {
     // Function to convert HSL to Hex
@@ -97,6 +97,7 @@ const CanvasRenderer: React.FC = () => {
       
         if (layer) {
           setSelectedLayerId(layer.id);
+          setSelectedLayer(layer);
         } else {
           console.warn("No corresponding layer found for the selected object.");
         }
@@ -111,10 +112,12 @@ const CanvasRenderer: React.FC = () => {
             const layer = layerManager.getLayers().find(layer => layer.fabricObject === target);
             if (layer) {
               setSelectedLayerId(layer.id);
+              setSelectedLayer(layer);
             }
           } else {
             canvas.discardActiveObject();
             setSelectedLayerId(null);
+            setSelectedLayer(null);
           }
         } else {
           layerManager.addLayerWithMouse(pointer.x, pointer.y);

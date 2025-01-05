@@ -39,9 +39,9 @@ const Toolbar: React.FC = () => {
   //   // empty for now
   // }
 
-  // const handleAddImage = () => {
-  //   layerManager.setActiveTool('image');
-  // }
+  const handleAddImage = () => {
+    layerManager.setActiveTool('image');
+  }
 
   const isSelected = (tool: string) => selectedTool === tool;  
 
@@ -109,7 +109,7 @@ const Toolbar: React.FC = () => {
           <Tooltip>
             <TooltipTrigger asChild>
               <Button 
-                // onClick={handleAddImage}
+                onClick={handleAddImage}
                 variant={isSelected('image') ? 'default' : 'ghost'}
                 size="icon"
               >

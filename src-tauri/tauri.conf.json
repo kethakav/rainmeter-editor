@@ -18,7 +18,16 @@
       }
     ],
     "security": {
-      "csp": null
+      "csp": "default-src 'self' ipc: http://ipc.localhost; img-src 'self' asset: http://asset.localhost",
+      "assetProtocol": {
+        "enable": true,
+        "scope": [
+          "$APP_DIR/**",
+          "$HOME/**",
+          "$LOCALDATA/**",
+          "**"
+        ]
+      }
     },
     "withGlobalTauri": true
   },
@@ -40,6 +49,9 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "resources": ["../public/fonts/"]
+    "resources": [
+      "../public/fonts/",
+      "../public/images/"
+    ]
   }
 }

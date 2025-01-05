@@ -1,7 +1,9 @@
 //LayerManager.ts
 // import { useToolContext } from '@/context/ToolContext';
 import { arrayMove } from '@dnd-kit/sortable';
-import { Canvas, Circle, FabricObject, FabricObjectProps, Rect, Triangle, IText, FabricImage } from 'fabric';
+import { resourceDir, join } from '@tauri-apps/api/path';
+import { Canvas, Circle, FabricObject, FabricObjectProps, Rect, Triangle, IText, FabricImage, Image } from 'fabric';
+import { convertFileSrc } from '@tauri-apps/api/core';
 
 // Enum for layer types
 enum LayerType {
@@ -21,6 +23,7 @@ interface LayerConfig {
   name: string;
   measure: string;
   fontName: string;
+  imageSrc: string;
 }
 
 class LayerManager {
@@ -102,7 +105,8 @@ class LayerManager {
         locked: false,
         name: this.generateLayerName(type),
         measure: "custom-text",
-        fontName: "null"
+        fontName: "null",
+        imageSrc: "",
       };
 
       // Add to canvas and layers array
@@ -274,19 +278,33 @@ class LayerManager {
     }
   }
 
-  addImageLayer(x: number, y: number) {
-    if(this.canvas) {
-      const imageObject = new FabricImage('im1', {
-        left: x,
-        top: y,
-        scaleX: 0.5,
-        scaleY: 0.5
-      });
-      this.addLayer(LayerType.IMAGE, imageObject);
+  async addImageLayer(x: number, y: number) {
+    if (this.canvas) {
+        const sourcePath = await join(await resourceDir() + `/_up_/public/images/image_placeholder.jpg`);
+        const assetUrl = convertFileSrc(sourcePath);
+        console.log(sourcePath);
+        console.log(assetUrl);
+        
+        // Use fromURL correctly with await
+        try {
+            const img: FabricImage = await FabricImage.fromURL(assetUrl, { crossOrigin: 'anonymous' });
+            img.set({
+                left: x,
+                top: y,
+                outerHeight: img.height,
+                outerWidth: img.width,
+                scaleX: 0.1,
+                scaleY: 0.1,
+                hasControls: false,
+            });
+            this.addLayer(LayerType.IMAGE, img);
+        } catch (error) {
+            console.error("Error loading image:", error);
+        }
     } else {
         return null;
     }
-  }
+}
 
 
 
