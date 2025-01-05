@@ -288,7 +288,7 @@ class LayerManager {
             filters: [
                 {
                     name: 'Images',
-                    extensions: ['png', 'jpg', 'jpeg'],
+                    extensions: ['png'],
                 },
             ],
         });
