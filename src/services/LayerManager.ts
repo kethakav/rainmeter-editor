@@ -2,7 +2,7 @@
 // import { useToolContext } from '@/context/ToolContext';
 import { arrayMove } from '@dnd-kit/sortable';
 import { resourceDir, join } from '@tauri-apps/api/path';
-import { Canvas, Circle, FabricObject, FabricObjectProps, Rect, Triangle, IText, FabricImage, Image } from 'fabric';
+import { Canvas, Circle, FabricObject, FabricObjectProps, Rect, Triangle, IText, FabricImage} from 'fabric';
 import { convertFileSrc } from '@tauri-apps/api/core';
 
 // Enum for layer types
