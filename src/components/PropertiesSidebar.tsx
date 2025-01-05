@@ -24,6 +24,7 @@ const PropertiesSidebar: React.FC = () => {
   const [textLayerProperties, setTextLayerProperties] = useState({
     x: '',
     y: '',
+    rotation: '',
     color: '#000000',
     font: 'Arial',
     measure: 'custom-text',
@@ -35,6 +36,7 @@ const PropertiesSidebar: React.FC = () => {
     y: '',
     height: '',
     width: '',
+    rotation: '',
     source: '',
     measure: 'static-image',
   });
@@ -91,6 +93,7 @@ const PropertiesSidebar: React.FC = () => {
             setTextLayerProperties({
               x: text.left?.toString() || '0',
               y: text.top?.toString() || '0',
+              rotation: text.angle?.toString() || '0',
               color: text.fill?.toString() || '#000000',
               font: text.fontFamily || 'Arial',
               measure: measure,
@@ -110,6 +113,7 @@ const PropertiesSidebar: React.FC = () => {
               y: image.top?.toString() || '0',
               height: (image.scaleY * image.height)?.toString() || '100',
               width: (image.scaleX * image.width)?.toString() || '100',
+              rotation: image.angle?.toString() || '0',
               source: layer.imageSrc || '',
               measure: measure,
             });
@@ -189,6 +193,9 @@ const PropertiesSidebar: React.FC = () => {
     if (field === 'fontSize') {
       updateFontSize(value);
     }
+    if (field === 'rotation') {
+      updateTextLayerRotation(value);
+    }
   };
 
   const handleFontChange = async (font: string) => {
@@ -201,6 +208,18 @@ const PropertiesSidebar: React.FC = () => {
       ...prev,
       font: font
     }));
+  };
+
+  const handleColorChange = (value: string) => {
+    const canvas = layerManager.getCanvas();
+    const layer = layerManager.getLayers().find(layer => layer.id === selectedLayerId);
+
+    if (layer && layer.type === 'text') {
+      layer.fabricObject.fill = value;
+      setTextLayerProperties(prev => ({ ...prev, color: value }));
+      layer.fabricObject.setCoords();
+      canvas?.renderAll();
+    }
   };
 
   const handleMeasureChange = (measure: string) => {
@@ -251,6 +270,18 @@ const PropertiesSidebar: React.FC = () => {
     }
   };
 
+  const updateTextLayerRotation = (value: string) => {
+    const canvas = layerManager.getCanvas();
+    const layer = layerManager.getLayers().find(layer => layer.id === selectedLayerId);
+
+    if (layer) {
+      const numValue = Number(value);
+      layer.fabricObject.angle = numValue;
+      layer.fabricObject.setCoords();
+      canvas?.renderAll();
+    }
+  };
+
   const updateFontSize = (value: string) => {
     const canvas = layerManager.getCanvas();
     const layer = layerManager.getLayers().find(layer => layer.id === selectedLayerId);
@@ -268,7 +299,9 @@ const PropertiesSidebar: React.FC = () => {
     }
   };
 
-  const handleTextKeyDown = (field: 'x' | 'y' | 'fontSize', event: KeyboardEvent<HTMLInputElement>) => {
+  
+
+  const handleTextKeyDown = (field: 'x' | 'y' | 'fontSize' | 'rotation', event: KeyboardEvent<HTMLInputElement>) => {
     const stepSize = event.shiftKey ? 10 : 1;
 
     if (event.key === 'Enter') {
@@ -277,6 +310,9 @@ const PropertiesSidebar: React.FC = () => {
         (event.target as HTMLInputElement).blur();
       } else if (field === 'fontSize') {
         updateFontSize((event.target as HTMLInputElement).value);
+        (event.target as HTMLInputElement).blur();
+      } else if (field === 'rotation') {
+        updateTextLayerRotation((event.target as HTMLInputElement).value);
         (event.target as HTMLInputElement).blur();
       }
     } else if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
@@ -296,6 +332,8 @@ const PropertiesSidebar: React.FC = () => {
         updateTextLayerPosition(field, newValue.toString());
       } else if (field === 'fontSize') {
         updateFontSize(newValue.toString());
+      } else if (field === 'rotation') {
+        updateTextLayerRotation(newValue.toString());
       }
     }
   };
@@ -304,16 +342,8 @@ const PropertiesSidebar: React.FC = () => {
     updateTextLayerPosition(field, textLayerProperties[field]);
   };
 
-  const handleColorChange = (value: string) => {
-    const canvas = layerManager.getCanvas();
-    const layer = layerManager.getLayers().find(layer => layer.id === selectedLayerId);
-
-    if (layer && layer.type === 'text') {
-      layer.fabricObject.fill = value;
-      setTextLayerProperties(prev => ({ ...prev, color: value }));
-      layer.fabricObject.setCoords();
-      canvas?.renderAll();
-    }
+  const handleTextRotationBlur = (field: 'rotation') => {
+    updateTextLayerRotation(textLayerProperties[field]);
   };
 
   // Handlers for Image Layer
@@ -325,8 +355,8 @@ const PropertiesSidebar: React.FC = () => {
     if (field === 'width' || field === 'height') {
       updateImageLayerDimensions(field, value);
     }
-    if (field === 'source') {
-      // updateImageSource(value);
+    if (field === 'rotation') {
+      updateImageLayerRotation(value);
     }
   };
 
@@ -373,22 +403,19 @@ const PropertiesSidebar: React.FC = () => {
     }
   };
 
-  // const updateImageSource = (source: string) => {
-  //   const canvas = layerManager.getCanvas();
-  //   const layer = layerManager.getLayers().find(layer => layer.id === selectedLayerId);
+  const updateImageLayerRotation = (value: string) => {
+    const canvas = layerManager.getCanvas();
+    const layer = layerManager.getLayers().find(layer => layer.id === selectedLayerId);
 
-  //   // if (layer && layer.type === 'image') {
-  //   //   layer.fabricObject.setSrc(source, () => {
-  //   //     canvas?.renderAll();
-  //   //   });
-  //   //   setImageLayerProperties(prev => ({
-  //   //     ...prev,
-  //   //     source: source
-  //   //   }));
-  //   // }
-  // };
+    if (layer && layer.type === 'image') {
+      const numValue = Number(value);
+      layer.fabricObject.set('angle', numValue);
+      layer.fabricObject.setCoords();
+      canvas?.renderAll();
+    }
+  };
 
-  const handleImageKeyDown = (field: 'x' | 'y' | 'width' | 'height', event: KeyboardEvent<HTMLInputElement>) => {
+  const handleImageKeyDown = (field: 'x' | 'y' | 'width' | 'height' | 'rotation', event: KeyboardEvent<HTMLInputElement>) => {
     const stepSize = event.shiftKey ? 10 : 1;
 
     if (event.key === 'Enter') {
@@ -397,6 +424,9 @@ const PropertiesSidebar: React.FC = () => {
         (event.target as HTMLInputElement).blur();
       } else if (field === 'width' || field === 'height') {
         updateImageLayerDimensions(field, (event.target as HTMLInputElement).value);
+        (event.target as HTMLInputElement).blur();
+      } else if (field === 'rotation') {
+        updateImageLayerRotation((event.target as HTMLInputElement).value);
         (event.target as HTMLInputElement).blur();
       }
     } else if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
@@ -416,6 +446,8 @@ const PropertiesSidebar: React.FC = () => {
         updateImageLayerPosition(field, newValue.toString());
       } else if (field === 'width' || field === 'height') {
         updateImageLayerDimensions(field, newValue.toString());
+      } else if (field === 'rotation') {
+        updateImageLayerRotation(newValue.toString());
       }
     }
   };
@@ -475,6 +507,22 @@ const PropertiesSidebar: React.FC = () => {
                         onKeyDown={e => handleTextKeyDown('fontSize', e)}
                         onBlur={() => {
                           updateFontSize(textLayerProperties.fontSize);
+                          setIsInputFocused(false);
+                        }}
+                        onFocus={() => setIsInputFocused(true)}
+                      />
+                    </div>
+                    {/* Rotation */}
+                    <div className="space-y-2">
+                      <Label htmlFor="text-rotation">Rotation</Label>
+                      <Input
+                        id="text-rotation"
+                        placeholder="Rotation"
+                        value={textLayerProperties.rotation}
+                        onChange={e => handleTextInputChange('rotation', e.target.value)}
+                        onKeyDown={e => handleTextKeyDown('rotation', e)}
+                        onBlur={() => {
+                          handleTextRotationBlur('rotation');
                           setIsInputFocused(false);
                         }}
                         onFocus={() => setIsInputFocused(true)}
@@ -713,6 +761,22 @@ const PropertiesSidebar: React.FC = () => {
                         onKeyDown={e => handleImageKeyDown('height', e)}
                         onBlur={() => {
                           updateImageLayerDimensions('height', imageLayerProperties.height);
+                          setIsInputFocused(false);
+                        }}
+                        onFocus={() => setIsInputFocused(true)}
+                      />
+                    </div>
+                    {/* Rotation */}
+                    <div className="space-y-2">
+                      <Label htmlFor="image-rotation">Rotation</Label>
+                      <Input
+                        id="image-rotation"
+                        placeholder="Rotation"
+                        value={imageLayerProperties.rotation}
+                        onChange={e => handleImageInputChange('rotation', e.target.value)}
+                        onKeyDown={e => handleImageKeyDown('rotation', e)}
+                        onBlur={() => {
+                          updateImageLayerRotation(imageLayerProperties.rotation);
                           setIsInputFocused(false);
                         }}
                         onFocus={() => setIsInputFocused(true)}
