@@ -12,7 +12,8 @@ import ExportModal from './ExportModal'
 import { checkForAppUpdates } from '@/services/CheckForAppUpdates';
 import { version as appVersion } from '../../package.json';
 import { Badge } from './ui/badge';
-import { FaDiscord } from 'react-icons/fa';
+import { FaBug, FaDiscord, FaThLarge } from 'react-icons/fa';
+import { open } from '@tauri-apps/plugin-shell';
 
 const Topbar: React.FC = () => {
   const [version, setVersion] = useState('1.0.0'); // Add version state
@@ -60,10 +61,38 @@ const Topbar: React.FC = () => {
         <div className="text-xl text-secondary-foreground font-semibold">
           Rainmeter Editor <Badge variant="outline">v{version}</Badge>
         </div>
-        <div className='flex items-center space-x-5'>
-          <a href="https://discord.gg/tzY82KkS4H" target="_blank" rel="noopener noreferrer">
-            <FaDiscord className="w-5 h-5 text-secondary-foreground hover:text-primary" />
-          </a>
+        <div className="flex items-center space-x-2">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="outline"
+                onClick={() => open("https://discord.gg/tzY82KkS4H")} 
+                className="hover:text-primary"
+              >
+                <FaDiscord />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Join our Discord</p>
+            </TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="outline"
+                onClick={() => open("https://github.com/kethakav/rainmeter-editor-releases/issues")} 
+                
+                className="hover:text-destructive"
+              >
+                <FaBug />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Report a Bug</p>
+            </TooltipContent>
+          </Tooltip>
+
           <Tooltip>
             <TooltipTrigger asChild>
               <Button variant="default" onClick={() => setIsExportModalOpen(true)}>
