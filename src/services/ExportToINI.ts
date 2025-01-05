@@ -211,7 +211,7 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
   exporter.addVariable('Scale', '1.0');
   exporter.addVariable('ScrollMouseIncrement', '0.05');
 
-  const addMeterLayerOneMeasure = (exporter: RainmeterSkinExporter, layer: any, text: IText, fontFace: string, stringStyle: string, adjustedX: number, adjustedY: number, strCont: string) => {
+  const addStringMeterLayerOneMeasure = (exporter: RainmeterSkinExporter, layer: any, text: IText, fontFace: string, stringStyle: string, adjustedX: number, adjustedY: number, strCont: string) => {
     
     exporter.addLayer({
       meter: {
@@ -289,7 +289,7 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
             }
           }
         });
-        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
+        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
@@ -303,7 +303,7 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
             }
           }
         });
-        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
+        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
@@ -317,7 +317,7 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
             }
           }
         });
-        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
+        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
@@ -331,7 +331,7 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
             }
           }
         });
-        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
+        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
@@ -345,7 +345,7 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
             }
           }
         });
-        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
+        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
@@ -359,7 +359,7 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
             }
           }
         });
-        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
+        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
@@ -373,7 +373,7 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
             }
           }
         });
-        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
+        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
@@ -387,7 +387,7 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
             }
           }
         });
-        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
+        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
@@ -401,7 +401,7 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
             }
           }
         });
-        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
+        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
@@ -415,7 +415,7 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
             }
           }
         });
-        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
+        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
@@ -429,7 +429,7 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
             }
           }
         });
-        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
+        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
@@ -443,7 +443,7 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
             }
           }
         });
-        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
+        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
@@ -457,7 +457,7 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
             }
           }
         });
-        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
+        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
@@ -471,7 +471,7 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
             }
           }
         });
-        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
+        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
@@ -485,7 +485,7 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
             }
           }
         });
-        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
+        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
@@ -499,7 +499,7 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
             }
           }
         });
-        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
+        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
@@ -513,7 +513,7 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
             }
           }
         });
-        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
+        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
@@ -526,7 +526,7 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
             }
           }
         });
-        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1%');
+        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1%');
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
@@ -540,7 +540,7 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
             }
           }
         });
-        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1%');
+        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1%');
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
@@ -554,7 +554,7 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
             }
           }
         });
-        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1%');
+        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1%');
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
@@ -568,7 +568,7 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
             }
           }
         });
-        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1%');
+        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1%');
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
@@ -582,7 +582,7 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
             }
           }
         });
-        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1%');
+        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1%');
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
@@ -596,7 +596,7 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
             }
           }
         });
-        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1%');
+        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1%');
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
@@ -610,7 +610,7 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
             }
           }
         });
-        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1%');
+        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1%');
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
@@ -624,7 +624,7 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
             }
           }
         });
-        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1%');
+        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1%');
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
@@ -638,7 +638,7 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
             }
           }
         });
-        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1%');
+        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1%');
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
@@ -654,7 +654,7 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
             }
           }
         });
-        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
+        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
@@ -670,7 +670,7 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
             }
           }
         });
-        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1 B');
+        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1 B');
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
@@ -685,7 +685,7 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
             }
           }
         });
-        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1 B');
+        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1 B');
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
@@ -701,7 +701,7 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
             }
           }
         });
-        addMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1 B');
+        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1 B');
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
