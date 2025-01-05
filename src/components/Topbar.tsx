@@ -12,7 +12,7 @@ import ExportModal from './ExportModal'
 import { checkForAppUpdates } from '@/services/CheckForAppUpdates';
 import { version as appVersion } from '../../package.json';
 import { Badge } from './ui/badge';
-import { FaBug, FaDiscord, FaThLarge } from 'react-icons/fa';
+import { FaBug, FaDiscord } from 'react-icons/fa';
 import { open } from '@tauri-apps/plugin-shell';
 
 const Topbar: React.FC = () => {
