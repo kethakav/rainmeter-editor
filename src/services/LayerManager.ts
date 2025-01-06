@@ -309,8 +309,8 @@ class LayerManager {
                     top: y,
                     outerHeight: img.height,
                     outerWidth: img.width,
-                    scaleX: 0.1,
-                    scaleY: 0.1,
+                    scaleX: 1,
+                    scaleY: 1,
                     hasControls: false,
                     centeredRotation: true,
                 });
