@@ -178,7 +178,7 @@ async function fontExistsInPublic(fontName: string): Promise<boolean> {
 
 
 // Modify the exportSkin function
-export const exportSkin = async (exportPath: string, metadata: { name: string; author: string; version: string; description: string }, allowScrollResize: boolean) => {
+export const exportSkin = async (resourcePath: string, metadata: { name: string; author: string; version: string; description: string }, allowScrollResize: boolean) => {
   const scaleCorrection = 1.35;
   const layers = layerManager.getLayers();
   const exporter = new RainmeterSkinExporter({
@@ -193,6 +193,7 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
   const systemFonts = localFontManager.getCachedFonts();
 
   const fontsToCopy = new Set<string>(); // To track fonts to copy
+  const imagesToCopy: string[] = []; // To track images to copy
 
   const minX = layers.reduce((min, layer) => {
     if (layer.fabricObject && layer.fabricObject.left !== undefined) {
@@ -233,10 +234,10 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
   };
 
   layers.forEach(layer => {
+    const adjustedX = layer.fabricObject.left - minX; // Adjust x value
+    const adjustedY = layer.fabricObject.top - minY; // Adjust y value
     if (layer.type === 'text') {
       const text = layer.fabricObject as IText;
-      const adjustedX = layer.fabricObject.left - minX; // Adjust x value
-      const adjustedY = layer.fabricObject.top - minY; // Adjust y value
 
       const font = systemFonts.find(font => font.name === text.fontFamily);
       // console.log('tt', font);
@@ -706,6 +707,23 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
           fontsToCopy.add(font.src); // Track the font
         }
       } 
+    } else if (layer.type === 'image') {
+        if (!imagesToCopy.includes(layer.imageSrc)) {
+          imagesToCopy.push(layer.imageSrc); // Track the image
+        }
+        exporter.addLayer({
+          meter: {
+            type: 'Image',
+            name: layer.name,
+            options: {
+              ImageName: '#@#Images/' + imagesToCopy.findIndex(img => img === layer.imageSrc).toString() + '.png',
+              W: ('(' + (layer.fabricObject.scaleX * layer.fabricObject.width).toString() + ' * #Scale#)'),
+              H: ('(' + (layer.fabricObject.scaleY * layer.fabricObject.height).toString() + ' * #Scale#)'),
+              X: ('(' + (adjustedX * scaleCorrection).toString() + ' * #Scale#)'),
+              Y: ('(' + (adjustedY * scaleCorrection).toString() + ' * #Scale#)'),
+            }
+          }
+        });
     }
   });
 
@@ -716,10 +734,19 @@ export const exportSkin = async (exportPath: string, metadata: { name: string; a
     if (fontExists) {
       console.log
       const sourcePath = await resourceDir() + `/_up_/public/fonts/${font}`;
-      const destinationPath = `${exportPath}/${font}`;
+      const destinationPath = `${resourcePath}/Fonts/${font}`;
       await copyFile(sourcePath, destinationPath);
     }
   }
+
+  // Check and copy the images
+  imagesToCopy.forEach(async (image, index) => {
+    console.log(image);
+    // const imageExists = await imageExistsInPublic(image);
+    const sourcePath = image;
+    const destinationPath = `${resourcePath}/Images/${index.toString() + '.png'}`;
+    await copyFile(sourcePath, destinationPath);
+  });
 
   // Generate the INI content
   const iniContent = exporter.export();
@@ -747,14 +774,16 @@ export const handleCreateDirectory = async (metadata: { name: string; author: st
     const resDirectory = '@Resources';
     const ResDirectoryPath = `${newDirectoryPath}/${resDirectory}`;
     const FontDirectoryPath = `${newDirectoryPath}/${resDirectory}/Fonts`;
+    const ImageDirectoryPath = `${newDirectoryPath}/${resDirectory}/Images`;
 
     // Create the new directory
     try {
       await mkdir(newDirectoryPath);
       await mkdir(ResDirectoryPath);
       await mkdir(FontDirectoryPath);
+      await mkdir(ImageDirectoryPath);
 
-      const iniContent = await exportSkin(FontDirectoryPath, metadata, allowScrollResize);
+      const iniContent = await exportSkin(ResDirectoryPath, metadata, allowScrollResize);
 
       // await copyFile(await resourceDir() + "/_up_/public/fonts/Tuesday Night.otf", `${FontDirectoryPath}/Tuesday Night.otf`);
 

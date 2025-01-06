@@ -1,7 +1,10 @@
 //LayerManager.ts
 // import { useToolContext } from '@/context/ToolContext';
+import { open} from '@tauri-apps/plugin-dialog';
 import { arrayMove } from '@dnd-kit/sortable';
-import { Canvas, Circle, FabricObject, FabricObjectProps, Rect, Triangle, IText, FabricImage } from 'fabric';
+import { join } from '@tauri-apps/api/path';
+import { Canvas, Circle, FabricObject, FabricObjectProps, Rect, Triangle, IText, FabricImage} from 'fabric';
+import { convertFileSrc } from '@tauri-apps/api/core';
 
 // Enum for layer types
 enum LayerType {
@@ -21,6 +24,7 @@ interface LayerConfig {
   name: string;
   measure: string;
   fontName: string;
+  imageSrc: string;
 }
 
 class LayerManager {
@@ -91,7 +95,7 @@ class LayerManager {
   }
 
   // Add a new layer to the stack
-  addLayer(type: LayerType, fabricObject: FabricObject) {
+  addLayer(type: LayerType, fabricObject: FabricObject, imageSrc: string = "") {
     if (this.canvas) {
       const newLayer: LayerConfig = {
         id: this.generateUniqueId(),
@@ -102,7 +106,8 @@ class LayerManager {
         locked: false,
         name: this.generateLayerName(type),
         measure: "custom-text",
-        fontName: "null"
+        fontName: "null",
+        imageSrc: imageSrc,
       };
 
       // Add to canvas and layers array
@@ -128,6 +133,7 @@ class LayerManager {
         fill: 'black',
         fontSize: 24,
         hasControls: false,
+        centeredRotation: true,
         });
         console.log(this.layers);
 
@@ -274,19 +280,49 @@ class LayerManager {
     }
   }
 
-  addImageLayer(x: number, y: number) {
-    if(this.canvas) {
-      const imageObject = new FabricImage('im1', {
-        left: x,
-        top: y,
-        scaleX: 0.5,
-        scaleY: 0.5
-      });
-      this.addLayer(LayerType.IMAGE, imageObject);
+  async addImageLayer(x: number, y: number) {
+    if (this.canvas) {
+        // Open a file dialog to select an image
+        const selectedFile = await open({
+            title: 'Select an Image',
+            filters: [
+                {
+                    name: 'Images',
+                    extensions: ['png'],
+                },
+            ],
+        });
+
+        // Check if a file was selected
+        if (selectedFile) {
+            // Convert to the appropriate format (string if selectedFile is a File)
+            const sourcePath = await join(selectedFile as string);
+            const assetUrl = convertFileSrc(sourcePath);
+            console.log(sourcePath);
+            console.log(assetUrl);
+            
+            // Use fromURL correctly with await
+            try {
+                const img: FabricImage = await FabricImage.fromURL(assetUrl, { crossOrigin: 'anonymous' });
+                img.set({
+                    left: x,
+                    top: y,
+                    outerHeight: img.height,
+                    outerWidth: img.width,
+                    scaleX: 0.1,
+                    scaleY: 0.1,
+                    hasControls: false,
+                    centeredRotation: true,
+                });
+                this.addLayer(LayerType.IMAGE, img, sourcePath);
+            } catch (error) {
+                console.error("Error loading image:", error);
+            }
+        }
     } else {
         return null;
     }
-  }
+}
 
 
 

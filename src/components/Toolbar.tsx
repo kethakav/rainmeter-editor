@@ -39,9 +39,9 @@ const Toolbar: React.FC = () => {
   //   // empty for now
   // }
 
-  // const handleAddImage = () => {
-  //   layerManager.setActiveTool('image');
-  // }
+  const handleAddImage = () => {
+    layerManager.setActiveTool('image');
+  }
 
   const isSelected = (tool: string) => selectedTool === tool;  
 
@@ -92,24 +92,7 @@ const Toolbar: React.FC = () => {
           <Tooltip>
             <TooltipTrigger asChild>
               <Button 
-                variant={isSelected('shape') ? 'default' : 'ghost'}
-                size="icon"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
-                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                </svg>
-                <span className="sr-only">Shape</span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Shape Tool (Coming Soon)</p>
-            </TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button 
-                // onClick={handleAddImage}
+                onClick={handleAddImage}
                 variant={isSelected('image') ? 'default' : 'ghost'}
                 size="icon"
               >
@@ -122,7 +105,24 @@ const Toolbar: React.FC = () => {
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Image Tool (Coming Soon)</p>
+              <p>Image Tool</p>
+            </TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant={isSelected('shape') ? 'default' : 'ghost'}
+                size="icon"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                </svg>
+                <span className="sr-only">Shape</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Shape Tool (Coming Soon)</p>
             </TooltipContent>
           </Tooltip>
         </div>
