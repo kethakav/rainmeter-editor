@@ -3099,7 +3099,7 @@ dependencies = [
 
 [[package]]
 name = "rainmeter-editor"
-version = "0.1.9"
+version = "0.1.10"
 dependencies = [
  "image",
  "rust-ini",
