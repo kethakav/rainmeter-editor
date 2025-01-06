@@ -133,7 +133,6 @@ class LayerManager {
         fill: 'black',
         fontSize: 24,
         hasControls: false,
-        centeredRotation: true,
         });
         console.log(this.layers);
 
@@ -312,7 +311,6 @@ class LayerManager {
                     scaleX: 1,
                     scaleY: 1,
                     hasControls: false,
-                    centeredRotation: true,
                 });
                 this.addLayer(LayerType.IMAGE, img, sourcePath);
             } catch (error) {

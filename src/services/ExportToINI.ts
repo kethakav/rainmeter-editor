@@ -179,7 +179,7 @@ async function fontExistsInPublic(fontName: string): Promise<boolean> {
 
 // Modify the exportSkin function
 export const exportSkin = async (resourcePath: string, metadata: { name: string; author: string; version: string; description: string }, allowScrollResize: boolean) => {
-  const scaleCorrection = 1.35;
+  const scaleCorrection = 1.33;
   const layers = layerManager.getLayers();
   const exporter = new RainmeterSkinExporter({
     name: metadata.name,
@@ -221,11 +221,12 @@ export const exportSkin = async (resourcePath: string, metadata: { name: string;
         measureName: 'Measure' + layer.name,
         options: {
           FontFace: fontFace,
-          FontSize: ('(' + text.fontSize.toString() + ' * #Scale#)'),
+          FontSize: ('(' + (text.fontSize / scaleCorrection).toString() + ' * #Scale#)'),
           FontColor: layer.fabricObject.fill ? hexToRgb(layer.fabricObject.fill) : '0,0,0',
           StringStyle: stringStyle,
-          X: ('(' + (adjustedX * scaleCorrection).toString() + ' * #Scale#)'),
-          Y: ('(' + (adjustedY * scaleCorrection).toString() + ' * #Scale#)'),
+          X: ('(' + adjustedX.toString() + ' * #Scale#)'),
+          Y: ('(' + adjustedY.toString() + ' * #Scale#)'),
+          Angle: (layer.fabricObject.angle * (Math.PI / 180)).toString(),
           AntiAlias: "1",
           Text: strCont,
         }
@@ -267,11 +268,12 @@ export const exportSkin = async (resourcePath: string, metadata: { name: string;
             name: layer.name,
             options: {
               FontFace: fontFace,
-              FontSize: ('(' + text.fontSize.toString() + ' * #Scale#)'),
+              FontSize: ('(' + (text.fontSize / scaleCorrection).toString() + ' * #Scale#)'),
               FontColor: layer.fabricObject.fill ? hexToRgb(layer.fabricObject.fill) : '0,0,0',
               StringStyle: stringStyle,
-              X: ('(' + (adjustedX * scaleCorrection).toString() + ' * #Scale#)'),
-              Y: ('(' + (adjustedY * scaleCorrection).toString() + ' * #Scale#)'),
+              X: ('(' + adjustedX.toString() + ' * #Scale#)'),
+              Y: ('(' + adjustedY.toString() + ' * #Scale#)'),
+              Angle: (layer.fabricObject.angle * (Math.PI / 180)).toString(),
               AntiAlias: "1",
               Text: text.text,
             }
@@ -719,8 +721,9 @@ export const exportSkin = async (resourcePath: string, metadata: { name: string;
               ImageName: '#@#Images/' + imagesToCopy.findIndex(img => img === layer.imageSrc).toString() + '.png',
               W: ('(' + (layer.fabricObject.scaleX * layer.fabricObject.width).toString() + ' * #Scale#)'),
               H: ('(' + (layer.fabricObject.scaleY * layer.fabricObject.height).toString() + ' * #Scale#)'),
-              X: ('(' + (adjustedX * scaleCorrection).toString() + ' * #Scale#)'),
-              Y: ('(' + (adjustedY * scaleCorrection).toString() + ' * #Scale#)'),
+              X: ('(' + (adjustedX).toString() + ' * #Scale#)'),
+              Y: ('(' + (adjustedY).toString() + ' * #Scale#)'),
+              Angle: (layer.fabricObject.angle * (Math.PI / 180)).toString(),
             }
           }
         });
