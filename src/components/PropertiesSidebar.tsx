@@ -211,13 +211,15 @@ const PropertiesSidebar: React.FC = () => {
   };
 
   const handleColorChange = (value: string) => {
+    console.log(value);
     const canvas = layerManager.getCanvas();
     const layer = layerManager.getLayers().find(layer => layer.id === selectedLayerId);
 
     if (layer && layer.type === 'text') {
-      layer.fabricObject.fill = value;
+      console.log(layer.fabricObject);
+      layer.fabricObject.set({ fill: value });
+      
       setTextLayerProperties(prev => ({ ...prev, color: value }));
-      layer.fabricObject.setCoords();
       canvas?.renderAll();
     }
   };
@@ -248,8 +250,14 @@ const PropertiesSidebar: React.FC = () => {
   };
 
   const handleCategoryChange = (value: string) => {
-    setCategory(value);
-    handleMeasureChange(value);
+    if (value === 'time') {
+      setCategory('time');
+      handleMeasureChange('time-hour-minute-24');
+    }
+    if (value === 'date') {
+      setCategory('date');
+      handleMeasureChange('date-yyyy-mm-dd');
+    }
   };
 
   const updateTextLayerPosition = (field: 'x' | 'y', value: string) => {
@@ -547,9 +555,10 @@ const PropertiesSidebar: React.FC = () => {
                       <Select
                         value={textLayerProperties.font}
                         onValueChange={handleFontChange}
+                        defaultValue='Times New Roman'
                       >
                         <SelectTrigger id="font-select">
-                          <SelectValue placeholder="Select a font" />
+                          <SelectValue placeholder="Times New Roman" />
                         </SelectTrigger>
                         <SelectContent>
                           {systemFonts.map(font => (
