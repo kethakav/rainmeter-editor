@@ -1,9 +1,8 @@
 import React, { useEffect, useRef } from 'react';
-import { ActiveSelection, Canvas, Control, Group } from 'fabric';
+import { Canvas, Group } from 'fabric';
 import { canvasManager } from '../services/CanvasManager';
 import { layerManager } from '@/services/LayerManager';
 import { useLayerContext } from '@/context/LayerContext';
-import { prototype } from 'events';
 
 const CanvasRenderer: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
