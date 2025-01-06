@@ -1,8 +1,9 @@
 import React, { useEffect, useRef } from 'react';
-import { Canvas } from 'fabric';
+import { ActiveSelection, Canvas, Control, Group } from 'fabric';
 import { canvasManager } from '../services/CanvasManager';
 import { layerManager } from '@/services/LayerManager';
 import { useLayerContext } from '@/context/LayerContext';
+import { prototype } from 'events';
 
 const CanvasRenderer: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -87,9 +88,18 @@ const CanvasRenderer: React.FC = () => {
       layerManager.setCanvas(canvas);
       canvas.renderAll();
 
+      Group.prototype.hasControls = false;
+
       // Rest of your event handlers...
       const handleSelectionEvent = (event: any) => {
         if (!event.selected) return;
+        if (event.selected.length > 1) {
+          const obj = canvas.getActiveObject();
+          if (obj) {
+            obj.hasControls = false;
+          }
+          return;
+        }
         const selectedObject = event.selected[0];
         const layer = layerManager
           .getLayers()
