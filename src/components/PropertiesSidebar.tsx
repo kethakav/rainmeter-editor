@@ -15,6 +15,7 @@ import { FabricImage, IText } from 'fabric';
 import { localFontManager } from '@/services/LocalFontManager';
 import { SingleFontLoad } from '@/services/singleFontLoad';
 import { Card, CardContent, CardHeader } from './ui/card';
+import { Slider } from "@/components/ui/slider"
 
 const PropertiesSidebar: React.FC = () => {
   const { selectedLayerId, selectedLayer } = useLayerContext();
@@ -29,6 +30,7 @@ const PropertiesSidebar: React.FC = () => {
     font: 'Arial',
     measure: 'custom-text',
     fontSize: '12',
+    opacity: '1', // Add opacity with default value 1 (fully opaque)
   });
 
   const [imageLayerProperties, setImageLayerProperties] = useState({
@@ -95,6 +97,7 @@ const PropertiesSidebar: React.FC = () => {
               y: text.top?.toString() || '0',
               rotation: text.angle?.toString() || '0',
               color: text.fill?.toString() || '#000000',
+              opacity: text.opacity?.toString() || '1', // Add opacity property
               font: text.fontFamily || 'Arial',
               measure: measure,
               fontSize: text.fontSize?.toString() || '12',
@@ -220,6 +223,18 @@ const PropertiesSidebar: React.FC = () => {
       layer.fabricObject.set({ fill: value });
       
       setTextLayerProperties(prev => ({ ...prev, color: value }));
+      canvas?.renderAll();
+    }
+  };
+
+  const handleOpacityChange = (value: string) => {
+    const canvas = layerManager.getCanvas();
+    const layer = layerManager.getLayers().find(layer => layer.id === selectedLayerId);
+  
+    if (layer && layer.type === 'text') {
+      layer.fabricObject.set({ opacity: parseFloat(value) }); // Update opacity on the object
+  
+      setTextLayerProperties(prev => ({ ...prev, opacity: value })); // Update state
       canvas?.renderAll();
     }
   };
@@ -546,6 +561,23 @@ const PropertiesSidebar: React.FC = () => {
                         value={textLayerProperties.color}
                         onChange={e => handleColorChange(e.target.value)}
                       />
+                    </div>
+
+                    {/* Opacity Slider */}
+                    <div className="space-y-2">
+                      <Label htmlFor="text-opacity">Opacity</Label>
+                      <Slider
+                        id="text-opacity"
+                        value={[parseFloat(textLayerProperties.opacity)]}
+                        min={0}
+                        max={1}
+                        step={0.01}
+                        onValueChange={(value) => handleOpacityChange(value[0].toString())}
+                        className="w-48"
+                      />
+                      <div className="text-sm text-muted-foreground">
+                        Opacity: {(parseFloat(textLayerProperties.opacity) * 100).toFixed(0)}%
+                      </div>
                     </div>
                     {/* Font Select */}
                     <div className="space-y-2">

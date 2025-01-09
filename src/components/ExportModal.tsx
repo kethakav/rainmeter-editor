@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Separator } from "@/components/ui/separator"
 
 interface ExportModalProps {
   onExport: (metadata: { name: string; author: string; version: string; description: string}, allowScrollResize: boolean) => Promise<boolean>;
@@ -91,10 +92,9 @@ const ExportModal: React.FC<ExportModalProps> = ({ onExport, open, onOpenChange 
               className="col-span-3"
             />
           </div>
-          <div className="grid grid-cols-4 items-center gap-4 border-t pt-4">
-            <div className="col-span-1" />
-            
-            <div className='col-span-3'>
+          <Separator />
+          <div className="flex flex-col items-center gap-4 justify-center">
+            <div>
               <Checkbox 
                 id="allowScrollResize" 
                 checked={allowScrollResize}
@@ -107,7 +107,6 @@ const ExportModal: React.FC<ExportModalProps> = ({ onExport, open, onOpenChange 
                 Allow Mouse Scroll Resize
               </label>
             </div>
-            
           </div>
         </div>
         <DialogFooter>

@@ -222,7 +222,7 @@ export const exportSkin = async (resourcePath: string, metadata: { name: string;
         options: {
           FontFace: fontFace,
           FontSize: ('(' + (text.fontSize / scaleCorrection).toString() + ' * #Scale#)'),
-          FontColor: layer.fabricObject.fill ? hexToRgb(layer.fabricObject.fill) : '0,0,0',
+          FontColor: layer.fabricObject.fill ? hexToRgb(layer.fabricObject.fill, layer.fabricObject.opacity) : '0,0,0,255',
           StringStyle: stringStyle,
           X: ('(' + adjustedX.toString() + ' * #Scale#)'),
           Y: ('(' + adjustedY.toString() + ' * #Scale#)'),
@@ -269,7 +269,7 @@ export const exportSkin = async (resourcePath: string, metadata: { name: string;
             options: {
               FontFace: fontFace,
               FontSize: ('(' + (text.fontSize / scaleCorrection).toString() + ' * #Scale#)'),
-              FontColor: layer.fabricObject.fill ? hexToRgb(layer.fabricObject.fill) : '0,0,0',
+              FontColor: layer.fabricObject.fill ? hexToRgb(layer.fabricObject.fill, layer.fabricObject.opacity) : '0,0,0',
               StringStyle: stringStyle,
               X: ('(' + adjustedX.toString() + ' * #Scale#)'),
               Y: ('(' + adjustedY.toString() + ' * #Scale#)'),
@@ -810,7 +810,7 @@ export const handleCreateDirectory = async (metadata: { name: string; author: st
   return false;
 };
 
-function hexToRgb(hex: string | TFiller): string {
+function hexToRgb(hex: string | TFiller, opacity: number): string {
   // Remove the '#' character if present
   // if hex is string
   if (typeof hex === 'string') {
@@ -822,9 +822,12 @@ function hexToRgb(hex: string | TFiller): string {
     const g = (bigint >> 8) & 255;
     const b = bigint & 255;
 
-    // Return RGB string in the desired format
-    return `${r},${g},${b}`;
+    // Convert opacity from 0-1 to 0-255
+    const alpha = Math.round(opacity * 255);
+
+    // Return RGB string in the desired format with opacity
+    return `${r},${g},${b},${alpha}`;
   }
 
-  return "0,0,0";
+  return `0,0,0,${Math.round(opacity * 255)}`;
 }
