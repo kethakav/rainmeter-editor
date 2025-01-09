@@ -9,7 +9,6 @@ import {
 import { layerManager } from '@/services/LayerManager';
 
 const Toolbar: React.FC = () => {
-
   const [selectedTool, setSelectedTool] = useState<string>('select');
 
   useEffect(() => {
@@ -35,13 +34,13 @@ const Toolbar: React.FC = () => {
     layerManager.setActiveTool('text');
   };
 
-  // const handleAddShape = () => {
-  //   // empty for now
-  // }
-
   const handleAddImage = () => {
     layerManager.setActiveTool('image');
-  }
+  };
+
+  const handleAddRotator = () => {
+    layerManager.setActiveTool('rotator');
+  };
 
   const isSelected = (tool: string) => selectedTool === tool;  
 
@@ -112,24 +111,25 @@ const Toolbar: React.FC = () => {
           <Tooltip>
             <TooltipTrigger asChild>
               <Button 
-                variant={isSelected('shape') ? 'default' : 'ghost'}
+                onClick={handleAddRotator}
+                variant={isSelected('rotator') ? 'default' : 'ghost'}
                 size="icon"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
-                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                  <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/>
+                  <path d="M21 3v5h-5"/>
                 </svg>
-                <span className="sr-only">Shape</span>
+                <span className="sr-only">Rotator</span>
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Shape Tool (Coming Soon)</p>
+              <p>Rotator Tool</p>
             </TooltipContent>
           </Tooltip>
         </div>
       </div>
     </TooltipProvider>
-  )
-}
+  );
+};
 
 export default Toolbar;
-

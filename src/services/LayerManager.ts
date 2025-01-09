@@ -10,7 +10,13 @@ import { convertFileSrc } from '@tauri-apps/api/core';
 enum LayerType {
   TEXT = 'text',
   SHAPE = 'shape',
-  IMAGE = 'image'
+  IMAGE = 'image',
+  ROTATOR = 'rotator',
+}
+
+interface LayerProperties {
+  property: string;
+  value: string;
 }
 
 // Interface for layer properties
@@ -25,6 +31,8 @@ interface LayerConfig {
   measure: string;
   fontName: string;
   imageSrc: string;
+  UIElements: FabricObject[];
+  properties: LayerProperties[];
 }
 
 class LayerManager {
@@ -40,7 +48,8 @@ class LayerManager {
     private layerCounts: { [key in LayerType]: number } = {
       [LayerType.TEXT]: 0,
       [LayerType.SHAPE]: 0,
-      [LayerType.IMAGE]: 0
+      [LayerType.IMAGE]: 0,
+      [LayerType.ROTATOR]: 0,
     };
   
     private constructor() {} // Make the constructor private
@@ -95,7 +104,7 @@ class LayerManager {
   }
 
   // Add a new layer to the stack
-  addLayer(type: LayerType, fabricObject: FabricObject, imageSrc: string = "") {
+  addLayer(type: LayerType, fabricObject: FabricObject, imageSrc: string = "", UIElements: FabricObject[] = [], properties: LayerProperties[] = []) {
     if (this.canvas) {
       const newLayer: LayerConfig = {
         id: this.generateUniqueId(),
@@ -108,6 +117,8 @@ class LayerManager {
         measure: "custom-text",
         fontName: "null",
         imageSrc: imageSrc,
+        UIElements: UIElements,
+        properties: properties,
       };
 
       // Add to canvas and layers array
@@ -465,6 +476,18 @@ class LayerManager {
         
         // Select the specific object
         this.canvas.setActiveObject(layer.fabricObject);
+        // Make the UIElements visible
+        layer.UIElements.forEach(element => {
+          element.set('visible', true);
+        });
+        // Make other layers UIElements invisible
+        this.layers.forEach(l => {
+          if (l.id !== layerId) {
+            l.UIElements.forEach(element => {
+              element.set('visible', false);
+            });
+          }
+        });
         this.canvas.renderAll();
         }
     }
@@ -540,7 +563,8 @@ class LayerManager {
     const typeLabels = {
       [LayerType.TEXT]: 'Text',
       [LayerType.SHAPE]: 'Shape',
-      [LayerType.IMAGE]: 'Image'
+      [LayerType.IMAGE]: 'Image',
+      [LayerType.ROTATOR]: 'Rotator',
     };
     
     return `${typeLabels[type]} ${this.layerCounts[type]}`;
