@@ -3,7 +3,7 @@
 import { open} from '@tauri-apps/plugin-dialog';
 import { arrayMove } from '@dnd-kit/sortable';
 import { join } from '@tauri-apps/api/path';
-import { Canvas, Circle, FabricObject, FabricObjectProps, Rect, Triangle, IText, FabricImage} from 'fabric';
+import { Canvas, Circle, FabricObject, FabricObjectProps, Rect, Triangle, IText, FabricImage, Group} from 'fabric';
 import { convertFileSrc } from '@tauri-apps/api/core';
 
 // Enum for layer types
@@ -31,7 +31,7 @@ interface LayerConfig {
   measure: string;
   fontName: string;
   imageSrc: string;
-  UIElements: FabricObject[];
+  UIElements: FabricObject;
   properties: LayerProperties[];
 }
 
@@ -98,13 +98,17 @@ class LayerManager {
         this.addImageLayer(x, y);
         this.setActiveTool('select');
       }
+      if (this.activeTool === 'rotator') {
+        this.addRotatorLayer(x, y);
+        this.setActiveTool('select');
+      }
     }
 
     return;
   }
 
   // Add a new layer to the stack
-  addLayer(type: LayerType, fabricObject: FabricObject, imageSrc: string = "", UIElements: FabricObject[] = [], properties: LayerProperties[] = []) {
+  addLayer(type: LayerType, fabricObject: FabricObject, imageSrc: string = "", UIElements: FabricObject = new Group(), properties: LayerProperties[] = []) {
     if (this.canvas) {
       const newLayer: LayerConfig = {
         id: this.generateUniqueId(),
@@ -123,6 +127,7 @@ class LayerManager {
 
       // Add to canvas and layers array
       this.canvas.add(fabricObject);
+      this.canvas.add(UIElements);
       this.layers.push(newLayer);
       this.notifyListeners();
 
@@ -331,7 +336,84 @@ class LayerManager {
     } else {
         return null;
     }
-}
+  }
+
+  async addRotatorLayer(x: number, y: number) {
+    if (this.canvas) {
+        // Open a file dialog to select an image
+        const selectedFile = await open({
+            title: 'Select the Rotator Image',
+            filters: [
+                {
+                    name: 'Images',
+                    extensions: ['png'],
+                },
+            ],
+        });
+
+        // Check if a file was selected
+        if (selectedFile) {
+            // Convert to the appropriate format (string if selectedFile is a File)
+            const sourcePath = await join(selectedFile as string);
+            const assetUrl = convertFileSrc(sourcePath);
+            console.log(sourcePath);
+            console.log(assetUrl);
+            
+            // Use fromURL correctly with await
+            try {
+                const img: FabricImage = await FabricImage.fromURL(assetUrl, { crossOrigin: 'anonymous' });
+                const midX = img.width / 2;
+                const midY = img.height / 2;
+                img.set({
+                    left: x,
+                    top: y,
+                    outerHeight: img.height,
+                    outerWidth: img.width,
+                    scaleX: 1,
+                    scaleY: 1,
+                    hasControls: false,
+                });
+                const pivotPoint = new Circle({
+                    radius: 5,
+                    originX: 'center',
+                    originY: 'center',
+                    centeredScaling: true,
+                    centeredRotation: true,
+                    fill: '#FF0000',
+                    left: x + midX,
+                    top: y + midY,
+                    hasControls: false,
+                });
+                const rangeIndicator = new Circle({
+                  radius: 40,
+                  left: x,
+                  top: y,
+                  angle: 0,
+                  startAngle: -0.3,
+                  endAngle: 0,
+                  stroke: '#000',
+                  strokeWidth: 25,
+                  fill: ''
+                })
+                const UIElements = new Group([pivotPoint, rangeIndicator], {
+                  visible: true,
+                  hasControls: false,
+                  interactive: false,
+                  selectable: false,
+                  perPixelTargetFind: true,
+                });
+                
+                // set the UIElements visible
+
+                this.addLayer(LayerType.ROTATOR, img, sourcePath, UIElements);
+            } catch (error) {
+                console.error("Error loading image:", error);
+            }
+        }
+    } else {
+        return null;
+    }
+  }
 
 
 
@@ -476,18 +558,7 @@ class LayerManager {
         
         // Select the specific object
         this.canvas.setActiveObject(layer.fabricObject);
-        // Make the UIElements visible
-        layer.UIElements.forEach(element => {
-          element.set('visible', true);
-        });
-        // Make other layers UIElements invisible
-        this.layers.forEach(l => {
-          if (l.id !== layerId) {
-            l.UIElements.forEach(element => {
-              element.set('visible', false);
-            });
-          }
-        });
+        
         this.canvas.renderAll();
         }
     }

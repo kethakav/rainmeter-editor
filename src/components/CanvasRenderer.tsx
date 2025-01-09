@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Canvas, Group } from 'fabric';
+import { Canvas, FabricObject } from 'fabric';
 import { canvasManager } from '../services/CanvasManager';
 import { layerManager } from '@/services/LayerManager';
 import { useLayerContext } from '@/context/LayerContext';
@@ -11,15 +11,13 @@ const CanvasRenderer: React.FC = () => {
   useEffect(() => {
     // Function to convert HSL to Hex
     function hslToHex(h: number, s: number, l: number): string {
-      // Make sure we're working with numbers
       h = Number(h);
       s = Number(s);
       l = Number(l);
 
-      // Validate inputs
       if (isNaN(h) || isNaN(s) || isNaN(l)) {
         console.warn('Invalid HSL values:', { h, s, l });
-        return '#000000'; // Default to black if conversion fails
+        return '#000000';
       }
 
       s /= 100;
@@ -52,23 +50,19 @@ const CanvasRenderer: React.FC = () => {
       return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
     }
 
-    // Function to get computed CSS variable value
     function getCSSVariableValue(variableName: string): string {
       return getComputedStyle(document.documentElement)
         .getPropertyValue(variableName)
         .trim();
     }
 
-    // Function to parse HSL string and convert to hex
     function cssVariableToHex(variableName: string): string {
       const hslValue = getCSSVariableValue(variableName);
-      
-      // Handle different HSL formats
       const hslMatch = hslValue.match(/(\d+(\.\d+)?)/g);
       
       if (!hslMatch || hslMatch.length < 3) {
         console.warn('Invalid HSL format:', hslValue);
-        return '#000000'; // Default to black if parsing fails
+        return '#000000';
       }
 
       const [h, s, l] = hslMatch.map(Number);
@@ -87,9 +81,6 @@ const CanvasRenderer: React.FC = () => {
       layerManager.setCanvas(canvas);
       canvas.renderAll();
 
-      Group.prototype.hasControls = false;
-
-      // Rest of your event handlers...
       const handleSelectionEvent = (event: any) => {
         if (!event.selected) return;
         if (event.selected.length > 1) {
@@ -99,14 +90,22 @@ const CanvasRenderer: React.FC = () => {
           }
           return;
         }
+        
         const selectedObject = event.selected[0];
-        const layer = layerManager
-          .getLayers()
-          .find(layer => layer.fabricObject === selectedObject);
-      
-        if (layer) {
+        const layer = layerManager.getLayerByFabricObject(selectedObject);
+        
+        if (layer?.UIElements) {
           setSelectedLayerId(layer.id);
           setSelectedLayer(layer);
+          layer.UIElements.set({
+            visible:true,
+          })
+          // set other layers' UIElements invisible
+          layerManager.getLayers().filter(l => l.id !== layer.id).forEach(l => {
+            l.UIElements.set({
+              visible: false,
+            });
+          });
         } else {
           console.warn("No corresponding layer found for the selected object.");
         }
@@ -133,6 +132,40 @@ const CanvasRenderer: React.FC = () => {
         }
       };
 
+      const handleObjectMoving = (event: any) => {
+        var x = event.e.movementX;
+        var y = event.e.movementY;
+        const movingObject = event.target;
+        console.log('Object moving:', movingObject);
+        if (movingObject._objects) {
+          console.log('Multiple objects moving');
+          movingObject._objects.forEach((obj: FabricObject) => {
+            const layer = layerManager.getLayerByFabricObject(obj);
+            if (layer?.UIElements) {
+              layer.UIElements.set({
+                left: layer.UIElements.left + x,
+                top: layer.UIElements.top + y
+              });
+              layer.UIElements.setCoords();
+              canvas.renderAll();
+            }
+          });
+        }
+        else {
+          const layer = layerManager.getLayerByFabricObject(movingObject);
+          
+          if (layer?.UIElements) {
+            // Update UIElements position to match the fabric object
+            layer.UIElements.set({
+              left: layer.UIElements.left + x,
+              top: layer.UIElements.top + y
+            });
+            layer.UIElements.setCoords();
+            canvas.renderAll();
+          }
+        }
+      };
+
       const handleResize = () => {
         canvas.setWidth(window.innerWidth);
         canvas.setHeight(window.innerHeight);
@@ -143,10 +176,13 @@ const CanvasRenderer: React.FC = () => {
       canvas.on('selection:created', handleSelectionEvent);
       canvas.on('selection:updated', handleSelectionEvent);
       canvas.on('mouse:down', handleMouseDown);
+      canvas.on('object:moving', handleObjectMoving);
 
       return () => {
         canvas.off('selection:created', handleSelectionEvent);
         canvas.off('selection:updated', handleSelectionEvent);
+        canvas.off('mouse:down', handleMouseDown);
+        canvas.off('object:moving', handleObjectMoving);
         canvas.dispose();
         window.removeEventListener('resize', handleResize);
       };
