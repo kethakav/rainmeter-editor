@@ -246,6 +246,23 @@ const PropertiesSidebar: React.FC = () => {
       ...prev,
       measure: measure
     }));
+
+    if (measure.startsWith('time-')) {
+      setMeasureType('time-date');
+      setCategory('time');
+    } else if (measure.startsWith('date-')) {
+      setMeasureType('time-date');
+      setCategory('date');
+    } else if (measure.startsWith('cpu-')) {
+      setMeasureType('cpu');
+      setCategory(measure);
+    } else if (measure.startsWith('disk-')) {
+      setMeasureType('disk');
+      setCategory(measure);
+    } else {
+      setMeasureType('custom-text');
+      setCategory('');
+    }
   };
 
   const handleMeasureTypeChange = (value: string) => {
@@ -485,71 +502,79 @@ const PropertiesSidebar: React.FC = () => {
               <ScrollArea className="h-full">
                 <div className="px-4 pb-4">
                   <div className="space-y-4">
-                    {/* X Position */}
-                    <div className="space-y-2">
-                      <Label htmlFor="text-x">X</Label>
-                      <Input
-                        ref={xInputRef}
-                        id="text-x"
-                        placeholder="X"
-                        value={textLayerProperties.x}
-                        onChange={e => handleTextInputChange('x', e.target.value)}
-                        onKeyDown={e => handleTextKeyDown('x', e)}
-                        onBlur={() => {
-                          handleTextPositionBlur('x');
-                          setIsInputFocused(false);
-                        }}
-                        onFocus={() => setIsInputFocused(true)}
-                      />
+                    <div className="flex space-x-4">
+                      {/* X Position */}
+                      <div className="space-y-2">
+                        <Label htmlFor="text-x">X</Label>
+                        <Input
+                          ref={xInputRef}
+                          id="text-x"
+                          placeholder="X"
+                          value={textLayerProperties.x}
+                          onChange={e => handleTextInputChange('x', e.target.value)}
+                          onKeyDown={e => handleTextKeyDown('x', e)}
+                          onBlur={() => {
+                            handleTextPositionBlur('x');
+                            setIsInputFocused(false);
+                          }}
+                          onFocus={() => setIsInputFocused(true)}
+                          className="w-20"
+                        />
+                      </div>
+                      {/* Y Position */}
+                      <div className="space-y-2">
+                        <Label htmlFor="text-y">Y</Label>
+                        <Input
+                          ref={yInputRef}
+                          id="text-y"
+                          placeholder="Y"
+                          value={textLayerProperties.y}
+                          onChange={e => handleTextInputChange('y', e.target.value)}
+                          onKeyDown={e => handleTextKeyDown('y', e)}
+                          onBlur={() => {
+                            handleTextPositionBlur('y');
+                            setIsInputFocused(false);
+                          }}
+                          onFocus={() => setIsInputFocused(true)}
+                          className="w-20"
+                        />
+                      </div>
                     </div>
-                    {/* Y Position */}
-                    <div className="space-y-2">
-                      <Label htmlFor="text-y">Y</Label>
-                      <Input
-                        ref={yInputRef}
-                        id="text-y"
-                        placeholder="Y"
-                        value={textLayerProperties.y}
-                        onChange={e => handleTextInputChange('y', e.target.value)}
-                        onKeyDown={e => handleTextKeyDown('y', e)}
-                        onBlur={() => {
-                          handleTextPositionBlur('y');
-                          setIsInputFocused(false);
-                        }}
-                        onFocus={() => setIsInputFocused(true)}
-                      />
-                    </div>
-                    {/* Font Size */}
-                    <div className="space-y-2">
-                      <Label htmlFor="text-font-size">Font Size</Label>
-                      <Input
-                        id="text-font-size"
-                        placeholder="Font Size"
-                        value={textLayerProperties.fontSize}
-                        onChange={e => handleTextInputChange('fontSize', e.target.value)}
-                        onKeyDown={e => handleTextKeyDown('fontSize', e)}
-                        onBlur={() => {
-                          updateFontSize(textLayerProperties.fontSize);
-                          setIsInputFocused(false);
-                        }}
-                        onFocus={() => setIsInputFocused(true)}
-                      />
-                    </div>
-                    {/* Rotation */}
-                    <div className="space-y-2">
-                      <Label htmlFor="text-rotation">Rotation</Label>
-                      <Input
-                        id="text-rotation"
-                        placeholder="Rotation"
-                        value={textLayerProperties.rotation}
-                        onChange={e => handleTextInputChange('rotation', e.target.value)}
-                        onKeyDown={e => handleTextKeyDown('rotation', e)}
-                        onBlur={() => {
-                          handleTextRotationBlur('rotation');
-                          setIsInputFocused(false);
-                        }}
-                        onFocus={() => setIsInputFocused(true)}
-                      />
+                    <div className="flex space-x-4">
+                      {/* Font Size */}
+                      <div className="space-y-2">
+                        <Label htmlFor="text-font-size">Font Size</Label>
+                        <Input
+                          id="text-font-size"
+                          placeholder="Font Size"
+                          value={textLayerProperties.fontSize}
+                          onChange={e => handleTextInputChange('fontSize', e.target.value)}
+                          onKeyDown={e => handleTextKeyDown('fontSize', e)}
+                          onBlur={() => {
+                            updateFontSize(textLayerProperties.fontSize);
+                            setIsInputFocused(false);
+                          }}
+                          onFocus={() => setIsInputFocused(true)}
+                          className="w-20"
+                        />
+                      </div>
+                      {/* Rotation */}
+                      <div className="space-y-2">
+                        <Label htmlFor="text-rotation">Rotation</Label>
+                        <Input
+                          id="text-rotation"
+                          placeholder="Rotation"
+                          value={textLayerProperties.rotation}
+                          onChange={e => handleTextInputChange('rotation', e.target.value)}
+                          onKeyDown={e => handleTextKeyDown('rotation', e)}
+                          onBlur={() => {
+                            handleTextRotationBlur('rotation');
+                            setIsInputFocused(false);
+                          }}
+                          onFocus={() => setIsInputFocused(true)}
+                          className="w-20"
+                        />
+                      </div>
                     </div>
                     {/* Color */}
                     <div className="space-y-2">
@@ -557,7 +582,7 @@ const PropertiesSidebar: React.FC = () => {
                       <Input
                         id="text-color"
                         type="color"
-                        className="h-10"
+                        className="h-10 w-44"
                         value={textLayerProperties.color}
                         onChange={e => handleColorChange(e.target.value)}
                       />
@@ -573,12 +598,13 @@ const PropertiesSidebar: React.FC = () => {
                         max={1}
                         step={0.01}
                         onValueChange={(value) => handleOpacityChange(value[0].toString())}
-                        className="w-48"
+                        className="w-44"
                       />
                       <div className="text-sm text-muted-foreground">
                         Opacity: {(parseFloat(textLayerProperties.opacity) * 100).toFixed(0)}%
                       </div>
                     </div>
+                    
                     {/* Font Select */}
                     <div className="space-y-2">
                       <Label htmlFor="font-select" className="block text-sm font-medium text-gray-700 mb-1">
@@ -589,7 +615,7 @@ const PropertiesSidebar: React.FC = () => {
                         onValueChange={handleFontChange}
                         defaultValue='Times New Roman'
                       >
-                        <SelectTrigger id="font-select">
+                        <SelectTrigger id="font-select" className='w-44'>
                           <SelectValue placeholder="Times New Roman" />
                         </SelectTrigger>
                         <SelectContent>
@@ -600,12 +626,12 @@ const PropertiesSidebar: React.FC = () => {
                       </Select>
                     </div>
                     {/* Measure Type */}
-                    <div className="space-y-2">
+                    <div className="space-y-2 w-44">
                       <Label htmlFor="text-measure-type-select" className="block text-sm font-medium text-gray-700 mb-1">
                         Measure Type
                       </Label>
                       <Select onValueChange={handleMeasureTypeChange} value={measureType}>
-                        <SelectTrigger id="measure-type-select">
+                        <SelectTrigger id="measure-type-select" className="w-44">
                           <SelectValue placeholder="Select Measure Type" />
                         </SelectTrigger>
                         <SelectContent>
@@ -620,11 +646,11 @@ const PropertiesSidebar: React.FC = () => {
                     {/* Category based on Measure Type */}
                     {measureType === 'time-date' && (
                       <div className="space-y-2">
-                        <Label htmlFor="text-category-select" className="block text-sm font-medium text-gray-700 mb-1">
+                        <Label htmlFor="text-category-select" className="block text-sm font-medium text-gray-700 mb-1 w-44">
                           Category
                         </Label>
                         <Select onValueChange={handleCategoryChange} value={category}>
-                          <SelectTrigger id="text-category-select">
+                          <SelectTrigger id="text-category-select" className="w-44">
                             <SelectValue placeholder="Select Category" />
                           </SelectTrigger>
                           <SelectContent>
@@ -640,8 +666,8 @@ const PropertiesSidebar: React.FC = () => {
                         <Label htmlFor="text-category-select" className="block text-sm font-medium text-gray-700 mb-1">
                           Category
                         </Label>
-                        <Select onValueChange={handleCategoryChange} value={category}>
-                          <SelectTrigger id="text-category-select">
+                        <Select onValueChange={handleMeasureChange} value={category}>
+                          <SelectTrigger id="text-category-select" className="w-44">
                             <SelectValue placeholder="Select Category" />
                           </SelectTrigger>
                           <SelectContent>
@@ -661,11 +687,11 @@ const PropertiesSidebar: React.FC = () => {
 
                     {measureType === 'disk' && (
                       <div className="space-y-2">
-                        <Label htmlFor="text-category-select" className="block text-sm font-medium text-gray-700 mb-1">
+                        <Label htmlFor="text-category-select" className="block text-sm font-medium text-gray-700 mb-1 w-44">
                           Disk
                         </Label>
-                        <Select onValueChange={handleCategoryChange} value={category}>
-                          <SelectTrigger id="text-category-select">
+                        <Select onValueChange={handleMeasureChange} value={category}>
+                          <SelectTrigger id="text-category-select" className="w-44">
                             <SelectValue placeholder="Select Disk Property" />
                           </SelectTrigger>
                           <SelectContent>
@@ -681,11 +707,11 @@ const PropertiesSidebar: React.FC = () => {
                     {/* Measure based on Measure Type and Category */}
                     {measureType === 'time-date' && category === 'time' && (
                       <div className="space-y-2">
-                        <Label htmlFor="text-measure-select" className="block text-sm font-medium text-gray-700 mb-1">
+                        <Label htmlFor="text-measure-select" className="block text-sm font-medium text-gray-700 mb-1 w-44">
                           Measure
                         </Label>
                         <Select onValueChange={handleMeasureChange} value={textLayerProperties.measure}>
-                          <SelectTrigger id="text-measure-select">
+                          <SelectTrigger id="text-measure-select" className="w-44">
                             <SelectValue placeholder="Select Measure" />
                           </SelectTrigger>
                           <SelectContent>
@@ -707,7 +733,7 @@ const PropertiesSidebar: React.FC = () => {
                           Measure
                         </Label>
                         <Select onValueChange={handleMeasureChange} value={textLayerProperties.measure}>
-                          <SelectTrigger id="text-measure-select">
+                          <SelectTrigger id="text-measure-select" className="w-44">
                             <SelectValue placeholder="Select Measure" />
                           </SelectTrigger>
                           <SelectContent>
