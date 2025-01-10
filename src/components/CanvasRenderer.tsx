@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Canvas, FabricObject } from 'fabric';
+import { Canvas, FabricObject, Group } from 'fabric';
 import { canvasManager } from '../services/CanvasManager';
 import { layerManager } from '@/services/LayerManager';
 import { useLayerContext } from '@/context/LayerContext';
@@ -100,6 +100,9 @@ const CanvasRenderer: React.FC = () => {
           layer.UIElements.set({
             visible:true,
           })
+          const UIGroup = layer.UIElements as Group;
+          // UIGroup.bringObjectToFront(UIGroup);
+          canvas.bringObjectToFront(UIGroup);
           // set other layers' UIElements invisible
           layerManager.getLayers().filter(l => l.id !== layer.id).forEach(l => {
             l.UIElements.set({
