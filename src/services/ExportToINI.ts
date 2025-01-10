@@ -1,7 +1,7 @@
 // ExportToINI.ts
 import { copyFile } from '@tauri-apps/plugin-fs';
 import { layerManager } from './LayerManager';
-import { IText, TFiller } from 'fabric';
+import { Group, IText, Rect, TFiller } from 'fabric';
 import { open} from '@tauri-apps/plugin-dialog';
 import { mkdir, writeFile, exists } from '@tauri-apps/plugin-fs'; // Imp
 import { resourceDir } from '@tauri-apps/api/path';
@@ -32,7 +32,7 @@ interface RainmeterMeasure {
 }
 
 interface RainmeterMeter {
-  type: 'String' | 'Image' | 'Shape' | 'Rotator';
+  type: 'String' | 'Image' | 'Shape' | 'Rotator' | 'Bar' | 'Button' | 'Audio' | 'WebParser' | 'Measure' | 'Meter';
   name: string;
   measureName?: string;
   measureName2?: string;
@@ -234,17 +234,17 @@ export const exportSkin = async (resourcePath: string, metadata: { name: string;
     });
   };
 
-  const addRotatorMeterLayerOneMeasure = (exporter: RainmeterSkinExporter, layer: any, adjustedX: number, adjustedY: number, width: number, height: number, ImageName: string, OffsetX: number, OffsetY: number, startAngle: number, endAngle: number, valueRemainder?: number) => {
+  const addRotatorMeterLayerOneMeasure = (exporter: RainmeterSkinExporter, layer: any, adjustedX: number, adjustedY: number, width: number, height: number, ImageName: string, OffsetX: number, OffsetY: number, startAngle: number, rotationAngle: number, valueRemainder?: number) => {
     const options: any = {
         ImageName: ImageName,
         W: ('(' + (width).toString() + ' * #Scale#)'),
         H: ('(' + (height).toString() + ' * #Scale#)'),
-        X: ('(' + adjustedX.toString() + ' * #Scale#)'),
-        Y: ('(' + adjustedY.toString() + ' * #Scale#)'),
-        StartAngle: (startAngle * (Math.PI / 180)).toString(),
-        RotationAngle: (endAngle * (Math.PI / 180)).toString(),
-        OffsetX: ('(' + OffsetX.toString() + ' * #Scale#)'),
-        OffsetY: ('(' + OffsetY.toString() + ' * #Scale#)')
+        X: ('(' + (adjustedX).toString() + ' * #Scale#)'),
+        Y: ('(' + (adjustedY).toString() + ' * #Scale#)'),
+        StartAngle: ((startAngle + 90) * (Math.PI / 180)).toString(),
+        RotationAngle: ((rotationAngle) * (Math.PI / 180)).toString(),
+        OffsetX: ('(' + (OffsetX + (width / 2)).toString() + ' * #Scale#)'),
+        OffsetY: ('(' + (OffsetY + (height / 2)).toString() + ' * #Scale#)')
     };
 
     if (valueRemainder !== undefined) {
@@ -258,6 +258,28 @@ export const exportSkin = async (resourcePath: string, metadata: { name: string;
             measureName: 'Measure' + layer.name,
             options: options
         }
+    });
+  }
+
+  const addBarMeterLayerOneMeasure = (exporter: RainmeterSkinExporter, layer: any, adjustedX: number, adjustedY: number, width: number, height: number) => {
+    const barGroup = layer.fabricObject as Group;
+    const background = barGroup._objects[0] as Rect;
+    const foreground = barGroup._objects[1] as Rect;
+    exporter.addLayer({
+      meter: {
+        type: 'Bar',
+        name: layer.name,
+        measureName: 'Measure' + layer.name,
+        options: {
+          X: ('(' + adjustedX.toString() + ' * #Scale#)'),
+          Y: ('(' + adjustedY.toString() + ' * #Scale#)'),
+          W: ('(' + width.toString() + ' * #Scale#)'),
+          H: ('(' + height.toString() + ' * #Scale#)'),
+          BarOrientation: 'Horizontal',
+          BarColor: background.fill ? hexToRgb(background.fill, background.opacity) : '0,0,0,255',
+          SolidColor: foreground.fill ? hexToRgb(foreground.fill, foreground.opacity) : '0,0,0,255',
+        }
+      }
     });
   }
 
@@ -1080,6 +1102,31 @@ export const exportSkin = async (resourcePath: string, metadata: { name: string;
           Number(layer.properties.find(prop => prop.property === 'startAngle')?.value),
           Number(layer.properties.find(prop => prop.property === 'rotationAngle')?.value),
         )
+      }
+    } else if (layer.type === 'bar') {
+      if (layer.measure === "bar-cpu") {
+        exporter.addLayer({
+          measure: {
+            type: 'CPU',
+            name: 'Measure' + layer.name,
+            options: {
+            }
+          }
+        });
+        addBarMeterLayerOneMeasure(exporter, layer, adjustedX, adjustedY, layer.fabricObject.width, layer.fabricObject.height);
+      } else if (layer.measure === "bar-disk") {
+        exporter.addLayer({
+          measure: {
+            type: 'FreeDiskSpace',
+            name: 'Measure' + layer.name,
+            options: {
+              Drive: 'C:',
+              InvertMeasure: '1',
+              UpdateDivider: '5',
+            }
+          }
+        });
+        addBarMeterLayerOneMeasure(exporter, layer, adjustedX, adjustedY, layer.fabricObject.width, layer.fabricObject.height);
       }
     }
   });

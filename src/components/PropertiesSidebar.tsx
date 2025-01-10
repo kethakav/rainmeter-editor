@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { FabricImage, FabricObject, Group, IText } from 'fabric';
+import { FabricImage, FabricObject, Group, IText, Rect } from 'fabric';
 import { localFontManager } from '@/services/LocalFontManager';
 import { SingleFontLoad } from '@/services/singleFontLoad';
 import { Card, CardContent, CardHeader } from './ui/card';
@@ -55,6 +55,18 @@ const PropertiesSidebar: React.FC = () => {
     rotationAngle: '',
     source: '',
     measure: 'rotator-time-second',
+  });
+
+  const [barLayerProperties, setBarLayerProperties] = useState({
+    x: '',
+    y: '',
+    height: '',
+    width: '',
+    backgroundFill: '',
+    backgroundOpacity: '',
+    foregroundFill: '',
+    foregroundOpacity: '',
+    measure: 'static-image',
   });
 
   const [isInputFocused, setIsInputFocused] = useState(false);
@@ -172,6 +184,31 @@ const PropertiesSidebar: React.FC = () => {
             // For now, we'll reset them
             setMeasureType(type);
             setCategory(newCategory);
+          } else if (layer.type === 'bar') {
+            const bar = layer.fabricObject as FabricImage;
+            const measure = layer.measure || 'static-image';
+            console.log(bar.width);
+            console.log(bar.height);
+            const barGroup = layer.fabricObject as Group;
+            const background = barGroup._objects[0] as Rect;
+            const foreground = barGroup._objects[1] as Rect
+
+            setBarLayerProperties({
+              x: bar.left?.toString() || '0',
+              y: bar.top?.toString() || '0',
+              height: (bar.scaleY * bar.height)?.toString() || '100',
+              width: (bar.scaleX * bar.width)?.toString() || '100',
+              backgroundFill: background.fill?.toString() || '#000000',
+              backgroundOpacity: background.opacity?.toString() || '1',
+              foregroundFill: foreground.fill?.toString() || '#000000',
+              foregroundOpacity: foreground.opacity?.toString() || '1',
+              measure: measure,
+            });
+
+            // Optionally, manage measureType and category for images if applicable
+            // For now, we'll reset them
+            setMeasureType('');
+            setCategory('');
           }
         }
       }
@@ -727,6 +764,161 @@ const PropertiesSidebar: React.FC = () => {
       }
     }
   };
+
+  // Handlers for Bar Layer
+  const handleBarInputChange = (field: keyof typeof barLayerProperties, value: string) => {
+    setBarLayerProperties(prev => ({ ...prev, [field]: value }));
+    if (field === 'x' || field === 'y') {
+      updateBarLayerPosition(field, value);
+    }
+    if (field === 'width' || field === 'height') {
+      updateBarLayerDimensions(field, value);
+    }
+  };
+
+  const updateBarLayerPosition = (field: 'x' | 'y', value: string) => {
+    const canvas = layerManager.getCanvas();
+    const layer = layerManager.getLayers().find(layer => layer.id === selectedLayerId);
+
+    if (layer) {
+      const numValue = Number(value);
+
+      if (field === 'x') {
+        layer.fabricObject.left = numValue;
+      } else if (field === 'y') {
+        layer.fabricObject.top = numValue;
+      }
+
+      layer.fabricObject.setCoords();
+      canvas?.renderAll();
+    }
+  };
+
+  const updateBarLayerDimensions = (field: 'width' | 'height', value: string) => {
+    const canvas = layerManager.getCanvas();
+    const layer = layerManager.getLayers().find(layer => layer.id === selectedLayerId);
+
+    if (layer && layer.type === 'bar') {
+      const numValue = Number(value);
+      if (field === 'width') {
+        layer.fabricObject.scaleX = numValue / (layer.fabricObject.width || 1);
+        setBarLayerProperties(prev => ({
+          ...prev,
+          width: numValue.toString()
+        }));
+      } else if (field === 'height') {
+        layer.fabricObject.scaleY = numValue / (layer.fabricObject.height || 1);
+        setBarLayerProperties(prev => ({
+          ...prev,
+          height: numValue.toString()
+        }));
+      }
+
+      layer.fabricObject.setCoords();
+      canvas?.renderAll();
+    }
+  };
+
+  const handleBarKeyDown = (field: 'x' | 'y' | 'width' | 'height', event: KeyboardEvent<HTMLInputElement>) => {
+    const stepSize = event.shiftKey ? 10 : 1;
+
+    if (event.key === 'Enter') {
+      if (field === 'x' || field === 'y') {
+        updateBarLayerPosition(field, (event.target as HTMLInputElement).value);
+        (event.target as HTMLInputElement).blur();
+      } else if (field === 'width' || field === 'height') {
+        updateBarLayerDimensions(field, (event.target as HTMLInputElement).value);
+        (event.target as HTMLInputElement).blur();
+      }
+    } else if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+      event.preventDefault();
+
+      const currentValue = Number(barLayerProperties[field]);
+      const newValue = event.key === 'ArrowUp'
+        ? currentValue + stepSize
+        : currentValue - stepSize;
+
+      setBarLayerProperties(prev => ({
+        ...prev,
+        [field]: newValue.toString()
+      }));
+
+      if (field === 'x' || field === 'y') {
+        updateBarLayerPosition(field, newValue.toString());
+      } else if (field === 'width' || field === 'height') {
+        updateBarLayerDimensions(field, newValue.toString());
+      }
+    }
+  };
+
+  const handleBarBackgroundFillChange = (value: string) => {
+    console.log(value);
+    const canvas = layerManager.getCanvas();
+    const layer = layerManager.getLayers().find(layer => layer.id === selectedLayerId);
+
+    if (layer && layer.type === 'bar') {
+      console.log(layer.fabricObject);
+      const barGroup = layer.fabricObject as Group;
+      const backgroundRect = barGroup._objects[0] as Rect;
+      backgroundRect.set({ fill: value });
+      
+      setBarLayerProperties(prev => ({ ...prev, backgroundFill: value }));
+      canvas?.renderAll();
+    }
+  };
+
+  const handleBarBackgroundOpacityChange = (value: string) => {
+    const canvas = layerManager.getCanvas();
+    const layer = layerManager.getLayers().find(layer => layer.id === selectedLayerId);
+  
+    if (layer && layer.type === 'bar') {
+      const barGroup = layer.fabricObject as Group;
+      const backgroundRect = barGroup._objects[0] as Rect;
+      backgroundRect.set({ opacity: parseFloat(value) }); // Update opacity on the object
+  
+      setBarLayerProperties(prev => ({ ...prev, backgroundOpacity: value })); // Update state
+      canvas?.renderAll();
+    }
+  };
+
+  const handleBarForegroundFillChange = (value: string) => {
+    console.log(value);
+    const canvas = layerManager.getCanvas();
+    const layer = layerManager.getLayers().find(layer => layer.id === selectedLayerId);
+
+    if (layer && layer.type === 'bar') {
+      console.log(layer.fabricObject);
+      const barGroup = layer.fabricObject as Group;
+      const foregroundRect = barGroup._objects[1] as Rect;
+      foregroundRect.set({ fill: value });
+      
+      setBarLayerProperties(prev => ({ ...prev, foregroundFill: value }));
+      canvas?.renderAll();
+    }
+  };
+
+  const handleBarForegroundOpacityChange = (value: string) => {
+    const canvas = layerManager.getCanvas();
+    const layer = layerManager.getLayers().find(layer => layer.id === selectedLayerId);
+  
+    if (layer && layer.type === 'bar') {
+      const barGroup = layer.fabricObject as Group;
+      const foregroundRect = barGroup._objects[1] as Rect;
+      foregroundRect.set({ opacity: parseFloat(value) }); // Update opacity on the object
+  
+      setBarLayerProperties(prev => ({ ...prev, foregroundOpacity: value })); // Update state
+      canvas?.renderAll();
+    }
+  };  
+
+  const handleBarMeasureChange = (measure: string) => {
+    console.log(measure);
+    layerManager.updateMeasureForSelectedLayer(measure);
+    setBarLayerProperties(prev => ({
+      ...prev,
+      measure: measure
+    }));
+  }
 
   return (
     <>
@@ -1336,6 +1528,163 @@ const PropertiesSidebar: React.FC = () => {
                         </Select>
                       </div>
                     )}
+                  </div>
+                </div>
+              </ScrollArea>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Bar Props */}
+      {selectedLayerId && selectedLayer?.type === 'bar' && (
+        <Card className='w-50 m-4 rounded-2xl'>
+          <CardHeader className='font-semibold text-xl border-b'>Bar Properties</CardHeader>
+          <CardContent>
+            <div className="overflow-y-auto mt-6" style={{ maxHeight: 'calc(100vh - 256px)' }}>
+              <ScrollArea className="h-full">
+                <div className="px-4 pb-4">
+                  <div className="space-y-4">
+                    {/* X Position */}
+                    <div className="space-y-2">
+                      <Label htmlFor="bar-x">X</Label>
+                      <Input
+                        ref={xInputRef}
+                        id="bar-x"
+                        placeholder="X"
+                        value={barLayerProperties.x}
+                        onChange={e => handleBarInputChange('x', e.target.value)}
+                        onKeyDown={e => handleBarKeyDown('x', e)}
+                        onBlur={() => {
+                          updateBarLayerPosition('x', barLayerProperties.x);
+                          setIsInputFocused(false);
+                        }}
+                        onFocus={() => setIsInputFocused(true)}
+                      />
+                    </div>
+                    {/* Y Position */}
+                    <div className="space-y-2">
+                      <Label htmlFor="bar-y">Y</Label>
+                      <Input
+                        ref={yInputRef}
+                        id="bar-y"
+                        placeholder="Y"
+                        value={barLayerProperties.y}
+                        onChange={e => handleBarInputChange('y', e.target.value)}
+                        onKeyDown={e => handleBarKeyDown('y', e)}
+                        onBlur={() => {
+                          updateBarLayerPosition('y', barLayerProperties.y);
+                          setIsInputFocused(false);
+                        }}
+                        onFocus={() => setIsInputFocused(true)}
+                      />
+                    </div>
+                    {/* Width */}
+                    <div className="space-y-2">
+                      <Label htmlFor="bar-width">Width</Label>
+                      <Input
+                        id="bar-width"
+                        placeholder="Width"
+                        value={barLayerProperties.width}
+                        onChange={e => handleBarInputChange('width', e.target.value)}
+                        onKeyDown={e => handleBarKeyDown('width', e)}
+                        onBlur={() => {
+                          updateBarLayerDimensions('width', barLayerProperties.width);
+                          setIsInputFocused(false);
+                        }}
+                        onFocus={() => setIsInputFocused(true)}
+                      />
+                    </div>
+                    {/* Height */}
+                    <div className="space-y-2">
+                      <Label htmlFor="bar-height">Height</Label>
+                      <Input
+                        id="bar-height"
+                        placeholder="Height"
+                        value={barLayerProperties.height}
+                        onChange={e => handleBarInputChange('height', e.target.value)}
+                        onKeyDown={e => handleBarKeyDown('height', e)}
+                        onBlur={() => {
+                          updateBarLayerDimensions('height', barLayerProperties.height);
+                          setIsInputFocused(false);
+                        }}
+                        onFocus={() => setIsInputFocused(true)}
+                      />
+                    </div>
+
+                    {/* Background Fill */}
+                    <div className="space-y-2">
+                      <Label htmlFor="bar-background-color">Background Fill</Label>
+                      <Input
+                        id="bar-background-color"
+                        type="color"
+                        className="h-10 w-44"
+                        value={barLayerProperties.backgroundFill}
+                        onChange={e => handleBarBackgroundFillChange(e.target.value)}
+                      />
+                    </div>
+
+                    {/* background Opacity Slider */}
+                    <div className="space-y-2">
+                      <Label htmlFor="bar-background-opacity">Background Opacity</Label>
+                      <Slider
+                        id="bar-background-opacity"
+                        value={[parseFloat(barLayerProperties.backgroundOpacity)]}
+                        min={0}
+                        max={1}
+                        step={0.01}
+                        onValueChange={(value) => handleBarBackgroundOpacityChange(value[0].toString())}
+                        className="w-44"
+                      />
+                      <div className="text-sm text-muted-foreground">
+                        Opacity: {(parseFloat(barLayerProperties.backgroundOpacity) * 100).toFixed(0)}%
+                      </div>
+                    </div>
+                    
+                    {/* Bar Fill */}
+                    <div className="space-y-2">
+                      <Label htmlFor="bar-foreground-color">Bar Fill</Label>
+                      <Input
+                        id="bar-foreground-color"
+                        type="color"
+                        className="h-10 w-44"
+                        value={barLayerProperties.foregroundFill}
+                        onChange={e => handleBarForegroundFillChange(e.target.value)}
+                      />
+                    </div>
+
+                    {/* Foreground Opacity Slider */}
+                    <div className="space-y-2">
+                      <Label htmlFor="bar-foreground-opacity">Bar Opacity</Label>
+                      <Slider
+                        id="bar-foreground-opacity"
+                        value={[parseFloat(barLayerProperties.foregroundOpacity)]}
+                        min={0}
+                        max={1}
+                        step={0.01}
+                        onValueChange={(value) => handleBarForegroundOpacityChange(value[0].toString())}
+                        className="w-44"
+                      />
+                      <div className="text-sm text-muted-foreground">
+                        Opacity: {(parseFloat(barLayerProperties.foregroundOpacity) * 100).toFixed(0)}%
+                      </div>
+                    </div>
+                    
+                    {/* Measure */}
+                    <div className="space-y-2 w-44">
+                      <Label htmlFor="bar-measure-type-select" className="block text-sm font-medium text-gray-700 mb-1">
+                        Measure
+                      </Label>
+                      <Select onValueChange={handleBarMeasureChange} value={barLayerProperties.measure}>
+                        <SelectTrigger id="bar-measure-type-select" className="w-44">
+                          <SelectValue placeholder="Select Measure" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="bar-cpu">CPU</SelectItem>
+                          <SelectItem value="bar-disk">Disk</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                 </div>
               </ScrollArea>

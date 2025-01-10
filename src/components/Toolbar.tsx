@@ -42,6 +42,10 @@ const Toolbar: React.FC = () => {
     layerManager.setActiveTool('rotator');
   };
 
+  const handleAddBar = () => {
+    layerManager.setActiveTool('bar');
+  };
+
   const isSelected = (tool: string) => selectedTool === tool;  
 
   return (
@@ -116,39 +120,56 @@ const Toolbar: React.FC = () => {
                 size="icon"
               >
                 <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="w-4 h-4"
-      >
-        {/* Outer circle of speedometer */}
-        <circle cx="12" cy="12" r="9" />
-        
-        {/* Tick marks */}
-        {/* <path d="M12 3 L12 5" />
-        <path d="M17 5.5 L15.5 7" />
-        <path d="M21 12 L19 12" />
-        <path d="M17 18.5 L15.5 17" />
-        <path d="M12 21 L12 19" />
-        <path d="M7 18.5 L8.5 17" />
-        <path d="M3 12 L5 12" />
-        <path d="M7 5.5 L8.5 7" /> */}
-        
-        {/* Needle */}
-        <path d="M12 12 L16 7" strokeWidth="2.5" />
-        
-        {/* Center dot */}
-        <circle cx="12" cy="12" r="1" fill="currentColor" />
-      </svg>
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="w-4 h-4"
+                >
+                  {/* Outer circle of speedometer */}
+                  <circle cx="12" cy="12" r="9" />
+                  
+                  {/* Tick marks */}
+                  {/* <path d="M12 3 L12 5" />
+                  <path d="M17 5.5 L15.5 7" />
+                  <path d="M21 12 L19 12" />
+                  <path d="M17 18.5 L15.5 17" />
+                  <path d="M12 21 L12 19" />
+                  <path d="M7 18.5 L8.5 17" />
+                  <path d="M3 12 L5 12" />
+                  <path d="M7 5.5 L8.5 7" /> */}
+                  
+                  {/* Needle */}
+                  <path d="M12 12 L16 7" strokeWidth="2.5" />
+                  
+                  {/* Center dot */}
+                  <circle cx="12" cy="12" r="1" fill="currentColor" />
+                </svg>
                 <span className="sr-only">Rotator</span>
               </Button>
             </TooltipTrigger>
             <TooltipContent>
               <p>Rotator Tool</p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                onClick={handleAddBar}
+                variant={isSelected('bar') ? 'default' : 'ghost'}
+                size="icon"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                  <rect x="3" y="11" width="18" height="2" rx="1" ry="1"/>
+                </svg>
+                <span className="sr-only">Bar</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Bar Tool</p>
             </TooltipContent>
           </Tooltip>
         </div>

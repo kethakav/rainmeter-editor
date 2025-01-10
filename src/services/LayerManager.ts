@@ -12,6 +12,7 @@ enum LayerType {
   SHAPE = 'shape',
   IMAGE = 'image',
   ROTATOR = 'rotator',
+  BAR = 'bar',
 }
 
 interface LayerProperties {
@@ -51,6 +52,7 @@ class LayerManager {
       [LayerType.SHAPE]: 0,
       [LayerType.IMAGE]: 0,
       [LayerType.ROTATOR]: 0,
+      [LayerType.BAR]: 0,
     };
   
     private constructor() {} // Make the constructor private
@@ -101,6 +103,10 @@ class LayerManager {
       }
       if (this.activeTool === 'rotator') {
         this.addRotatorLayer(x, y);
+        this.setActiveTool('select');
+      }
+      if (this.activeTool === 'bar') {
+        this.addBarLayer(x, y);
         this.setActiveTool('select');
       }
     }
@@ -390,19 +396,6 @@ class LayerManager {
 
   async addRotatorLayer(x: number, y: number) {
     if (this.canvas) {
-        // // Open a file dialog to select an image
-        // const selectedFile = await open({
-        //     title: 'Select the Rotator Image',
-        //     filters: [
-        //         {
-        //             name: 'Images',
-        //             extensions: ['png'],
-        //         },
-        //     ],
-        // });
-
-        // Check if a file was selected
-      // Convert to the appropriate format (string if selectedFile is a File)
       const resPath = await resourceDir();
       const source = await join(resPath, '_up_/public/images/Needle.png');
       const assetUrl = convertFileSrc(source);
@@ -425,22 +418,6 @@ class LayerManager {
               scaleY: 1,
               hasControls: false,
           });
-          
-          // const rangeIndicator = new Circle({
-          //   radius: 40,
-          //   originX: 'center',
-          //   originY: 'center',
-          //   centeredScaling: true,
-          //   centeredRotation: true,
-          //   left: x,
-          //   top: y,
-          //   angle: 0,
-          //   startAngle: -0.3,
-          //   endAngle: 0,
-          //   stroke: '#0F0',
-          //   strokeWidth: 25,
-          //   fill: ''
-          // });
           const rangeIndicator = new Circle({
             radius: 40,
             originX: 'center',
@@ -476,21 +453,6 @@ class LayerManager {
             top: y,
             hasControls: false,
         });
-          // const rangeIndicator3 = new Circle({
-          //   radius: 40,
-          //   originX: 'center',
-          //   originY: 'center',
-          //   centeredScaling: true,
-          //   centeredRotation: true,
-          //   left: x,
-          //   top: y,
-          //   angle: 0,
-          //   startAngle: 0.3,
-          //   endAngle: 0.7,
-          //   stroke: '#00F',
-          //   strokeWidth: 25,
-          //   fill: ''
-          // });
           const UIElements = new Group([pivotPoint, rangeIndicator, indLine], {
             visible: true,
             hasControls: false,
@@ -534,7 +496,47 @@ class LayerManager {
     }
   }
 
-
+  async addBarLayer(x: number, y: number) {
+    if (this.canvas) {
+      try {
+        const background = new Rect({
+          left: x,
+          top: y,
+          width: 200,
+          height: 50,
+          fill: '#000',
+          hasControls: false,
+        });
+        const foreground = new Rect({
+          left: x,
+          top: y,
+          width: 150,
+          height: 50,
+          fill: '#FFA500',
+          hasControls: false,
+        });
+        const bar = new Group([background, foreground], {
+          centeredScaling: true,
+          centeredRotation: true,
+          hasControls: false,
+          perPixelTargetFind: true,
+        });
+        // const layerProperties: LayerProperties[] = [
+        //   {
+        //     property: "barOrientation",
+        //     value: 'horizontal'
+        //   },
+        //   {
+        //     property: "flip",
+        //     value: '0'
+        //   }
+        // ];
+        this.addLayer(LayerType.BAR, bar);
+      } catch (error) {
+        console.error("Error loading image:", error);
+      }
+    }
+  }
 
   subscribeToLayerChanges(listener: () => void) {
     this.listeners.push(listener);
@@ -756,6 +758,7 @@ class LayerManager {
       [LayerType.SHAPE]: 'Shape',
       [LayerType.IMAGE]: 'Image',
       [LayerType.ROTATOR]: 'Rotator',
+      [LayerType.BAR]: 'Bar',
     };
     
     return `${typeLabels[type]}${this.layerCounts[type]}`;
