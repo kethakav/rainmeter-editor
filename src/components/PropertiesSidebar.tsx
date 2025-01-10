@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { FabricImage, IText } from 'fabric';
+import { FabricImage, FabricObject, Group, IText } from 'fabric';
 import { localFontManager } from '@/services/LocalFontManager';
 import { SingleFontLoad } from '@/services/singleFontLoad';
 import { Card, CardContent, CardHeader } from './ui/card';
@@ -41,6 +41,20 @@ const PropertiesSidebar: React.FC = () => {
     rotation: '',
     source: '',
     measure: 'static-image',
+  });
+
+  const [rotatorLayerProperties, setRotatorLayerProperties] = useState({
+    x: '',
+    y: '',
+    height: '',
+    width: '',
+    offsetX: '',
+    offsetY: '',
+    rotation: '',
+    startAngle: '',
+    rotationAngle: '',
+    source: '',
+    measure: 'rotator-time-second',
   });
 
   const [isInputFocused, setIsInputFocused] = useState(false);
@@ -77,6 +91,16 @@ const PropertiesSidebar: React.FC = () => {
 
     if (measure.startsWith('disk-')) {
       return { type: 'disk', category: measure };
+    }
+
+    if (measure.startsWith('rotator-time-')) {
+      return { type: 'time', category: '' };
+    }
+    if (measure.startsWith('rotator-cpu-')) {
+      return { type: 'cpu', category: '' };
+    }
+    if (measure.startsWith('rotator-disk-')) {
+      return { type: 'disk', category: '' };
     }
 
     return { type: 'custom-text', category: '' };
@@ -125,6 +149,29 @@ const PropertiesSidebar: React.FC = () => {
             // For now, we'll reset them
             setMeasureType('');
             setCategory('');
+          } else if (layer.type === 'rotator') {
+            const rotator = layer.fabricObject as FabricImage;
+            const measure = layer.measure || 'rotator-time-second';
+            const { type, category: newCategory } = getMeasureTypeAndCategory(measure);
+
+            setRotatorLayerProperties({
+              x: rotator.left?.toString() || '0',
+              y: rotator.top?.toString() || '0',
+              height: (rotator.scaleY * rotator.height)?.toString() || '100',
+              width: (rotator.scaleX * rotator.width)?.toString() || '100',
+              offsetX: layer.properties.find(prop => prop.property === 'offsetX')?.value.toString() || '0',
+              offsetY: layer.properties.find(prop => prop.property === 'offsetY')?.value.toString() || '0',
+              startAngle: layer.properties.find(prop => prop.property === 'startAngle')?.value.toString() || '0',
+              rotationAngle: layer.properties.find(prop => prop.property === 'rotationAngle')?.value.toString() || '90',
+              rotation: rotator.angle?.toString() || '0',
+              source: layer.imageSrc || '',
+              measure: measure,
+            });
+
+            // Optionally, manage measureType and category for images if applicable
+            // For now, we'll reset them
+            setMeasureType(type);
+            setCategory(newCategory);
           }
         }
       }
@@ -239,7 +286,7 @@ const PropertiesSidebar: React.FC = () => {
     }
   };
 
-  const handleMeasureChange = (measure: string) => {
+  const handleTextMeasureChange = (measure: string) => {
     console.log(measure);
     layerManager.updateMeasureForSelectedLayer(measure);
     setTextLayerProperties(prev => ({
@@ -265,30 +312,51 @@ const PropertiesSidebar: React.FC = () => {
     }
   };
 
-  const handleMeasureTypeChange = (value: string) => {
+  const handleTextMeasureTypeChange = (value: string) => {
     setMeasureType(value);
     if (value === 'time-date') {
       setCategory('time');
-      handleMeasureChange('time-hour-minute-24');
+      handleTextMeasureChange('time-hour-minute-24');
     }
     if (value === 'cpu') {
       setCategory('cpu-average');
-      handleMeasureChange('cpu-average');
+      handleTextMeasureChange('cpu-average');
     }
     if (value === 'disk') {
       setCategory('disk-c-label');
-      handleMeasureChange('disk-c-label');
+      handleTextMeasureChange('disk-c-label');
     }
   };
 
-  const handleCategoryChange = (value: string) => {
+  const handleTextCategoryChange = (value: string) => {
     if (value === 'time') {
       setCategory('time');
-      handleMeasureChange('time-hour-minute-24');
+      handleTextMeasureChange('time-hour-minute-24');
     }
     if (value === 'date') {
       setCategory('date');
-      handleMeasureChange('date-yyyy-mm-dd');
+      handleTextMeasureChange('date-yyyy-mm-dd');
+    }
+  };
+
+  const handleRotatorMeasureChange = (measure: string) => {
+    console.log(measure);
+    layerManager.updateMeasureForSelectedLayer(measure);
+    setRotatorLayerProperties(prev => ({
+      ...prev,
+      measure: measure
+    }));
+  };
+
+  const handleRotatorMeasureTypeChange = (value: string) => {
+    setMeasureType(value);
+    // Set default measure for each type
+    if (value === 'time') {
+      handleRotatorMeasureChange('rotator-time-second');
+    } else if (value === 'cpu') {
+      handleRotatorMeasureChange('rotator-cpu-average');
+    } else if (value === 'disk') {
+      handleRotatorMeasureChange('rotator-disk-c-usage');
     }
   };
 
@@ -492,6 +560,167 @@ const PropertiesSidebar: React.FC = () => {
     }
   };
 
+  // Handlers for Rotator Layer
+  const handleRotatorInputChange = (field: keyof typeof rotatorLayerProperties, value: string) => {
+    setRotatorLayerProperties(prev => ({ ...prev, [field]: value }));
+    if (field === 'x' || field === 'y') {
+      updateRotatorLayerPosition(field, value);
+    }
+    if (field === 'width' || field === 'height') {
+      updateRotatorLayerDimensions(field, value);
+    }
+    if (field === 'rotation') {
+      updateRotatorLayerRotation(value);
+    }
+    if (field === 'offsetX' || field === 'offsetY') {
+      updateRotatorLayerOffset(field, value);
+    }
+    if (field === 'startAngle' || field === 'rotationAngle') {
+      updateRotatorLayerRotationAngles(field, value);
+    }
+  };
+
+  const updateRotatorLayerPosition = (field: 'x' | 'y', value: string) => {
+    const canvas = layerManager.getCanvas();
+    const layer = layerManager.getLayers().find(layer => layer.id === selectedLayerId);
+
+    if (layer) {
+      const numValue = Number(value);
+
+      if (field === 'x') {
+        layer.fabricObject.left = numValue;
+      } else if (field === 'y') {
+        layer.fabricObject.top = numValue;
+      }
+
+      layer.fabricObject.setCoords();
+      canvas?.renderAll();
+    }
+  };
+
+  const updateRotatorLayerDimensions = (field: 'width' | 'height', value: string) => {
+    const canvas = layerManager.getCanvas();
+    const layer = layerManager.getLayers().find(layer => layer.id === selectedLayerId);
+
+    if (layer && layer.type === 'rotator') {
+      const numValue = Number(value);
+      if (field === 'width') {
+        layer.fabricObject.scaleX = numValue / (layer.fabricObject.width || 1);
+        setRotatorLayerProperties(prev => ({
+          ...prev,
+          width: numValue.toString()
+        }));
+      } else if (field === 'height') {
+        layer.fabricObject.scaleY = numValue / (layer.fabricObject.height || 1);
+        setRotatorLayerProperties(prev => ({
+          ...prev,
+          height: numValue.toString()
+        }));
+      }
+
+      layer.fabricObject.setCoords();
+      canvas?.renderAll();
+    }
+  };
+
+  const updateRotatorLayerRotation = (value: string) => {
+    const canvas = layerManager.getCanvas();
+    const layer = layerManager.getLayers().find(layer => layer.id === selectedLayerId);
+
+    if (layer && layer.type === 'rotator') {
+      const numValue = Number(value);
+      layer.fabricObject.set('angle', numValue);
+      layer.fabricObject.setCoords();
+      canvas?.renderAll();
+    }
+  };
+
+  const updateRotatorLayerOffset = (field: 'offsetX' | 'offsetY', value: string) => {
+    const canvas = layerManager.getCanvas();
+    const layer = layerManager.getLayers().find(layer => layer.id === selectedLayerId);
+
+    if (layer && layer.type === 'rotator') {
+      const numValue = Number(value);
+      const prop = layer.properties.find(prop => prop.property === field);
+      if (prop) {
+        prop.value = numValue.toString();
+      } else {
+        layer.properties.push({ property: field, value: numValue.toString() });
+      }
+      // update fabricobject.UIElements
+      if (field === 'offsetX') {
+        layer.UIElements.set('left', layer.fabricObject.left + numValue);
+      } else if (field === 'offsetY') {
+        layer.UIElements.set('top', layer.fabricObject.top + numValue);
+      }
+      layer.fabricObject.setCoords();
+      canvas?.renderAll();
+    }
+  };
+
+  const updateRotatorLayerRotationAngles = (field: 'startAngle' | 'rotationAngle', value: string) => {
+    const canvas = layerManager.getCanvas();
+    const layer = layerManager.getLayers().find(layer => layer.id === selectedLayerId);
+
+    if (layer && layer.type === 'rotator') {
+      const numValue = Number(value);
+      const prop = layer.properties.find(prop => prop.property === field);
+      if (prop) {
+        prop.value = numValue.toString();
+      } else {
+        layer.properties.push({ property: field, value: numValue.toString() });
+      }
+
+      const UIGroup = layer.UIElements as Group;
+      const rangeIndicator = UIGroup._objects[1] as FabricObject;
+
+      if (field === 'startAngle') {
+        rangeIndicator.set('startAngle', numValue);
+      } else if (field === 'rotationAngle') {
+        rangeIndicator.set('endAngle', numValue);
+      }
+      layer.fabricObject.setCoords();
+      canvas?.renderAll();
+    }
+  };
+
+  const handleRotatorKeyDown = (field: 'x' | 'y' | 'width' | 'height' | 'rotation', event: KeyboardEvent<HTMLInputElement>) => {
+    const stepSize = event.shiftKey ? 10 : 1;
+
+    if (event.key === 'Enter') {
+      if (field === 'x' || field === 'y') {
+        updateRotatorLayerPosition(field, (event.target as HTMLInputElement).value);
+        (event.target as HTMLInputElement).blur();
+      } else if (field === 'width' || field === 'height') {
+        updateRotatorLayerDimensions(field, (event.target as HTMLInputElement).value);
+        (event.target as HTMLInputElement).blur();
+      } else if (field === 'rotation') {
+        updateRotatorLayerRotation((event.target as HTMLInputElement).value);
+        (event.target as HTMLInputElement).blur();
+      }
+    } else if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+      event.preventDefault();
+
+      const currentValue = Number(rotatorLayerProperties[field]);
+      const newValue = event.key === 'ArrowUp'
+        ? currentValue + stepSize
+        : currentValue - stepSize;
+
+      setRotatorLayerProperties(prev => ({
+        ...prev,
+        [field]: newValue.toString()
+      }));
+
+      if (field === 'x' || field === 'y') {
+        updateRotatorLayerPosition(field, newValue.toString());
+      } else if (field === 'width' || field === 'height') {
+        updateRotatorLayerDimensions(field, newValue.toString());
+      } else if (field === 'rotation') {
+        updateRotatorLayerRotation(newValue.toString());
+      }
+    }
+  };
+
   return (
     <>
       {selectedLayerId && selectedLayer?.type === 'text' && (
@@ -630,7 +859,7 @@ const PropertiesSidebar: React.FC = () => {
                       <Label htmlFor="text-measure-type-select" className="block text-sm font-medium text-gray-700 mb-1">
                         Measure Type
                       </Label>
-                      <Select onValueChange={handleMeasureTypeChange} value={measureType}>
+                      <Select onValueChange={handleTextMeasureTypeChange} value={measureType}>
                         <SelectTrigger id="measure-type-select" className="w-44">
                           <SelectValue placeholder="Select Measure Type" />
                         </SelectTrigger>
@@ -649,7 +878,7 @@ const PropertiesSidebar: React.FC = () => {
                         <Label htmlFor="text-category-select" className="block text-sm font-medium text-gray-700 mb-1 w-44">
                           Category
                         </Label>
-                        <Select onValueChange={handleCategoryChange} value={category}>
+                        <Select onValueChange={handleTextCategoryChange} value={category}>
                           <SelectTrigger id="text-category-select" className="w-44">
                             <SelectValue placeholder="Select Category" />
                           </SelectTrigger>
@@ -666,7 +895,7 @@ const PropertiesSidebar: React.FC = () => {
                         <Label htmlFor="text-category-select" className="block text-sm font-medium text-gray-700 mb-1">
                           Category
                         </Label>
-                        <Select onValueChange={handleMeasureChange} value={category}>
+                        <Select onValueChange={handleTextMeasureChange} value={category}>
                           <SelectTrigger id="text-category-select" className="w-44">
                             <SelectValue placeholder="Select Category" />
                           </SelectTrigger>
@@ -690,7 +919,7 @@ const PropertiesSidebar: React.FC = () => {
                         <Label htmlFor="text-category-select" className="block text-sm font-medium text-gray-700 mb-1 w-44">
                           Disk
                         </Label>
-                        <Select onValueChange={handleMeasureChange} value={category}>
+                        <Select onValueChange={handleTextMeasureChange} value={category}>
                           <SelectTrigger id="text-category-select" className="w-44">
                             <SelectValue placeholder="Select Disk Property" />
                           </SelectTrigger>
@@ -710,7 +939,7 @@ const PropertiesSidebar: React.FC = () => {
                         <Label htmlFor="text-measure-select" className="block text-sm font-medium text-gray-700 mb-1 w-44">
                           Measure
                         </Label>
-                        <Select onValueChange={handleMeasureChange} value={textLayerProperties.measure}>
+                        <Select onValueChange={handleTextMeasureChange} value={textLayerProperties.measure}>
                           <SelectTrigger id="text-measure-select" className="w-44">
                             <SelectValue placeholder="Select Measure" />
                           </SelectTrigger>
@@ -732,7 +961,7 @@ const PropertiesSidebar: React.FC = () => {
                         <Label htmlFor="text-measure-select" className="block text-sm font-medium text-gray-700 mb-1">
                           Measure
                         </Label>
-                        <Select onValueChange={handleMeasureChange} value={textLayerProperties.measure}>
+                        <Select onValueChange={handleTextMeasureChange} value={textLayerProperties.measure}>
                           <SelectTrigger id="text-measure-select" className="w-44">
                             <SelectValue placeholder="Select Measure" />
                           </SelectTrigger>
@@ -849,27 +1078,237 @@ const PropertiesSidebar: React.FC = () => {
                         onFocus={() => setIsInputFocused(true)}
                       />
                     </div>
-                    {/* Measure Type (if applicable for images) */}
-                    {/* Uncomment and modify if image layers have measure types */}
-                    {/* 
+                    
+                  </div>
+                </div>
+              </ScrollArea>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Rotator props */}
+      {selectedLayerId && selectedLayer?.type === 'rotator' && (
+        <Card className='w-50 m-4 rounded-2xl'>
+          <CardHeader className='font-semibold text-xl border-b'>Rotator Properties</CardHeader>
+          <CardContent>
+            <div className="overflow-y-auto mt-6" style={{ maxHeight: 'calc(100vh - 256px)' }}>
+              <ScrollArea className="h-full">
+                <div className="px-4 pb-4">
+                  <div className="space-y-4">
+                    {/* X Position */}
                     <div className="space-y-2">
-                      <Label htmlFor="image-measure-type-select" className="block text-sm font-medium text-gray-700 mb-1">
+                      <Label htmlFor="rotator-x">X</Label>
+                      <Input
+                        ref={xInputRef}
+                        id="rotator-x"
+                        placeholder="X"
+                        value={rotatorLayerProperties.x}
+                        onChange={e => handleRotatorInputChange('x', e.target.value)}
+                        onKeyDown={e => handleRotatorKeyDown('x', e)}
+                        onBlur={() => {
+                          updateRotatorLayerPosition('x', rotatorLayerProperties.x);
+                          setIsInputFocused(false);
+                        }}
+                        onFocus={() => setIsInputFocused(true)}
+                      />
+                    </div>
+                    {/* Y Position */}
+                    <div className="space-y-2">
+                      <Label htmlFor="rotator-y">Y</Label>
+                      <Input
+                        ref={yInputRef}
+                        id="rotator-y"
+                        placeholder="Y"
+                        value={rotatorLayerProperties.y}
+                        onChange={e => handleRotatorInputChange('y', e.target.value)}
+                        onKeyDown={e => handleRotatorKeyDown('y', e)}
+                        onBlur={() => {
+                          updateRotatorLayerPosition('y', rotatorLayerProperties.y);
+                          setIsInputFocused(false);
+                        }}
+                        onFocus={() => setIsInputFocused(true)}
+                      />
+                    </div>
+                    {/* Width */}
+                    <div className="space-y-2">
+                      <Label htmlFor="rotator-width">Width</Label>
+                      <Input
+                        id="rotator-width"
+                        placeholder="Width"
+                        value={rotatorLayerProperties.width}
+                        onChange={e => handleRotatorInputChange('width', e.target.value)}
+                        onKeyDown={e => handleRotatorKeyDown('width', e)}
+                        onBlur={() => {
+                          updateRotatorLayerDimensions('width', rotatorLayerProperties.width);
+                          setIsInputFocused(false);
+                        }}
+                        onFocus={() => setIsInputFocused(true)}
+                      />
+                    </div>
+                    {/* Height */}
+                    <div className="space-y-2">
+                      <Label htmlFor="rotator-height">Height</Label>
+                      <Input
+                        id="rotator-height"
+                        placeholder="Height"
+                        value={rotatorLayerProperties.height}
+                        onChange={e => handleRotatorInputChange('height', e.target.value)}
+                        onKeyDown={e => handleRotatorKeyDown('height', e)}
+                        onBlur={() => {
+                          updateRotatorLayerDimensions('height', rotatorLayerProperties.height);
+                          setIsInputFocused(false);
+                        }}
+                        onFocus={() => setIsInputFocused(true)}
+                      />
+                    </div>
+                    {/* Rotation */}
+                    <div className="space-y-2">
+                      <Label htmlFor="rotator-rotation">Rotation</Label>
+                      <Input
+                        id="rotator-rotation"
+                        placeholder="Rotation"
+                        value={rotatorLayerProperties.rotation}
+                        onChange={e => handleRotatorInputChange('rotation', e.target.value)}
+                        onKeyDown={e => handleRotatorKeyDown('rotation', e)}
+                        onBlur={() => {
+                          updateRotatorLayerRotation(rotatorLayerProperties.rotation);
+                          setIsInputFocused(false);
+                        }}
+                        onFocus={() => setIsInputFocused(true)}
+                      />
+                    </div>
+                    {/* OffsetX */}
+                    <div className="space-y-2">
+                      <Label htmlFor="rotator-offset-x">Offset X</Label>
+                      <Input
+                        id="rotator-offset-x"
+                        placeholder="Offset X"
+                        value={rotatorLayerProperties.offsetX}
+                        onChange={e => handleRotatorInputChange('offsetX', e.target.value)}
+                        onBlur={() => {
+                          setIsInputFocused(false);
+                        }}
+                        onFocus={() => setIsInputFocused(true)}
+                      />
+                    </div>
+                    {/* OffsetX */}
+                    <div className="space-y-2">
+                      <Label htmlFor="rotator-offset-y">Offset Y</Label>
+                      <Input
+                        id="rotator-offset-y"
+                        placeholder="Offset Y"
+                        value={rotatorLayerProperties.offsetY}
+                        onChange={e => handleRotatorInputChange('offsetY', e.target.value)}
+                        onBlur={() => {
+                          setIsInputFocused(false);
+                        }}
+                        onFocus={() => setIsInputFocused(true)}
+                      />
+                    </div>
+                    {/* Start Angle */}
+                    <div className="space-y-2">
+                      <Label htmlFor="rotator-start-angle">Start Angle</Label>
+                      <Input
+                        id="rotator-start-angle"
+                        placeholder="Start Angle"
+                        value={rotatorLayerProperties.startAngle}
+                        onChange={e => handleRotatorInputChange('startAngle', e.target.value)}
+                        onBlur={() => {
+                          setIsInputFocused(false);
+                        }}
+                        onFocus={() => setIsInputFocused(true)}
+                      />
+                    </div>
+                    {/* Rotation Angle */}
+                    <div className="space-y-2">
+                      <Label htmlFor="rotator-rotation-angle">Rotation Angle</Label>
+                      <Input
+                        id="rotator-rotation-angle"
+                        placeholder="Rotation Angle"
+                        value={rotatorLayerProperties.rotationAngle}
+                        onChange={e => handleRotatorInputChange('rotationAngle', e.target.value)}
+                        onBlur={() => {
+                          setIsInputFocused(false);
+                        }}
+                        onFocus={() => setIsInputFocused(true)}
+                      />
+                    </div>
+                    {/* Measure Type */}
+                    <div className="space-y-2 w-44">
+                      <Label htmlFor="rotator-measure-type-select" className="block text-sm font-medium text-gray-700 mb-1">
                         Measure Type
                       </Label>
-                      <Select onValueChange={handleMeasureTypeChange} value={measureType}>
-                        <SelectTrigger id="image-measure-type-select">
+                      <Select onValueChange={handleRotatorMeasureTypeChange} value={measureType}>
+                        <SelectTrigger id="rotator-measure-type-select" className="w-44">
                           <SelectValue placeholder="Select Measure Type" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="custom-text">Custom Text</SelectItem>
-                          <SelectItem value="time-date">Time/Date</SelectItem>
+                          <SelectItem value="time">Time</SelectItem>
                           <SelectItem value="cpu">CPU</SelectItem>
                           <SelectItem value="disk">Disk</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
-                    */}
-                    {/* Additional properties based on measureType and category can be added here */}
+
+                    {/* Measures based on Type */}
+                    {measureType === 'time' && (
+                      <div className="space-y-2">
+                        <Label htmlFor="rotator-measure-select" className="block text-sm font-medium text-gray-700 mb-1 w-44">
+                          Time Measure
+                        </Label>
+                        <Select onValueChange={handleRotatorMeasureChange} value={rotatorLayerProperties.measure}>
+                          <SelectTrigger id="rotator-measure-select" className="w-44">
+                            <SelectValue placeholder="Select Time Measure" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="rotator-time-second">Seconds</SelectItem>
+                            <SelectItem value="rotator-time-minute">Minutes</SelectItem>
+                            <SelectItem value="rotator-time-hour">Hours</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+
+                    {measureType === 'cpu' && (
+                      <div className="space-y-2">
+                        <Label htmlFor="rotator-measure-select" className="block text-sm font-medium text-gray-700 mb-1 w-44">
+                          CPU Measure
+                        </Label>
+                        <Select onValueChange={handleRotatorMeasureChange} value={rotatorLayerProperties.measure}>
+                          <SelectTrigger id="rotator-measure-select" className="w-44">
+                            <SelectValue placeholder="Select CPU Measure" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="rotator-cpu-average">Average CPU Usage</SelectItem>
+                            <SelectItem value="rotator-cpu-core-1">Core 1 Usage</SelectItem>
+                            <SelectItem value="rotator-cpu-core-2">Core 2 Usage</SelectItem>
+                            <SelectItem value="rotator-cpu-core-3">Core 3 Usage</SelectItem>
+                            <SelectItem value="rotator-cpu-core-4">Core 4 Usage</SelectItem>
+                            <SelectItem value="rotator-cpu-core-5">Core 5 Usage</SelectItem>
+                            <SelectItem value="rotator-cpu-core-6">Core 6 Usage</SelectItem>
+                            <SelectItem value="rotator-cpu-core-7">Core 7 Usage</SelectItem>
+                            <SelectItem value="rotator-cpu-core-8">Core 8 Usage</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+
+                    {measureType === 'disk' && (
+                      <div className="space-y-2">
+                        <Label htmlFor="rotator-measure-select" className="block text-sm font-medium text-gray-700 mb-1 w-44">
+                          Disk Measure
+                        </Label>
+                        <Select onValueChange={handleRotatorMeasureChange} value={rotatorLayerProperties.measure}>
+                          <SelectTrigger id="rotator-measure-select" className="w-44">
+                            <SelectValue placeholder="Select Disk Measure" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="rotator-disk-c-usage">Disk C Usage</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
                   </div>
                 </div>
               </ScrollArea>

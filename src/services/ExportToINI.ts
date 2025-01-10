@@ -32,7 +32,7 @@ interface RainmeterMeasure {
 }
 
 interface RainmeterMeter {
-  type: 'String' | 'Image' | 'Shape';
+  type: 'String' | 'Image' | 'Shape' | 'Rotator';
   name: string;
   measureName?: string;
   measureName2?: string;
@@ -233,6 +233,33 @@ export const exportSkin = async (resourcePath: string, metadata: { name: string;
       }
     });
   };
+
+  const addRotatorMeterLayerOneMeasure = (exporter: RainmeterSkinExporter, layer: any, adjustedX: number, adjustedY: number, width: number, height: number, ImageName: string, OffsetX: number, OffsetY: number, startAngle: number, endAngle: number, valueRemainder?: number) => {
+    const options: any = {
+        ImageName: ImageName,
+        W: ('(' + (width).toString() + ' * #Scale#)'),
+        H: ('(' + (height).toString() + ' * #Scale#)'),
+        X: ('(' + adjustedX.toString() + ' * #Scale#)'),
+        Y: ('(' + adjustedY.toString() + ' * #Scale#)'),
+        StartAngle: (startAngle * (Math.PI / 180)).toString(),
+        RotationAngle: (endAngle * (Math.PI / 180)).toString(),
+        OffsetX: ('(' + OffsetX.toString() + ' * #Scale#)'),
+        OffsetY: ('(' + OffsetY.toString() + ' * #Scale#)')
+    };
+
+    if (valueRemainder !== undefined) {
+        options.ValueRemainder = valueRemainder.toString();
+    }
+
+    exporter.addLayer({
+        meter: {
+            type: 'Rotator',
+            name: layer.name,
+            measureName: 'Measure' + layer.name,
+            options: options
+        }
+    });
+  }
 
   layers.forEach(layer => {
     const adjustedX = layer.fabricObject.left - minX; // Adjust x value
@@ -710,23 +737,350 @@ export const exportSkin = async (resourcePath: string, metadata: { name: string;
         }
       } 
     } else if (layer.type === 'image') {
-        if (!imagesToCopy.includes(layer.imageSrc)) {
-          imagesToCopy.push(layer.imageSrc); // Track the image
+      if (!imagesToCopy.includes(layer.imageSrc)) {
+        imagesToCopy.push(layer.imageSrc); // Track the image
+      }
+      exporter.addLayer({
+        meter: {
+          type: 'Image',
+          name: layer.name,
+          options: {
+            ImageName: '#@#Images/' + imagesToCopy.findIndex(img => img === layer.imageSrc).toString() + '.png',
+            W: ('(' + (layer.fabricObject.scaleX * layer.fabricObject.width).toString() + ' * #Scale#)'),
+            H: ('(' + (layer.fabricObject.scaleY * layer.fabricObject.height).toString() + ' * #Scale#)'),
+            X: ('(' + (adjustedX).toString() + ' * #Scale#)'),
+            Y: ('(' + (adjustedY).toString() + ' * #Scale#)'),
+            Angle: (layer.fabricObject.angle * (Math.PI / 180)).toString(),
+          }
         }
+      });
+    } else if (layer.type === 'rotator') {
+      if (!imagesToCopy.includes(layer.imageSrc)) {
+        imagesToCopy.push(layer.imageSrc); // Track the image
+      }
+      if (layer.measure === 'rotator-time-second') {
         exporter.addLayer({
-          meter: {
-            type: 'Image',
-            name: layer.name,
+          measure: {
+            type: 'Time',
+            name: 'Measure' + layer.name,
             options: {
-              ImageName: '#@#Images/' + imagesToCopy.findIndex(img => img === layer.imageSrc).toString() + '.png',
-              W: ('(' + (layer.fabricObject.scaleX * layer.fabricObject.width).toString() + ' * #Scale#)'),
-              H: ('(' + (layer.fabricObject.scaleY * layer.fabricObject.height).toString() + ' * #Scale#)'),
-              X: ('(' + (adjustedX).toString() + ' * #Scale#)'),
-              Y: ('(' + (adjustedY).toString() + ' * #Scale#)'),
-              Angle: (layer.fabricObject.angle * (Math.PI / 180)).toString(),
             }
           }
-        });
+        })
+        addRotatorMeterLayerOneMeasure(
+          exporter,
+          layer,
+          adjustedX,
+          adjustedY,
+          layer.fabricObject.width,
+          layer.fabricObject.height,
+          '#@#Images/' + imagesToCopy.findIndex(img => img === layer.imageSrc).toString() + '.png',
+          Number(layer.properties.find(prop => prop.property === 'offsetX')?.value),
+          Number(layer.properties.find(prop => prop.property === 'offsetY')?.value),
+          Number(layer.properties.find(prop => prop.property === 'startAngle')?.value),
+          Number(layer.properties.find(prop => prop.property === 'rotationAngle')?.value),
+          60
+        )
+      }
+      else if (layer.measure === 'rotator-time-minute') {
+        exporter.addLayer({
+          measure: {
+            type: 'Time',
+            name: 'Measure' + layer.name,
+            options: {
+            }
+          }
+        })
+        addRotatorMeterLayerOneMeasure(
+          exporter,
+          layer,
+          adjustedX,
+          adjustedY,
+          layer.fabricObject.width,
+          layer.fabricObject.height,
+          '#@#Images/' + imagesToCopy.findIndex(img => img === layer.imageSrc).toString() + '.png',
+          Number(layer.properties.find(prop => prop.property === 'offsetX')?.value),
+          Number(layer.properties.find(prop => prop.property === 'offsetY')?.value),
+          Number(layer.properties.find(prop => prop.property === 'startAngle')?.value),
+          Number(layer.properties.find(prop => prop.property === 'rotationAngle')?.value),
+          3600
+        )
+      } else if (layer.measure === 'rotator-time-hour') {
+        exporter.addLayer({
+          measure: {
+            type: 'Time',
+            name: 'Measure' + layer.name,
+            options: {
+            }
+          }
+        })
+        addRotatorMeterLayerOneMeasure(
+          exporter,
+          layer,
+          adjustedX,
+          adjustedY,
+          layer.fabricObject.width,
+          layer.fabricObject.height,
+          '#@#Images/' + imagesToCopy.findIndex(img => img === layer.imageSrc).toString() + '.png',
+          Number(layer.properties.find(prop => prop.property === 'offsetX')?.value),
+          Number(layer.properties.find(prop => prop.property === 'offsetY')?.value),
+          Number(layer.properties.find(prop => prop.property === 'startAngle')?.value),
+          Number(layer.properties.find(prop => prop.property === 'rotationAngle')?.value),
+          43200
+        )
+      } else if (layer.measure === 'rotator-cpu-average') {
+        exporter.addLayer({
+          measure: {
+            type: 'CPU',
+            name: 'Measure' + layer.name,
+            options: {
+            }
+          }
+        })
+        addRotatorMeterLayerOneMeasure(
+          exporter,
+          layer,
+          adjustedX,
+          adjustedY,
+          layer.fabricObject.width,
+          layer.fabricObject.height,
+          '#@#Images/' + imagesToCopy.findIndex(img => img === layer.imageSrc).toString() + '.png',
+          Number(layer.properties.find(prop => prop.property === 'offsetX')?.value),
+          Number(layer.properties.find(prop => prop.property === 'offsetY')?.value),
+          Number(layer.properties.find(prop => prop.property === 'startAngle')?.value),
+          Number(layer.properties.find(prop => prop.property === 'rotationAngle')?.value),
+        )
+      } else if (layer.measure === 'rotator-cpu-core-1') {
+        exporter.addLayer({
+          measure: {
+            type: 'CPU',
+            name: 'Measure' + layer.name,
+            options: {
+              Processor: '1',
+            }
+          }
+        })
+        addRotatorMeterLayerOneMeasure(
+          exporter,
+          layer,
+          adjustedX,
+          adjustedY,
+          layer.fabricObject.width,
+          layer.fabricObject.height,
+          '#@#Images/' + imagesToCopy.findIndex(img => img === layer.imageSrc).toString() + '.png',
+          Number(layer.properties.find(prop => prop.property === 'offsetX')?.value),
+          Number(layer.properties.find(prop => prop.property === 'offsetY')?.value),
+          Number(layer.properties.find(prop => prop.property === 'startAngle')?.value),
+          Number(layer.properties.find(prop => prop.property === 'rotationAngle')?.value),
+        )
+      } else if (layer.measure === 'rotator-cpu-core-2') {
+        exporter.addLayer({
+          measure: {
+            type: 'CPU',
+            name: 'Measure' + layer.name,
+            options: {
+              Processor: '2',
+            }
+          }
+        })
+        addRotatorMeterLayerOneMeasure(
+          exporter,
+          layer,
+          adjustedX,
+          adjustedY,
+          layer.fabricObject.width,
+          layer.fabricObject.height,
+          '#@#Images/' + imagesToCopy.findIndex(img => img === layer.imageSrc).toString() + '.png',
+          Number(layer.properties.find(prop => prop.property === 'offsetX')?.value),
+          Number(layer.properties.find(prop => prop.property === 'offsetY')?.value),
+          Number(layer.properties.find(prop => prop.property === 'startAngle')?.value),
+          Number(layer.properties.find(prop => prop.property === 'rotationAngle')?.value),
+        )
+      } else if (layer.measure === 'rotator-cpu-core-3') {
+        exporter.addLayer({
+          measure: {
+            type: 'CPU',
+            name: 'Measure' + layer.name,
+            options: {
+              Processor: '3',
+            }
+          }
+        })
+        addRotatorMeterLayerOneMeasure(
+          exporter,
+          layer,
+          adjustedX,
+          adjustedY,
+          layer.fabricObject.width,
+          layer.fabricObject.height,
+          '#@#Images/' + imagesToCopy.findIndex(img => img === layer.imageSrc).toString() + '.png',
+          Number(layer.properties.find(prop => prop.property === 'offsetX')?.value),
+          Number(layer.properties.find(prop => prop.property === 'offsetY')?.value),
+          Number(layer.properties.find(prop => prop.property === 'startAngle')?.value),
+          Number(layer.properties.find(prop => prop.property === 'rotationAngle')?.value),
+        )
+      } else if (layer.measure === 'rotator-cpu-core-4') {
+        exporter.addLayer({
+          measure: {
+            type: 'CPU',
+            name: 'Measure' + layer.name,
+            options: {
+              Processor: '4',
+            }
+          }
+        })
+        addRotatorMeterLayerOneMeasure(
+          exporter,
+          layer,
+          adjustedX,
+          adjustedY,
+          layer.fabricObject.width,
+          layer.fabricObject.height,
+          '#@#Images/' + imagesToCopy.findIndex(img => img === layer.imageSrc).toString() + '.png',
+          Number(layer.properties.find(prop => prop.property === 'offsetX')?.value),
+          Number(layer.properties.find(prop => prop.property === 'offsetY')?.value),
+          Number(layer.properties.find(prop => prop.property === 'startAngle')?.value),
+          Number(layer.properties.find(prop => prop.property === 'rotationAngle')?.value),
+        )
+      } else if (layer.measure === 'rotator-cpu-core-5') {
+        exporter.addLayer({
+          measure: {
+            type: 'CPU',
+            name: 'Measure' + layer.name,
+            options: {
+              Processor: '5',
+            }
+          }
+        })
+        addRotatorMeterLayerOneMeasure(
+          exporter,
+          layer,
+          adjustedX,
+          adjustedY,
+          layer.fabricObject.width,
+          layer.fabricObject.height,
+          '#@#Images/' + imagesToCopy.findIndex(img => img === layer.imageSrc).toString() + '.png',
+          Number(layer.properties.find(prop => prop.property === 'offsetX')?.value),
+          Number(layer.properties.find(prop => prop.property === 'offsetY')?.value),
+          Number(layer.properties.find(prop => prop.property === 'startAngle')?.value),
+          Number(layer.properties.find(prop => prop.property === 'rotationAngle')?.value),
+        )
+      } else if (layer.measure === 'rotator-cpu-core-6') {
+        exporter.addLayer({
+          measure: {
+            type: 'CPU',
+            name: 'Measure' + layer.name,
+            options: {
+              Processor: '6',
+            }
+          }
+        })
+        addRotatorMeterLayerOneMeasure(
+          exporter,
+          layer,
+          adjustedX,
+          adjustedY,
+          layer.fabricObject.width,
+          layer.fabricObject.height,
+          '#@#Images/' + imagesToCopy.findIndex(img => img === layer.imageSrc).toString() + '.png',
+          Number(layer.properties.find(prop => prop.property === 'offsetX')?.value),
+          Number(layer.properties.find(prop => prop.property === 'offsetY')?.value),
+          Number(layer.properties.find(prop => prop.property === 'startAngle')?.value),
+          Number(layer.properties.find(prop => prop.property === 'rotationAngle')?.value),
+        )
+      } else if (layer.measure === 'rotator-cpu-core-7') {
+        exporter.addLayer({
+          measure: {
+            type: 'CPU',
+            name: 'Measure' + layer.name,
+            options: {
+              Processor: '7',
+            }
+          }
+        })
+        addRotatorMeterLayerOneMeasure(
+          exporter,
+          layer,
+          adjustedX,
+          adjustedY,
+          layer.fabricObject.width,
+          layer.fabricObject.height,
+          '#@#Images/' + imagesToCopy.findIndex(img => img === layer.imageSrc).toString() + '.png',
+          Number(layer.properties.find(prop => prop.property === 'offsetX')?.value),
+          Number(layer.properties.find(prop => prop.property === 'offsetY')?.value),
+          Number(layer.properties.find(prop => prop.property === 'startAngle')?.value),
+          Number(layer.properties.find(prop => prop.property === 'rotationAngle')?.value),
+        )
+      } else if (layer.measure === 'rotator-cpu-core-8') {
+        exporter.addLayer({
+          measure: {
+            type: 'CPU',
+            name: 'Measure' + layer.name,
+            options: {
+              Processor: '8',
+            }
+          }
+        })
+        addRotatorMeterLayerOneMeasure(
+          exporter,
+          layer,
+          adjustedX,
+          adjustedY,
+          layer.fabricObject.width,
+          layer.fabricObject.height,
+          '#@#Images/' + imagesToCopy.findIndex(img => img === layer.imageSrc).toString() + '.png',
+          Number(layer.properties.find(prop => prop.property === 'offsetX')?.value),
+          Number(layer.properties.find(prop => prop.property === 'offsetY')?.value),
+          Number(layer.properties.find(prop => prop.property === 'startAngle')?.value),
+          Number(layer.properties.find(prop => prop.property === 'rotationAngle')?.value),
+        )
+      } else if (layer.measure === 'rotator-disk-c-usage') {
+        exporter.addLayer({
+          measure: {
+            type: 'FreeDiskSpace',
+            name: 'Measure' + layer.name + 'Total',
+            options: {
+              Drive: 'C:',
+              Total: '1',
+              UpdateDivider: '5',
+            }
+          }
+        })
+        exporter.addLayer({
+          measure: {
+            type: 'FreeDiskSpace',
+            name: 'Measure' + layer.name + 'Used',
+            options: {
+              Drive: 'C:',
+              InvertMeasure: '1',
+              UpdateDivider: '5',
+            }
+          }
+        })
+        exporter.addLayer({
+          measure: {
+            type: 'Calc',
+            name: 'Measure' + layer.name,
+            options: {
+              Formula: "Measure" + layer.name + "Used / Measure" + layer.name + "Total",
+              UpdateDivider: '5',
+            }
+          }
+        })
+        addRotatorMeterLayerOneMeasure(
+          exporter,
+          layer,
+          adjustedX,
+          adjustedY,
+          layer.fabricObject.width,
+          layer.fabricObject.height,
+          '#@#Images/' + imagesToCopy.findIndex(img => img === layer.imageSrc).toString() + '.png',
+          Number(layer.properties.find(prop => prop.property === 'offsetX')?.value),
+          Number(layer.properties.find(prop => prop.property === 'offsetY')?.value),
+          Number(layer.properties.find(prop => prop.property === 'startAngle')?.value),
+          Number(layer.properties.find(prop => prop.property === 'rotationAngle')?.value),
+        )
+      }
     }
   });
 

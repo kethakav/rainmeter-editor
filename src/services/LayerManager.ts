@@ -3,7 +3,7 @@
 import { open} from '@tauri-apps/plugin-dialog';
 import { arrayMove } from '@dnd-kit/sortable';
 import { join } from '@tauri-apps/api/path';
-import { Canvas, Circle, FabricObject, FabricObjectProps, Rect, Triangle, IText, FabricImage, Group} from 'fabric';
+import { Canvas, Circle, FabricObject, FabricObjectProps, Rect, Triangle, IText, FabricImage, Group, Line} from 'fabric';
 import { convertFileSrc } from '@tauri-apps/api/core';
 
 // Enum for layer types
@@ -118,12 +118,20 @@ class LayerManager {
         visible: true,
         locked: false,
         name: this.generateLayerName(type),
-        measure: "custom-text",
+        measure: "",
         fontName: "null",
         imageSrc: imageSrc,
         UIElements: UIElements,
         properties: properties,
       };
+
+      // Set measure
+      if (type === LayerType.TEXT) {
+        newLayer.measure = "custom-text";
+      }
+      if (type === LayerType.ROTATOR) {
+        newLayer.measure = "rotator-time-second";
+      }
 
       // Add to canvas and layers array
       this.canvas.add(fabricObject);
@@ -373,39 +381,102 @@ class LayerManager {
                     scaleY: 1,
                     hasControls: false,
                 });
-                const pivotPoint = new Circle({
-                    radius: 5,
-                    originX: 'center',
-                    originY: 'center',
-                    centeredScaling: true,
-                    centeredRotation: true,
-                    fill: '#FF0000',
-                    left: x + midX,
-                    top: y + midY,
-                    hasControls: false,
-                });
+                
+                // const rangeIndicator = new Circle({
+                //   radius: 40,
+                //   originX: 'center',
+                //   originY: 'center',
+                //   centeredScaling: true,
+                //   centeredRotation: true,
+                //   left: x,
+                //   top: y,
+                //   angle: 0,
+                //   startAngle: -0.3,
+                //   endAngle: 0,
+                //   stroke: '#0F0',
+                //   strokeWidth: 25,
+                //   fill: ''
+                // });
                 const rangeIndicator = new Circle({
                   radius: 40,
-                  left: x,
-                  top: y,
+                  originX: 'center',
+                  originY: 'center',
+                  centeredScaling: true,
+                  centeredRotation: true,
+                  left: x + midX,
+                  top: y + midY,
                   angle: 0,
-                  startAngle: -0.3,
-                  endAngle: 0,
-                  stroke: '#000',
+                  startAngle: 0,
+                  endAngle: 90,
+                  stroke: '#0F0',
                   strokeWidth: 25,
                   fill: ''
-                })
-                const UIElements = new Group([pivotPoint, rangeIndicator], {
+                });
+                const indLine = new Line([x + midX, y + midY, x + midX + 50, y + midY], {
+                  stroke: '#000',
+                  strokeWidth: 2,
+                  hasControls: false,
+                });
+                const pivotPoint = new Circle({
+                  radius: 5,
+                  originX: 'center',
+                  originY: 'center',
+                  centeredScaling: true,
+                  centeredRotation: true,
+                  fill: '#FF0000',
+                  left: x + midX,
+                  top: y + midY,
+                  hasControls: false,
+              });
+                // const rangeIndicator3 = new Circle({
+                //   radius: 40,
+                //   originX: 'center',
+                //   originY: 'center',
+                //   centeredScaling: true,
+                //   centeredRotation: true,
+                //   left: x,
+                //   top: y,
+                //   angle: 0,
+                //   startAngle: 0.3,
+                //   endAngle: 0.7,
+                //   stroke: '#00F',
+                //   strokeWidth: 25,
+                //   fill: ''
+                // });
+                const UIElements = new Group([pivotPoint, rangeIndicator, indLine], {
                   visible: true,
                   hasControls: false,
                   interactive: false,
                   selectable: false,
                   perPixelTargetFind: true,
+                  originX: 'center',
+                  originY: 'center',
+                  centeredScaling: true,
+                  centeredRotation: true,
                 });
                 
                 // set the UIElements visible
 
-                this.addLayer(LayerType.ROTATOR, img, sourcePath, UIElements);
+                // add layerProperties
+                const layerProperties: LayerProperties[] = [
+                  {
+                    property: "offsetX",
+                    value: midX.toString()
+                  },
+                  {
+                    property: "offsetY",
+                    value: midY.toString()
+                  },
+                  {
+                    property: "startAngle",
+                    value: "0"
+                  },
+                  {
+                    property: "rotationAngle",
+                    value: "90"
+                  }
+                ];
+                this.addLayer(LayerType.ROTATOR, img, sourcePath, UIElements, layerProperties);
             } catch (error) {
                 console.error("Error loading image:", error);
             }
@@ -509,6 +580,7 @@ class LayerManager {
         
         // Remove from canvas
         this.canvas.remove(layer.fabricObject);
+        this.canvas.remove(layer.UIElements);
         
         // Remove from layers array
         this.layers.splice(layerIndex, 1);
@@ -638,7 +710,7 @@ class LayerManager {
       [LayerType.ROTATOR]: 'Rotator',
     };
     
-    return `${typeLabels[type]} ${this.layerCounts[type]}`;
+    return `${typeLabels[type]}${this.layerCounts[type]}`;
   }
 
   // Get all layers
