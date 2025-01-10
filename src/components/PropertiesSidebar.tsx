@@ -577,6 +577,13 @@ const PropertiesSidebar: React.FC = () => {
     }
     if (field === 'startAngle' || field === 'rotationAngle') {
       updateRotatorLayerRotationAngles(field, value);
+      if (field === 'startAngle') {
+        updateRotatorLayerRotation((Number(value) + 90).toString());
+      }
+    }
+    if (field === 'source') {
+      console.log(value);
+      layerManager.updateImageForSelectedLayer(value);
     }
   };
 
@@ -1096,6 +1103,26 @@ const PropertiesSidebar: React.FC = () => {
               <ScrollArea className="h-full">
                 <div className="px-4 pb-4">
                   <div className="space-y-4">
+                    {/* Change Rotator Image */}
+                    <div className="space-y-2">
+                      <Label htmlFor="rotator-image">Rotator Image</Label>
+                      <Input
+                        id="rotator-image"
+                        type='file'
+                        onChange={e => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const fileURL = URL.createObjectURL(file);
+                            console.log(fileURL);
+                            handleRotatorInputChange('source', fileURL);
+                          }
+                        }}
+                        onBlur={() => {
+                          setIsInputFocused(false);
+                        }}
+                        onFocus={() => setIsInputFocused(true)}
+                      />
+                    </div>
                     {/* X Position */}
                     <div className="space-y-2">
                       <Label htmlFor="rotator-x">X</Label>

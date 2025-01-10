@@ -115,10 +115,35 @@ const Toolbar: React.FC = () => {
                 variant={isSelected('rotator') ? 'default' : 'ghost'}
                 size="icon"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
-                  <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/>
-                  <path d="M21 3v5h-5"/>
-                </svg>
+                <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="w-4 h-4"
+      >
+        {/* Outer circle of speedometer */}
+        <circle cx="12" cy="12" r="9" />
+        
+        {/* Tick marks */}
+        {/* <path d="M12 3 L12 5" />
+        <path d="M17 5.5 L15.5 7" />
+        <path d="M21 12 L19 12" />
+        <path d="M17 18.5 L15.5 17" />
+        <path d="M12 21 L12 19" />
+        <path d="M7 18.5 L8.5 17" />
+        <path d="M3 12 L5 12" />
+        <path d="M7 5.5 L8.5 7" /> */}
+        
+        {/* Needle */}
+        <path d="M12 12 L16 7" strokeWidth="2.5" />
+        
+        {/* Center dot */}
+        <circle cx="12" cy="12" r="1" fill="currentColor" />
+      </svg>
                 <span className="sr-only">Rotator</span>
               </Button>
             </TooltipTrigger>

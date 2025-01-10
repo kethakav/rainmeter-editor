@@ -2,7 +2,7 @@
 // import { useToolContext } from '@/context/ToolContext';
 import { open} from '@tauri-apps/plugin-dialog';
 import { arrayMove } from '@dnd-kit/sortable';
-import { join } from '@tauri-apps/api/path';
+import { join, resourceDir } from '@tauri-apps/api/path';
 import { Canvas, Circle, FabricObject, FabricObjectProps, Rect, Triangle, IText, FabricImage, Group, Line} from 'fabric';
 import { convertFileSrc } from '@tauri-apps/api/core';
 
@@ -44,6 +44,7 @@ class LayerManager {
     public layers: LayerConfig[] = [];
 
     private listeners: (() => void)[] = [];
+    
 
     private layerCounts: { [key in LayerType]: number } = {
       [LayerType.TEXT]: 0,
@@ -177,6 +178,46 @@ class LayerManager {
         }
         activeObject.set('fontFamily', font); // Update the font
         this.canvas.renderAll(); // Re-render the canvas to reflect changes
+      }
+    }
+  }
+
+  public async updateImageForSelectedLayer(imageSource: string) {
+    // const { setSelectedLayerId, setSelectedLayer } = useLayerContext();
+    if (this.canvas) {
+      console.log("update image");
+      const activeObject = this.canvas.getActiveObject();
+      if (activeObject) {
+        const activeLayer = this.getLayerByFabricObject(activeObject);
+        // Update the image source
+        const fabricImage = activeObject as FabricImage;
+        await fabricImage.setSrc(imageSource);
+        if (activeLayer) {
+          activeLayer.imageSrc = imageSource; // Update the image source
+          const offsetX = activeLayer.properties.find(prop => prop.property === 'offsetX');
+          const offsetY = activeLayer.properties.find(prop => prop.property === 'offsetY');
+          if (offsetX) {
+            offsetX.value = '0';
+          }
+          if (offsetY) {
+            offsetY.value = '0';
+          }
+          // setSelectedLayerId(activeLayer.id);
+          // setSelectedLayer(activeLayer);
+        }
+        // update properties Sidebar
+        // this.updatePropertiesSidebar(activeLayer);
+
+        
+        // offsetX: layer.properties.find(prop => prop.property === 'offsetX')?.value.toString() || '0',
+
+        activeLayer?.UIElements.set({
+          visible: true,
+          left: activeLayer.fabricObject.left,
+          top: activeLayer.fabricObject.top
+        });
+        this.canvas.renderAll(); // Re-render the canvas to reflect changes
+        
       }
     }
   }
@@ -315,6 +356,7 @@ class LayerManager {
                 },
             ],
         });
+        
 
         // Check if a file was selected
         if (selectedFile) {
@@ -348,139 +390,145 @@ class LayerManager {
 
   async addRotatorLayer(x: number, y: number) {
     if (this.canvas) {
-        // Open a file dialog to select an image
-        const selectedFile = await open({
-            title: 'Select the Rotator Image',
-            filters: [
-                {
-                    name: 'Images',
-                    extensions: ['png'],
-                },
-            ],
-        });
+        // // Open a file dialog to select an image
+        // const selectedFile = await open({
+        //     title: 'Select the Rotator Image',
+        //     filters: [
+        //         {
+        //             name: 'Images',
+        //             extensions: ['png'],
+        //         },
+        //     ],
+        // });
 
         // Check if a file was selected
-        if (selectedFile) {
-            // Convert to the appropriate format (string if selectedFile is a File)
-            const sourcePath = await join(selectedFile as string);
-            const assetUrl = convertFileSrc(sourcePath);
-            console.log(sourcePath);
-            console.log(assetUrl);
-            
-            // Use fromURL correctly with await
-            try {
-                const img: FabricImage = await FabricImage.fromURL(assetUrl, { crossOrigin: 'anonymous' });
-                const midX = img.width / 2;
-                const midY = img.height / 2;
-                img.set({
-                    left: x,
-                    top: y,
-                    outerHeight: img.height,
-                    outerWidth: img.width,
-                    scaleX: 1,
-                    scaleY: 1,
-                    hasControls: false,
-                });
-                
-                // const rangeIndicator = new Circle({
-                //   radius: 40,
-                //   originX: 'center',
-                //   originY: 'center',
-                //   centeredScaling: true,
-                //   centeredRotation: true,
-                //   left: x,
-                //   top: y,
-                //   angle: 0,
-                //   startAngle: -0.3,
-                //   endAngle: 0,
-                //   stroke: '#0F0',
-                //   strokeWidth: 25,
-                //   fill: ''
-                // });
-                const rangeIndicator = new Circle({
-                  radius: 40,
-                  originX: 'center',
-                  originY: 'center',
-                  centeredScaling: true,
-                  centeredRotation: true,
-                  left: x + midX,
-                  top: y + midY,
-                  angle: 0,
-                  startAngle: 0,
-                  endAngle: 90,
-                  stroke: '#0F0',
-                  strokeWidth: 25,
-                  fill: ''
-                });
-                const indLine = new Line([x + midX, y + midY, x + midX + 50, y + midY], {
-                  stroke: '#000',
-                  strokeWidth: 2,
-                  hasControls: false,
-                });
-                const pivotPoint = new Circle({
-                  radius: 5,
-                  originX: 'center',
-                  originY: 'center',
-                  centeredScaling: true,
-                  centeredRotation: true,
-                  fill: '#FF0000',
-                  left: x + midX,
-                  top: y + midY,
-                  hasControls: false,
-              });
-                // const rangeIndicator3 = new Circle({
-                //   radius: 40,
-                //   originX: 'center',
-                //   originY: 'center',
-                //   centeredScaling: true,
-                //   centeredRotation: true,
-                //   left: x,
-                //   top: y,
-                //   angle: 0,
-                //   startAngle: 0.3,
-                //   endAngle: 0.7,
-                //   stroke: '#00F',
-                //   strokeWidth: 25,
-                //   fill: ''
-                // });
-                const UIElements = new Group([pivotPoint, rangeIndicator, indLine], {
-                  visible: true,
-                  hasControls: false,
-                  interactive: false,
-                  selectable: false,
-                  perPixelTargetFind: true,
-                  originX: 'center',
-                  originY: 'center',
-                  centeredScaling: true,
-                  centeredRotation: true,
-                });
-                
-                // set the UIElements visible
+      // Convert to the appropriate format (string if selectedFile is a File)
+      const resPath = await resourceDir();
+      const source = await join(resPath, '_up_/public/images/Needle.png');
+      const assetUrl = convertFileSrc(source);
+      console.log(assetUrl);
+      
+      // Use fromURL correctly with await
+      try {
+          const img: FabricImage = await FabricImage.fromURL(assetUrl, { crossOrigin: 'anonymous' });
+          img.set({
+              left: x,
+              top: y,
+              outerHeight: img.height,
+              outerWidth: img.width,
+              originX: 'center',
+              originY: 'center',
+              centeredScaling: true,
+              centeredRotation: true,
+              angle: 90,
+              scaleX: 1,
+              scaleY: 1,
+              hasControls: false,
+          });
+          
+          // const rangeIndicator = new Circle({
+          //   radius: 40,
+          //   originX: 'center',
+          //   originY: 'center',
+          //   centeredScaling: true,
+          //   centeredRotation: true,
+          //   left: x,
+          //   top: y,
+          //   angle: 0,
+          //   startAngle: -0.3,
+          //   endAngle: 0,
+          //   stroke: '#0F0',
+          //   strokeWidth: 25,
+          //   fill: ''
+          // });
+          const rangeIndicator = new Circle({
+            radius: 40,
+            originX: 'center',
+            originY: 'center',
+            centeredScaling: true,
+            centeredRotation: true,
+            left: x,
+            top: y,
+            angle: 0,
+            startAngle: 0,
+            endAngle: 90,
+            stroke: '#0F0',
+            opacity: 0.5,
+            strokeWidth: 25,
+            fill: ''
+          });
+          const indLine = new Line([x, y, x + 50, y], {
+            stroke: '#000',
+            strokeWidth: 2,
+            opacity: 0,
+            hasControls: false,
 
-                // add layerProperties
-                const layerProperties: LayerProperties[] = [
-                  {
-                    property: "offsetX",
-                    value: midX.toString()
-                  },
-                  {
-                    property: "offsetY",
-                    value: midY.toString()
-                  },
-                  {
-                    property: "startAngle",
-                    value: "0"
-                  },
-                  {
-                    property: "rotationAngle",
-                    value: "90"
-                  }
-                ];
-                this.addLayer(LayerType.ROTATOR, img, sourcePath, UIElements, layerProperties);
-            } catch (error) {
-                console.error("Error loading image:", error);
+          });
+          const pivotPoint = new Circle({
+            radius: 5,
+            originX: 'center',
+            originY: 'center',
+            centeredScaling: true,
+            centeredRotation: true,
+            fill: '#FF0000',
+            opacity: 0.5,
+            left: x,
+            top: y,
+            hasControls: false,
+        });
+          // const rangeIndicator3 = new Circle({
+          //   radius: 40,
+          //   originX: 'center',
+          //   originY: 'center',
+          //   centeredScaling: true,
+          //   centeredRotation: true,
+          //   left: x,
+          //   top: y,
+          //   angle: 0,
+          //   startAngle: 0.3,
+          //   endAngle: 0.7,
+          //   stroke: '#00F',
+          //   strokeWidth: 25,
+          //   fill: ''
+          // });
+          const UIElements = new Group([pivotPoint, rangeIndicator, indLine], {
+            visible: true,
+            hasControls: false,
+            interactive: false,
+            selectable: false,
+            perPixelTargetFind: true,
+            originX: 'center',
+            originY: 'center',
+            centeredScaling: true,
+            centeredRotation: true,
+          });
+          
+          // set the UIElements visible
+
+          // add layerProperties
+          const layerProperties: LayerProperties[] = [
+            {
+              property: "offsetX",
+              value: '0'
+            },
+            {
+              property: "offsetY",
+              value: '0'
+            },
+            {
+              property: "startAngle",
+              value: "0"
+            },
+            {
+              property: "rotationAngle",
+              value: "90"
             }
-        }
+          ];
+          this.addLayer(LayerType.ROTATOR, img, source, UIElements, layerProperties);
+      } catch (error) {
+          console.error("Error loading image:", error);
+      }
+        
     } else {
         return null;
     }
