@@ -22,6 +22,13 @@ const PropertiesSidebar: React.FC = () => {
   const xInputRef = useRef<HTMLInputElement>(null);
   const yInputRef = useRef<HTMLInputElement>(null);
 
+  const [skinProperties, setSkinProperties] = useState({
+    x: '',
+    y: '',
+    height: '',
+    width: '',
+  });
+
   const [textLayerProperties, setTextLayerProperties] = useState({
     x: '',
     y: '',
@@ -66,7 +73,7 @@ const PropertiesSidebar: React.FC = () => {
     backgroundOpacity: '',
     foregroundFill: '',
     foregroundOpacity: '',
-    measure: 'static-image',
+    measure: 'bar-cpu',
   });
 
   const [isInputFocused, setIsInputFocused] = useState(false);
@@ -211,6 +218,19 @@ const PropertiesSidebar: React.FC = () => {
             setCategory('');
           }
         }
+      } else {
+        console.log("no selected layer");
+        // update skin properties
+        const backgroundGroup = layerManager.getSkinBackground() as Group;
+        if (backgroundGroup) {
+          const backgroundRect = backgroundGroup._objects[0] as Rect;
+          setSkinProperties({
+            x: backgroundGroup.left?.toString() || '0',
+            y: backgroundGroup.top?.toString() || '0',
+            width: backgroundRect.width?.toString() || '100',
+            height: backgroundRect.height?.toString() || '100',
+          });
+        }
       }
     };
 
@@ -270,6 +290,125 @@ const PropertiesSidebar: React.FC = () => {
       window.removeEventListener('keydown', handleGlobalKeyDown as unknown as EventListener);
     };
   }, [selectedLayerId, isInputFocused]);
+
+  // Handlers for Skin Properties
+  const handleSkinInputChange = (field: keyof typeof skinProperties, value: string) => {
+    setSkinProperties(prev => ({ ...prev, [field]: value }));
+    if (field === 'x' || field === 'y') {
+      updateSkinPosition(field, value);
+    }
+  };
+
+  const updateSkinPosition = (field: 'x' | 'y', value: string) => {
+    const canvas = layerManager.getCanvas();
+    // Get skinBackground object which is not a selected layer
+    const skinBackground = layerManager.getSkinBackground();
+
+
+    if (skinBackground) {
+      const numValue = Number(value);
+
+      if (field === 'x') {
+        skinBackground.left = numValue;
+      } else if (field === 'y') {
+        skinBackground.top = numValue;
+      }
+
+      skinBackground.setCoords();
+      canvas?.renderAll();
+    }
+  };
+
+  const handleSkinKeyDown = (field: 'x' | 'y' | 'width' | 'height', event: KeyboardEvent<HTMLInputElement>) => {  
+    const stepSize = event.shiftKey ? 10 : 1;
+    if (event.key === 'Enter') {
+      if (field === 'x' || field === 'y') {
+        updateSkinPosition(field, (event.target as HTMLInputElement).value);
+        (event.target as HTMLInputElement).blur();
+      } else if (field === 'width' || field === 'height') {
+        updateSkinDimensions(field, (event.target as HTMLInputElement).value);
+        (event.target as HTMLInputElement).blur();
+      }
+    } else if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+      event.preventDefault(); 
+      const currentValue = Number(skinProperties[field]);
+      const newValue = event.key === 'ArrowUp'
+        ? currentValue + stepSize
+        : currentValue - stepSize;
+  
+      setSkinProperties(prev => ({
+        ...prev,
+        [field]: newValue.toString()
+      }));
+    }
+  };  
+
+  const handleSkinPositionBlur = (field: 'x' | 'y') => {
+    updateSkinPosition(field, skinProperties[field]);
+  };
+
+  const updateSkinDimensions = (field: 'width' | 'height', value: string) => {
+    const canvas = layerManager.getCanvas();
+    const skinBackground = layerManager.getSkinBackground();
+    const backgroundGroup = skinBackground as Group;
+    const backgroundRect = backgroundGroup._objects[0] as Rect;
+
+    if (backgroundRect && skinBackground) {
+        const numValue = Number(value);
+        if (field === 'width') {
+          console.log("width");
+            // backgroundRect.set({  });
+            backgroundRect.set({ 
+              width: numValue,
+              left: 0,
+              top: 0
+            }); // Update the rect's width
+            // update the group width while keeping the child objects positions same
+            backgroundGroup._objects[1].set({
+              left: 0,
+              top: 0,
+            })
+            backgroundGroup.set({ width: numValue });
+            setSkinProperties(prev => ({
+                ...prev,
+                width: numValue.toString()
+            }));
+        } else if (field === 'height') {
+            // backgroundRect.set({ height: numValue });
+            backgroundRect.set({ 
+              height: numValue,
+              left: 0,
+              top: 0
+            }); // Update the rect's height
+            // update the group height while keeping the child objects positions same
+            backgroundGroup._objects[1].set({
+              left: 0,
+              top: 0,
+            })
+            backgroundGroup.set({ height: numValue });
+            setSkinProperties(prev => ({
+                ...prev,
+                height: numValue.toString()
+            }));  
+        }
+
+        backgroundRect.setCoords();
+        backgroundGroup.setCoords(); // Update the group's coordinates
+        canvas?.renderAll();
+    }
+};
+
+
+  const handleSkinDimensionsBlur = (field: 'width' | 'height') => {
+    updateSkinDimensions(field, skinProperties[field]);
+  };
+
+  const handleSkinDimensionsChange = (field: 'width' | 'height', value: string) => {
+    setSkinProperties(prev => ({ ...prev, [field]: value }));
+    if (field === 'width' || field === 'height') {
+      updateSkinDimensions(field, value);
+    }
+  };  
 
   // Handlers for Text Layer
   const handleTextInputChange = (field: keyof typeof textLayerProperties, value: string) => {
@@ -922,6 +1061,96 @@ const PropertiesSidebar: React.FC = () => {
 
   return (
     <>
+      {!selectedLayerId && (
+        <Card className='w-50 m-4 rounded-2xl'>
+          <CardHeader className='font-semibold text-xl border-b'>Skin Properties</CardHeader>
+          <CardContent>
+            <div className="overflow-y-auto mt-6" style={{ maxHeight: 'calc(100vh - 256px)' }}>
+              <ScrollArea className="h-full">
+                <div className="px-4 pb-4">
+                  <div className="space-y-4">
+                    <div className="flex space-x-4">
+                      {/* X Position */}
+                      <div className='space-y-2'>
+                        <Label htmlFor='skin-x'>X</Label>
+                        <Input 
+                          ref={xInputRef} 
+                          id='skin-x' 
+                          placeholder='X' 
+                          value={skinProperties.x} 
+                          onChange={e => handleSkinInputChange('x', e.target.value)} 
+                          onKeyDown={e => handleSkinKeyDown('x', e)}
+                          onBlur={() => { 
+                            handleSkinPositionBlur('x');
+                            setIsInputFocused(false); 
+                          }}
+                          onFocus={() => setIsInputFocused(true)} 
+                          className='w-20' 
+                        />
+                      </div>
+
+                      {/* Y Position */}
+                      <div className='space-y-2'>
+                        <Label htmlFor='skin-y'>Y</Label>
+                        <Input 
+                          ref={yInputRef} 
+                          id='skin-y' 
+                          placeholder='Y' 
+                          value={skinProperties.y} 
+                          onChange={e => handleSkinInputChange('y', e.target.value)} 
+                          onKeyDown={e => handleSkinKeyDown('y', e)}
+                          onBlur={() => { 
+                            handleSkinPositionBlur('y');
+                            setIsInputFocused(false);
+                          }} 
+                          onFocus={() => setIsInputFocused(true)}
+                          className='w-20'
+                        />
+                      </div>
+                    </div>
+                    <div className="flex space-x-4">
+                      {/* Width */}
+                      <div className='space-y-2'>
+                        <Label htmlFor='skin-width'>Width</Label>
+                        <Input 
+                          id='skin-width' 
+                          placeholder='Width' 
+                          value={skinProperties.width} 
+                          onChange={e => handleSkinDimensionsChange('width', e.target.value)} 
+                          onKeyDown={e => handleSkinKeyDown('width', e)}
+                          onBlur={() => { 
+                            handleSkinDimensionsBlur('width');
+                            setIsInputFocused(false);
+                          }} 
+                          onFocus={() => setIsInputFocused(true)}
+                          className='w-20'
+                        />
+                      </div>
+                      {/* Height */}
+                      <div className='space-y-2'>
+                        <Label htmlFor='skin-height'>Height</Label>
+                        <Input 
+                          id='skin-height' 
+                          placeholder='Height' 
+                          value={skinProperties.height} 
+                          onChange={e => handleSkinDimensionsChange('height', e.target.value)} 
+                          onKeyDown={e => handleSkinKeyDown('height', e)}
+                          onBlur={() => { 
+                            handleSkinDimensionsBlur('height');
+                            setIsInputFocused(false);
+                          }} 
+                          onFocus={() => setIsInputFocused(true)}
+                          className='w-20'
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </ScrollArea>
+            </div>
+          </CardContent>
+        </Card>
+      )}
       {selectedLayerId && selectedLayer?.type === 'text' && (
         <Card className='w-50 m-4 rounded-2xl'>
           <CardHeader className='font-semibold text-xl border-b'>Text Properties</CardHeader>

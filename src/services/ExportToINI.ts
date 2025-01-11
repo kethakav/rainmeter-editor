@@ -54,11 +54,15 @@ class RainmeterSkinExporter {
   private baseTemplate: string;
   private layers: RainmeterSkinLayer[] = [];
   private metadata: RainmeterMetadata;
+  private skinWidth: number = 0;
+  private skinHeight: number = 0;
   public properties: RainmeterSkinProperties = { allowScrollResize: false };
   private variables: RainmeterVariable[] = [];
 
-  constructor(metadata: RainmeterMetadata) {
+  constructor(metadata: RainmeterMetadata, skinWidth: number, skinHeight: number) {
     this.metadata = metadata;
+    this.skinWidth = skinWidth;
+    this.skinHeight = skinHeight;
     this.baseTemplate = this.createBaseTemplate();
   }
 
@@ -73,10 +77,12 @@ Description=${this.metadata.description}
 Update=1000
 BackgroundMode=2
 SolidColor=0,0,0,1
-DynamicWindowSize=1
+SkinWidth=(${this.skinWidth.toString()} * #Scale#)
+SkinHeight=(${this.skinHeight.toString()} * #Scale#)
 AccurateText=1
 `;
-  }
+}
+
 
   addVariable(key: string, value: string): this {
     this.variables.push({ key, value });
@@ -181,13 +187,19 @@ async function fontExistsInPublic(fontName: string): Promise<boolean> {
 export const exportSkin = async (resourcePath: string, metadata: { name: string; author: string; version: string; description: string }, allowScrollResize: boolean) => {
   const scaleCorrection = 1.33;
   const layers = layerManager.getLayers();
+  const skinBackground = layerManager.getSkinBackground();
+
+
   const exporter = new RainmeterSkinExporter({
     name: metadata.name,
     author: metadata.author,
     version: metadata.version,
     description: metadata.description,
-  });
-
+  },
+    skinBackground?.width || 0,
+    skinBackground?.height || 0
+);
+  
   exporter.properties.allowScrollResize = allowScrollResize;
   
   const systemFonts = localFontManager.getCachedFonts();
@@ -195,19 +207,21 @@ export const exportSkin = async (resourcePath: string, metadata: { name: string;
   const fontsToCopy = new Set<string>(); // To track fonts to copy
   const imagesToCopy: string[] = []; // To track images to copy
 
-  const minX = layers.reduce((min, layer) => {
-    if (layer.fabricObject && layer.fabricObject.left !== undefined) {
-      return Math.min(min, layer.fabricObject.left);
-    }
-    return min;
-  }, Infinity);
+  const minX = skinBackground?.left || 0;
+  const minY = skinBackground?.top || 0;
+  // const minX = layers.reduce((min, layer) => {
+  //   if (layer.fabricObject && layer.fabricObject.left !== undefined) {
+  //     return Math.min(min, layer.fabricObject.left);
+  //   }
+  //   return min;
+  // }, Infinity);
 
-  const minY = layers.reduce((min, layer) => {
-    if (layer.fabricObject && layer.fabricObject.top !== undefined) {
-      return Math.min(min, layer.fabricObject.top);
-    }
-    return min;
-  }, Infinity);
+  // const minY = layers.reduce((min, layer) => {
+  //   if (layer.fabricObject && layer.fabricObject.top !== undefined) {
+  //     return Math.min(min, layer.fabricObject.top);
+  //   }
+  //   return min;
+  // }, Infinity);
 
   exporter.addVariable('Scale', '1.0');
   exporter.addVariable('ScrollMouseIncrement', '0.05');

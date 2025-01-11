@@ -3,7 +3,7 @@
 import { open} from '@tauri-apps/plugin-dialog';
 import { arrayMove } from '@dnd-kit/sortable';
 import { join, resourceDir } from '@tauri-apps/api/path';
-import { Canvas, Circle, FabricObject, FabricObjectProps, Rect, Triangle, IText, FabricImage, Group, Line} from 'fabric';
+import { Canvas, Circle, FabricObject, FabricObjectProps, Rect, Triangle, IText, FabricImage, Group, Line, Text} from 'fabric';
 import { convertFileSrc } from '@tauri-apps/api/core';
 
 // Enum for layer types
@@ -39,6 +39,7 @@ interface LayerConfig {
 class LayerManager {
     private static instance: LayerManager | null = null;
     public canvas: Canvas | null = null;
+    private skinBackground: FabricObject | null = null;
 
     public activeTool: string = 'select';
   
@@ -72,6 +73,60 @@ class LayerManager {
 
     public getCanvas() {
         return this.canvas;
+    }
+
+    public setSkinBackground() {
+      if (this.canvas) {
+        const skinBackground = new Rect({
+          width: 400,
+          height: 300,
+          stroke: '#000000',
+          fill: 'transparent',
+          strokeWidth: 1,
+          originX: 'center',
+          originY: 'center',
+          strokeDashArray: [5, 5],
+          hasControls: false,
+          hasBorders: false,
+        });
+
+        const backgroundText = new Text('Skin Background', {
+          lockScalingX: true,
+          lockScalingY: true,
+          fontSize: 18,
+          fontFamily: 'Arial',
+          fill: '#000000',
+          opacity: 0.2,
+          originX: 'center',
+          originY: 'center',
+          hasControls: false,
+          hasBorders: false,
+        });
+
+        const backgroundGroup = new Group([skinBackground, backgroundText], {
+          left: 400,
+          top: 200,        
+          originX: 'left',
+          originY: 'top',
+          hasControls: false,
+          hasBorders: false,
+        });
+        backgroundGroup.setCoords();
+        // background group clipping so that it doesn't clip object when the objects are scaled
+        
+        backgroundGroup.set({
+          visible: true,
+        });
+        this.skinBackground = backgroundGroup;
+
+        this.canvas.sendObjectToBack(backgroundGroup);
+        this.canvas.add(backgroundGroup);
+        this.canvas.renderAll();
+      }
+    }
+
+    public getSkinBackground() {
+      return this.skinBackground;
     }
 
     private toolChangeListeners: (() => void)[] = [];

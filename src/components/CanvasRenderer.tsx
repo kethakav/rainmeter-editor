@@ -72,7 +72,7 @@ const CanvasRenderer: React.FC = () => {
     if (canvasRef.current) {
       const canvas = new Canvas(canvasRef.current, {
         preserveObjectStacking: true,
-        height: window.innerHeight,
+        height: window.innerHeight - 64,
         width: window.innerWidth,
         backgroundColor: cssVariableToHex('--card'),
       });
@@ -80,6 +80,8 @@ const CanvasRenderer: React.FC = () => {
       canvasManager.setCanvas(canvas);
       layerManager.setCanvas(canvas);
       canvas.renderAll();
+
+      layerManager.setSkinBackground();
 
       const handleSelectionEvent = (event: any) => {
         if (!event.selected) return;
@@ -170,8 +172,15 @@ const CanvasRenderer: React.FC = () => {
       };
 
       const handleResize = () => {
-        canvas.setWidth(window.innerWidth);
-        canvas.setHeight(window.innerHeight);
+        const currentWidth = canvas.getWidth();
+        const currentHeight = canvas.getHeight();
+
+        if (currentWidth < window.innerWidth){
+          canvas.setWidth(window.innerWidth);
+        }
+        if (currentHeight <( window.innerHeight - 64)){
+          canvas.setHeight(window.innerHeight - 64);
+        }
         canvas.renderAll();
       };
     
@@ -193,8 +202,10 @@ const CanvasRenderer: React.FC = () => {
   }, []);
 
   return (
-    <div className="flex items-center justify-center bg-gray-100">
-      <canvas ref={canvasRef} className="w-full h-full" />
+    <div className="flex items-center justify-center bg-gray-100 h-full">
+      <div className="max-w-full max-h-full overflow-auto" style={{ maxHeight: `calc(100vh - 64px)`, maxWidth: '100vw' }}>
+        <canvas ref={canvasRef} className="w-full h-full" />
+      </div>
     </div>
   );
 };
