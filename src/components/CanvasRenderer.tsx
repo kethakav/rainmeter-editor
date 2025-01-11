@@ -9,6 +9,31 @@ const CanvasRenderer: React.FC = () => {
   const { setSelectedLayerId, setSelectedLayer } = useLayerContext();
 
   useEffect(() => {
+  const disableRefresh = () => {
+    document.addEventListener('keydown', function (event) {
+      // Prevent F5 or Ctrl+R (Windows/Linux) and Command+R (Mac) from refreshing the page
+      if (event.key === 'F5' || (event.ctrlKey && event.key === 'r') || (event.metaKey && event.key === 'r')) {
+        event.preventDefault();
+      }
+    });
+
+    document.addEventListener('contextmenu', function (event) {
+      event.preventDefault();
+    });
+  };
+
+  disableRefresh();
+
+  // Other existing code continues here...
+
+  return () => {
+    // Cleanup event listeners to prevent memory leaks
+    document.removeEventListener('keydown', disableRefresh);
+    document.removeEventListener('contextmenu', disableRefresh);
+  };
+}, []);
+
+  useEffect(() => {
     // Function to convert HSL to Hex
     function hslToHex(h: number, s: number, l: number): string {
       h = Number(h);
