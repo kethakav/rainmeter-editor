@@ -287,8 +287,8 @@ export const exportSkin = async (resourcePath: string, metadata: { name: string;
         options: {
           X: ('(' + adjustedX.toString() + ' * #Scale#)'),
           Y: ('(' + adjustedY.toString() + ' * #Scale#)'),
-          W: ('(' + width.toString() + ' * #Scale#)'),
-          H: ('(' + height.toString() + ' * #Scale#)'),
+          W: ('(' + (barGroup.width * barGroup.scaleX).toString() + ' * #Scale#)'),
+          H: ('(' + (barGroup.height * barGroup.scaleY).toString() + ' * #Scale#)'),
           BarOrientation: 'Horizontal',
           BarColor: background.fill ? hexToRgb(background.fill, background.opacity) : '0,0,0,255',
           SolidColor: foreground.fill ? hexToRgb(foreground.fill, foreground.opacity) : '0,0,0,255',
@@ -298,8 +298,8 @@ export const exportSkin = async (resourcePath: string, metadata: { name: string;
   }
 
   layers.forEach(layer => {
-    const adjustedX = layer.fabricObject.left - minX; // Adjust x value
-    const adjustedY = layer.fabricObject.top - minY; // Adjust y value
+    const adjustedX = (layer.fabricObject.left - minX); // Adjust x value
+    const adjustedY = (layer.fabricObject.top - minY); // Adjust y value
     if (layer.type === 'text') {
       const text = layer.fabricObject as IText;
 

@@ -5,6 +5,7 @@ import { arrayMove } from '@dnd-kit/sortable';
 import { join, resourceDir } from '@tauri-apps/api/path';
 import { Canvas, Circle, FabricObject, FabricObjectProps, Rect, Triangle, IText, FabricImage, Group, Line, Text} from 'fabric';
 import { convertFileSrc } from '@tauri-apps/api/core';
+import { SingleFontLoad } from './singleFontLoad';
 
 // Enum for layer types
 enum LayerType {
@@ -149,7 +150,7 @@ class LayerManager {
   addLayerWithMouse(x: number, y: number) {
     if(this.canvas) {
       if (this.activeTool === 'text') {
-        this.addTextLayer("New Text", x, y);
+        this.addTextLayer("Hello There!", x, y);
         this.setActiveTool('select');
       }
       if (this.activeTool === 'image') {
@@ -210,13 +211,16 @@ class LayerManager {
   }
 
   // Add text layer
-  addTextLayer(text: string = 'New Text', x: number, y: number) {
+  async addTextLayer(text: string = 'Hello There!', x: number, y: number) {
+    await SingleFontLoad('Abtera Bold');
     
     if (this.canvas) {
         const textObject = new IText(text, {
         left: x,
         top: y,
         fill: 'black',
+        fontFamily: 'Abtera Bold',
+        textAlign: 'justify-left',
         fontSize: 24,
         hasControls: false,
         });

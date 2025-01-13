@@ -27,6 +27,7 @@ const PropertiesSidebar: React.FC = () => {
     y: '',
     height: '',
     width: '',
+    backgroundColor: '#FFFFFF',
   });
 
   const [textLayerProperties, setTextLayerProperties] = useState({
@@ -126,6 +127,7 @@ const PropertiesSidebar: React.FC = () => {
   };
 
   useEffect(() => {
+    const canvas = layerManager.getCanvas();
     const updateLayerProperties = () => {
       if (selectedLayerId) {
         const layer = layerManager.getLayers().find(layer => layer.id === selectedLayerId);
@@ -192,10 +194,8 @@ const PropertiesSidebar: React.FC = () => {
             setMeasureType(type);
             setCategory(newCategory);
           } else if (layer.type === 'bar') {
-            const bar = layer.fabricObject as FabricImage;
-            const measure = layer.measure || 'static-image';
-            console.log(bar.width);
-            console.log(bar.height);
+            const bar = layer.fabricObject;
+            const measure = layer.measure || 'bar-cpu';
             const barGroup = layer.fabricObject as Group;
             const background = barGroup._objects[0] as Rect;
             const foreground = barGroup._objects[1] as Rect
@@ -203,8 +203,8 @@ const PropertiesSidebar: React.FC = () => {
             setBarLayerProperties({
               x: bar.left?.toString() || '0',
               y: bar.top?.toString() || '0',
-              height: (bar.scaleY * bar.height)?.toString() || '100',
-              width: (bar.scaleX * bar.width)?.toString() || '100',
+              height: (barGroup.height * barGroup.scaleY)?.toString() || '100',
+              width: (barGroup.width * barGroup.scaleX)?.toString() || '100',
               backgroundFill: background.fill?.toString() || '#000000',
               backgroundOpacity: background.opacity?.toString() || '1',
               foregroundFill: foreground.fill?.toString() || '#000000',
@@ -229,14 +229,13 @@ const PropertiesSidebar: React.FC = () => {
             y: backgroundGroup.top?.toString() || '0',
             width: backgroundRect.width?.toString() || '100',
             height: backgroundRect.height?.toString() || '100',
+            backgroundColor: canvas?.backgroundColor?.toString() || '0x000000',
           });
         }
       }
     };
 
     updateLayerProperties();
-
-    const canvas = layerManager.getCanvas();
     if (canvas) {
       canvas.on('selection:created', updateLayerProperties);
       canvas.on('selection:updated', updateLayerProperties);
@@ -352,51 +351,41 @@ const PropertiesSidebar: React.FC = () => {
     const skinBackground = layerManager.getSkinBackground();
     const backgroundGroup = skinBackground as Group;
     const backgroundRect = backgroundGroup._objects[0] as Rect;
-
+  
     if (backgroundRect && skinBackground) {
-        const numValue = Number(value);
-        if (field === 'width') {
-          console.log("width");
-            // backgroundRect.set({  });
-            backgroundRect.set({ 
-              width: numValue,
-              left: 0,
-              top: 0
-            }); // Update the rect's width
-            // update the group width while keeping the child objects positions same
-            backgroundGroup._objects[1].set({
-              left: 0,
-              top: 0,
-            })
-            backgroundGroup.set({ width: numValue });
-            setSkinProperties(prev => ({
-                ...prev,
-                width: numValue.toString()
-            }));
-        } else if (field === 'height') {
-            // backgroundRect.set({ height: numValue });
-            backgroundRect.set({ 
-              height: numValue,
-              left: 0,
-              top: 0
-            }); // Update the rect's height
-            // update the group height while keeping the child objects positions same
-            backgroundGroup._objects[1].set({
-              left: 0,
-              top: 0,
-            })
-            backgroundGroup.set({ height: numValue });
-            setSkinProperties(prev => ({
-                ...prev,
-                height: numValue.toString()
-            }));  
-        }
-
-        backgroundRect.setCoords();
-        backgroundGroup.setCoords(); // Update the group's coordinates
-        canvas?.renderAll();
+      const numValue = Math.max(1, Number(value)); // Ensure minimum value is 1
+      if (field === 'width') {
+        backgroundRect.set({ 
+          width: numValue,
+          left: 0,
+          top: 0
+        }); // Update the rect's width
+        // Update the group width while keeping the child objects positions the same
+        backgroundGroup.set({ width: numValue }); 
+        setSkinProperties(prev => ({
+          ...prev,
+          width: numValue.toString()
+        }));
+      } else if (field === 'height') {
+        backgroundRect.set({ 
+          height: numValue,
+          left: 0,
+          top: 0
+        }); // Update the rect's height
+        // Update the group height while keeping the child objects positions the same
+        backgroundGroup.set({ height: numValue });
+        setSkinProperties(prev => ({
+          ...prev,
+          height: numValue.toString()
+        }));
+      }
+  
+      backgroundRect.setCoords();
+      backgroundGroup.setCoords(); // Update the group's coordinates
+      canvas?.renderAll();
     }
-};
+  };
+  
 
 
   const handleSkinDimensionsBlur = (field: 'width' | 'height') => {
@@ -410,18 +399,25 @@ const PropertiesSidebar: React.FC = () => {
     }
   };  
 
+  const handleSkinBackgroundColorChange = (value: string) => {
+    const canvas = layerManager.getCanvas();
+    // console.log("handleSkinBackgroundColorChange" + value);
+    canvas?.set({ backgroundColor: value });
+    setSkinProperties(prev => ({ ...prev, backgroundColor: value }));
+  };
+
   // Handlers for Text Layer
   const handleTextInputChange = (field: keyof typeof textLayerProperties, value: string) => {
     setTextLayerProperties(prev => ({ ...prev, [field]: value }));
-    if (field === 'x' || field === 'y') {
-      updateTextLayerPosition(field, value);
-    }
-    if (field === 'fontSize') {
-      updateFontSize(value);
-    }
-    if (field === 'rotation') {
-      updateTextLayerRotation(value);
-    }
+    // if (field === 'x' || field === 'y') {
+    //   updateTextLayerPosition(field, value);
+    // }
+    // if (field === 'fontSize') {
+    //   updateFontSize(value);
+    // }
+    // if (field === 'rotation') {
+    //   updateTextLayerRotation(value);
+    // }
   };
 
   const handleFontChange = async (font: string) => {
@@ -784,9 +780,9 @@ const PropertiesSidebar: React.FC = () => {
   const updateRotatorLayerDimensions = (field: 'width' | 'height', value: string) => {
     const canvas = layerManager.getCanvas();
     const layer = layerManager.getLayers().find(layer => layer.id === selectedLayerId);
-
+  
     if (layer && layer.type === 'rotator') {
-      const numValue = Number(value);
+      const numValue = Math.max(1, Number(value)); // Ensure minimum value is 1
       if (field === 'width') {
         layer.fabricObject.scaleX = numValue / (layer.fabricObject.width || 1);
         setRotatorLayerProperties(prev => ({
@@ -800,11 +796,12 @@ const PropertiesSidebar: React.FC = () => {
           height: numValue.toString()
         }));
       }
-
+  
       layer.fabricObject.setCoords();
       canvas?.renderAll();
     }
   };
+  
 
   const updateRotatorLayerRotation = (value: string) => {
     const canvas = layerManager.getCanvas();
@@ -936,23 +933,33 @@ const PropertiesSidebar: React.FC = () => {
   const updateBarLayerDimensions = (field: 'width' | 'height', value: string) => {
     const canvas = layerManager.getCanvas();
     const layer = layerManager.getLayers().find(layer => layer.id === selectedLayerId);
-
+  
     if (layer && layer.type === 'bar') {
-      const numValue = Number(value);
+      const barGroup = layer.fabricObject as Group;
+      const numValue = Math.max(1, Number(value)); // Ensure minimum value is 1
       if (field === 'width') {
-        layer.fabricObject.scaleX = numValue / (layer.fabricObject.width || 1);
+        // background.scaleX = numValue / (background.width || 1);
+        // background.set({ width: numValue });
+        // foreground.set({ width: numValue });
+        // foreground.scaleX = numValue / (foreground.width || 1);
+        barGroup.scaleX = numValue / (barGroup.width || 1);
         setBarLayerProperties(prev => ({
           ...prev,
           width: numValue.toString()
         }));
       } else if (field === 'height') {
-        layer.fabricObject.scaleY = numValue / (layer.fabricObject.height || 1);
+        // background.scaleY = numValue / (background.height || 1);
+        // background.set({ height: numValue });
+        // foreground.scaleY = numValue / (foreground.height || 1); 
+        // foreground.set({ height: numValue });
+        // barGroup.set({ height: numValue });
+        barGroup.scaleY = numValue / (barGroup.height || 1);
         setBarLayerProperties(prev => ({
           ...prev,
           height: numValue.toString()
         }));
       }
-
+  
       layer.fabricObject.setCoords();
       canvas?.renderAll();
     }
@@ -1143,6 +1150,17 @@ const PropertiesSidebar: React.FC = () => {
                           className='w-20'
                         />
                       </div>
+                    </div>
+                    {/* Background Color */}
+                    <div className="space-y-2">
+                      <Label htmlFor="skin-background-color">Background Color</Label>
+                      <Input
+                        id="skin-background-color"
+                        type="color"
+                        className="h-10 w-44"
+                        value={skinProperties.backgroundColor}
+                        onChange={e => handleSkinBackgroundColorChange(e.target.value)}
+                      />
                     </div>
                   </div>
                 </div>
