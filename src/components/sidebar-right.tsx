@@ -1,22 +1,37 @@
-import React, { useEffect, useState } from 'react';
-import { Button } from './ui/button';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { handleCreateDirectory } from '@/services/ExportToINI';
-import { useToast } from "@/hooks/use-toast"
-import ExportModal from './ExportModal'
-import { checkForAppUpdates } from '@/services/CheckForAppUpdates';
-import { version as appVersion } from '../../package.json';
-import { Badge } from './ui/badge';
-import { FaBug, FaDiscord } from 'react-icons/fa';
-import { open } from '@tauri-apps/plugin-shell';
+import { useEffect, useState } from "react"
+import { Plus } from "lucide-react"
 
-const Topbar: React.FC = () => {
-  const [version, setVersion] = useState('1.0.0'); // Add version state
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarSeparator,
+} from "@/components/ui/sidebar"
+import { checkForAppUpdates } from "@/services/CheckForAppUpdates";
+import { useToast } from "@/hooks/use-toast";
+import { handleCreateDirectory } from "@/services/ExportToINI";
+import { version as appVersion } from '../../package.json';
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
+import { Button } from "./ui/button";
+import { Bug } from 'lucide-react';
+import { FaDiscord } from "react-icons/fa";
+import { useLayerContext } from "@/context/LayerContext";
+import ExportModal from "./ExportModal";
+import SkinProperties from "./PropertiesSidebar/SkinProperties";
+
+
+export function SidebarRight({
+  ...props
+}: React.ComponentProps<typeof Sidebar>) {
+    const { selectedLayer } = useLayerContext();
+    const selectedLayerId = selectedLayer?.id;
+    const [version, setVersion] = useState('1.0.0'); // Add version state
   const v = appVersion;
 
   useEffect(() => {
@@ -47,36 +62,15 @@ const Topbar: React.FC = () => {
 
     return success;
   };
-
-  // const handleRefresh = async () => {
-  //   // await Window
-  //   // await Webview.reload();
-  //   // await getCurrentWindow().refr
-  //   // await getCurrentWebview().;
-  // };
-
   return (
-    <TooltipProvider>
-      <div className="h-16 z-2 bg-secondary border-gray-200 flex items-center justify-between px-6">
-        <div className="text-xl text-secondary-foreground font-semibold">
-          Rainmeter Editor <Badge variant="outline">v{version}</Badge>
-        </div>
-        <div className="flex items-center space-x-2">
-          {/* <Tooltip>
-            <TooltipTrigger asChild>
-              <Button 
-                variant="outline"
-                onClick={handleRefresh} // Trigger refresh action
-                className="hover:text-primary"
-              >
-                <FaSync />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Refresh</p>
-            </TooltipContent>
-          </Tooltip> */}
-          <Tooltip>
+    <Sidebar
+      collapsible="none"
+      className="sticky hidden lg:flex top-0 h-svh border-l"
+      {...props}
+    >
+      <SidebarHeader className="h-fit flex flex-row justify-end border-b border-sidebar-border">
+        {/* <NavUser user={data.user} /> */}
+        <Tooltip>
             <TooltipTrigger asChild>
               <Button 
                 variant="outline"
@@ -99,17 +93,16 @@ const Topbar: React.FC = () => {
                 
                 className="hover:text-destructive"
               >
-                <FaBug />
+                <Bug />
               </Button>
             </TooltipTrigger>
             <TooltipContent>
               <p>Report a Bug</p>
             </TooltipContent>
           </Tooltip>
-
-          <Tooltip>
+        <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="default" onClick={() => setIsExportModalOpen(true)}>
+              <Button className="w-fit" variant="default" onClick={() => setIsExportModalOpen(true)}>
                 Export
               </Button>
             </TooltipTrigger>
@@ -117,15 +110,21 @@ const Topbar: React.FC = () => {
               <p>Export Skin</p>
             </TooltipContent>
           </Tooltip>
-        </div>
-      </div>
-      <ExportModal 
+
+      </SidebarHeader>
+      <SidebarContent>
+        {/* <DatePicker /> */}
+        {!selectedLayerId && (
+            <SkinProperties />
+        )}
+      </SidebarContent>
+      <SidebarFooter>
+      </SidebarFooter>
+      <ExportModal
         onExport={handleExport} 
         open={isExportModalOpen} 
         onOpenChange={setIsExportModalOpen}
       />
-    </TooltipProvider>
+    </Sidebar>
   )
 }
-
-export default Topbar;
