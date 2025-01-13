@@ -24,6 +24,7 @@ import { FaDiscord } from "react-icons/fa";
 import { useLayerContext } from "@/context/LayerContext";
 import ExportModal from "./ExportModal";
 import SkinProperties from "./PropertiesSidebar/SkinProperties";
+import TextLayerProperties from "./PropertiesSidebar/TextProperties";
 
 
 export function SidebarRight({
@@ -116,6 +117,9 @@ export function SidebarRight({
         {/* <DatePicker /> */}
         {!selectedLayerId && (
             <SkinProperties />
+        )}
+        {selectedLayerId && (selectedLayer.type === 'text') && (
+            <TextLayerProperties />
         )}
       </SidebarContent>
       <SidebarFooter>

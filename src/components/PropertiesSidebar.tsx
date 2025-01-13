@@ -1417,16 +1417,16 @@ const PropertiesSidebar: React.FC = () => {
         //                     <SelectValue placeholder="Select Measure" />
         //                   </SelectTrigger>
         //                   <SelectContent>
-        //                     <SelectItem value="date-yyyy-mm-dd">2025-01-01 (yyyy-mm-dd)</SelectItem>
-        //                     <SelectItem value="date-mm-dd-yy">01/01/25 (mm/dd/yy)</SelectItem>
-        //                     <SelectItem value="date-month-number">01 (Month Number)</SelectItem>
-        //                     <SelectItem value="date-month-full">January (Month Name Full)</SelectItem>
-        //                     <SelectItem value="date-month-short">Jan (Month Name Short)</SelectItem>
-        //                     <SelectItem value="date-day-number">01 (Day Number)</SelectItem>
-        //                     <SelectItem value="date-day-full">Monday (Day Name Full)</SelectItem>
-        //                     <SelectItem value="date-day-short">Mon (Day Name Short)</SelectItem>
-        //                     <SelectItem value="date-year-short">25 (Year Short)</SelectItem>
-        //                     <SelectItem value="date-year-full">2025 (Year Full)</SelectItem>
+                            // <SelectItem value="date-yyyy-mm-dd">2025-01-01 (yyyy-mm-dd)</SelectItem>
+                            // <SelectItem value="date-mm-dd-yy">01/01/25 (mm/dd/yy)</SelectItem>
+                            // <SelectItem value="date-month-number">01 (Month Number)</SelectItem>
+                            // <SelectItem value="date-month-full">January (Month Name Full)</SelectItem>
+                            // <SelectItem value="date-month-short">Jan (Month Name Short)</SelectItem>
+                            // <SelectItem value="date-day-number">01 (Day Number)</SelectItem>
+                            // <SelectItem value="date-day-full">Monday (Day Name Full)</SelectItem>
+                            // <SelectItem value="date-day-short">Mon (Day Name Short)</SelectItem>
+                            // <SelectItem value="date-year-short">25 (Year Short)</SelectItem>
+                            // <SelectItem value="date-year-full">2025 (Year Full)</SelectItem>
         //                   </SelectContent>
         //                 </Select>
         //               </div>
