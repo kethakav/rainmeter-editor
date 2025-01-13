@@ -29,13 +29,6 @@ const Topbar: React.FC = () => {
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const { toast } = useToast();
 
-  useEffect(() => {
-    toast({
-      title: "Join our discord!",
-      description: "Click the Discord icon to join our community.",
-    });
-  }, [toast]);
-
   const handleExport = async (metadata: { name: string; author: string; version: string; description: string},  allowScrollResize: boolean ) => {
     const success = await handleCreateDirectory(metadata, allowScrollResize);
 
