@@ -48,6 +48,13 @@ const Topbar: React.FC = () => {
     return success;
   };
 
+  // const handleRefresh = async () => {
+  //   // await Window
+  //   // await Webview.reload();
+  //   // await getCurrentWindow().refr
+  //   // await getCurrentWebview().;
+  // };
+
   return (
     <TooltipProvider>
       <div className="h-16 bg-secondary border-gray-200 flex items-center justify-between px-6">
@@ -55,6 +62,20 @@ const Topbar: React.FC = () => {
           Rainmeter Editor <Badge variant="outline">v{version}</Badge>
         </div>
         <div className="flex items-center space-x-2">
+          {/* <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="outline"
+                onClick={handleRefresh} // Trigger refresh action
+                className="hover:text-primary"
+              >
+                <FaSync />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Refresh</p>
+            </TooltipContent>
+          </Tooltip> */}
           <Tooltip>
             <TooltipTrigger asChild>
               <Button 

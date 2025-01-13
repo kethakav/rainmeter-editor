@@ -132,16 +132,6 @@ const Toolbar: React.FC = () => {
                   {/* Outer circle of speedometer */}
                   <circle cx="12" cy="12" r="9" />
                   
-                  {/* Tick marks */}
-                  {/* <path d="M12 3 L12 5" />
-                  <path d="M17 5.5 L15.5 7" />
-                  <path d="M21 12 L19 12" />
-                  <path d="M17 18.5 L15.5 17" />
-                  <path d="M12 21 L12 19" />
-                  <path d="M7 18.5 L8.5 17" />
-                  <path d="M3 12 L5 12" />
-                  <path d="M7 5.5 L8.5 7" /> */}
-                  
                   {/* Needle */}
                   <path d="M12 12 L16 7" strokeWidth="2.5" />
                   

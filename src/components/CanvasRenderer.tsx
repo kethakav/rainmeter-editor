@@ -6,7 +6,8 @@ import { useLayerContext } from '@/context/LayerContext';
 
 const CanvasRenderer: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const { setSelectedLayerId, setSelectedLayer } = useLayerContext();
+  const { setSelectedLayer } = useLayerContext();
+  
 
   useEffect(() => {
   const disableRefresh = () => {
@@ -122,7 +123,7 @@ const CanvasRenderer: React.FC = () => {
         const layer = layerManager.getLayerByFabricObject(selectedObject);
         
         if (layer?.UIElements) {
-          setSelectedLayerId(layer.id);
+          // setSelectedLayerId(layer.id);
           setSelectedLayer(layer);
           layer.UIElements.set({
             visible:true,
@@ -149,12 +150,12 @@ const CanvasRenderer: React.FC = () => {
           if (target) {
             const layer = layerManager.getLayers().find(layer => layer.fabricObject === target);
             if (layer) {
-              setSelectedLayerId(layer.id);
+              // setSelectedLayerId(layer.id);
               setSelectedLayer(layer);
             }
           } else {
             canvas.discardActiveObject();
-            setSelectedLayerId(null);
+            // setSelectedLayerId(null);
             setSelectedLayer(null);
           }
         } else {

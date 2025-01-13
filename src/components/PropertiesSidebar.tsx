@@ -18,9 +18,11 @@ import { Card, CardContent, CardHeader } from './ui/card';
 import { Slider } from "@/components/ui/slider"
 
 const PropertiesSidebar: React.FC = () => {
-  const { selectedLayerId, selectedLayer } = useLayerContext();
+  const { selectedLayer } = useLayerContext();
   const xInputRef = useRef<HTMLInputElement>(null);
   const yInputRef = useRef<HTMLInputElement>(null);
+
+  const selectedLayerId = selectedLayer?.id;
 
   const [skinProperties, setSkinProperties] = useState({
     x: '',
