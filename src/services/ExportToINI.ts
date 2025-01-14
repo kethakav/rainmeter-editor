@@ -182,6 +182,25 @@ async function fontExistsInPublic(fontName: string): Promise<boolean> {
   return await exists(fontPath);
 }
 
+function getRotatedBounds(width: number, height: number, angleInDegrees: number) {
+  // Convert angle to radians
+  const angle = Math.abs(angleInDegrees * Math.PI / 180);
+  
+  // Calculate the bounds of the rotated rectangle
+  const absCos = Math.abs(Math.cos(angle));
+  const absSin = Math.abs(Math.sin(angle));
+  
+  // Calculate the dimensions of the bounding box
+  const boundWidth = width * absCos + height * absSin;
+  const boundHeight = width * absSin + height * absCos;
+  
+  return {
+    width: boundWidth,
+    height: boundHeight,
+    scale: Math.min(width / boundWidth, height / boundHeight)
+  };
+}
+
 
 // Modify the exportSkin function
 export const exportSkin = async (resourcePath: string, metadata: { name: string; author: string; version: string; description: string }, allowScrollResize: boolean) => {
@@ -255,7 +274,7 @@ export const exportSkin = async (resourcePath: string, metadata: { name: string;
         H: ('(' + (height).toString() + ' * #Scale#)'),
         X: ('(' + (adjustedX).toString() + ' * #Scale#)'),
         Y: ('(' + (adjustedY).toString() + ' * #Scale#)'),
-        StartAngle: ((startAngle + 90) * (Math.PI / 180)).toString(),
+        StartAngle: ((startAngle) * (Math.PI / 180)).toString(),
         RotationAngle: ((rotationAngle) * (Math.PI / 180)).toString(),
         OffsetX: ('(' + (OffsetX + (width / 2)).toString() + ' * #Scale#)'),
         OffsetY: ('(' + (OffsetY + (height / 2)).toString() + ' * #Scale#)')
@@ -499,7 +518,7 @@ export const exportSkin = async (resourcePath: string, metadata: { name: string;
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
-      } else if (layer.measure === "time-hour-minute-24") {
+      } else if (layer.measure === "time-hour-minute-12") {
         exporter.addLayer({
           measure: {
             type: 'Time',
@@ -776,17 +795,30 @@ export const exportSkin = async (resourcePath: string, metadata: { name: string;
       if (!imagesToCopy.includes(layer.imageSrc)) {
         imagesToCopy.push(layer.imageSrc); // Track the image
       }
+      // const alpha = layer.fabricObject.angle * (Math.PI / 180);
+      // const gamma = Math.atan(layer.fabricObject.width / layer.fabricObject.height);
+      // const beta = alpha + gamma;
+      // const d = Math.sqrt(Math.pow(layer.fabricObject.width, 2) + Math.pow(layer.fabricObject.height, 2));
+      // const correctedW = d * Math.sin(beta);
+      // const correctedH = d * Math.cos(beta);
+      const { width: correctedW, height: correctedH } = getRotatedBounds(
+        layer.fabricObject.width * layer.fabricObject.scaleX, 
+        layer.fabricObject.height * layer.fabricObject.scaleY, 
+        layer.fabricObject.angle
+      );
+      // console log each step of the calculation
+      
       exporter.addLayer({
         meter: {
           type: 'Image',
           name: layer.name,
           options: {
             ImageName: '#@#Images/' + imagesToCopy.findIndex(img => img === layer.imageSrc).toString() + '.png',
-            W: ('(' + (layer.fabricObject.scaleX * layer.fabricObject.width).toString() + ' * #Scale#)'),
-            H: ('(' + (layer.fabricObject.scaleY * layer.fabricObject.height).toString() + ' * #Scale#)'),
-            X: ('(' + (adjustedX).toString() + ' * #Scale#)'),
-            Y: ('(' + (adjustedY).toString() + ' * #Scale#)'),
-            Angle: (layer.fabricObject.angle * (Math.PI / 180)).toString(),
+            W: ('(' + (correctedW).toString() + ' * #Scale#)'),
+            H: ('(' + (correctedH).toString() + ' * #Scale#)'),
+            X: ('(' + (adjustedX - (correctedW / 2)).toString() + ' * #Scale#)'),
+            Y: ('(' + (adjustedY - (correctedH / 2)).toString() + ' * #Scale#)'),
+            ImageRotate: (layer.fabricObject.angle).toString(),
           }
         }
       });
@@ -806,8 +838,8 @@ export const exportSkin = async (resourcePath: string, metadata: { name: string;
         addRotatorMeterLayerOneMeasure(
           exporter,
           layer,
-          adjustedX,
-          adjustedY,
+          adjustedX - layer.fabricObject.width / 2,
+          adjustedY - layer.fabricObject.height / 2,
           layer.fabricObject.width,
           layer.fabricObject.height,
           '#@#Images/' + imagesToCopy.findIndex(img => img === layer.imageSrc).toString() + '.png',

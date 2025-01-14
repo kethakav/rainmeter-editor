@@ -1,6 +1,6 @@
 import { useLayerContext } from "@/context/LayerContext";
 import { layerManager } from "@/services/LayerManager";
-import { FabricImage, FabricObject, Group } from "fabric";
+import { Circle, FabricImage, FabricObject, Group } from "fabric";
 import { useEffect, useState } from "react";
 import { SidebarGroup, SidebarGroupLabel, SidebarSeparator } from "../ui/sidebar";
 import PropertyInput from "../customUI/PropertyInput";
@@ -146,10 +146,12 @@ const RotatorLayerProperties: React.FC = () => {
                     }
 
                     const UIGroup = layer.UIElements as Group;
-                    const rangeIndicator = UIGroup._objects[1] as FabricObject;
+                    const rangeIndicator = UIGroup._objects[1] as Circle
 
                     if (field === 'startAngle') {
-                        rangeIndicator.set('startAngle', numValue);
+                        // rangeIndicator.set('startAngle', numValue);
+                        rangeIndicator.set('angle', numValue - 90);
+                        rotatorLayer.set('angle', numValue);
                     } else if (field === 'rotationAngle') {
                         rangeIndicator.set('endAngle', numValue);
                     }
@@ -179,6 +181,9 @@ const RotatorLayerProperties: React.FC = () => {
         } else if (value === 'cpu') {
             setCategory('cpu'); // Add the correct one
             handleInputChange('measure', 'rotator-cpu-average');
+        } else if (value === 'disk') {
+            setCategory('disk'); // Add the correct one
+            handleInputChange('measure', 'rotator-disk-c-usage');
         }
     }
 
@@ -360,6 +365,26 @@ const RotatorLayerProperties: React.FC = () => {
                                 <SelectItem value="rotator-cpu-core-6">Core 6 Usage</SelectItem>
                                 <SelectItem value="rotator-cpu-core-7">Core 7 Usage</SelectItem>
                                 <SelectItem value="rotator-cpu-core-8">Core 8 Usage</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </SidebarGroup>
+            )}
+            {measureType === 'disk' && (
+                <SidebarGroup className="pb-0">
+                    <SidebarGroupLabel>Disk Measure</SidebarGroupLabel>
+                    <div className="flex space-x-4 px-2 py-2">
+                        {/* Select Measure Category */}
+                        <Select
+                            value={rotatorLayerProperties.measure}
+                            onValueChange={handleInputChange.bind(null, 'measure') as any}
+                            defaultValue='rotator-disk-c-usage'
+                        >
+                            <SelectTrigger id="category-select" className='w-52 shadow-none'>
+                                <SelectValue placeholder="Select Disk Measure" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="rotator-disk-c-usage">Disk C Usage</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>

@@ -327,7 +327,7 @@ class LayerManager {
             activeObject.set('text', "2025-01-01");
           }
           if (measure === "date-mm-dd-yy") {
-            activeObject.set('text', "01-01-25");
+            activeObject.set('text', "01/01/25");
           }
           if (measure === "custom-text") {
             activeObject.set('text', "Custom Text");
@@ -441,6 +441,8 @@ class LayerManager {
                     outerWidth: img.width,
                     scaleX: 1,
                     scaleY: 1,
+                    originX: 'center',
+                    originY: 'center',
                     hasControls: false,
                 });
                 this.addLayer(LayerType.IMAGE, img, sourcePath);
@@ -472,7 +474,7 @@ class LayerManager {
               originY: 'center',
               centeredScaling: true,
               centeredRotation: true,
-              angle: 90,
+              angle: 0,
               scaleX: 1,
               scaleY: 1,
               hasControls: false,
@@ -485,7 +487,7 @@ class LayerManager {
             centeredRotation: true,
             left: x,
             top: y,
-            angle: 0,
+            angle: -90,
             startAngle: 0,
             endAngle: 90,
             stroke: '#0F0',
