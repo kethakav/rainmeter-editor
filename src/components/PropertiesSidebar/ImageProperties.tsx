@@ -53,7 +53,7 @@ const ImageLayerProperties: React.FC = () => {
                 canvas.off('object:moving', updateLayerProperties);
             }
         }
-    }, [])
+    }, [selectedLayerId])
 
     const handleInputChange = (field: keyof typeof imageLayerProperties, value: string) => {
         if (selectedLayerId) {

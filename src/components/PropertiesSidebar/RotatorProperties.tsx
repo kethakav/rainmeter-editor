@@ -91,7 +91,7 @@ const RotatorLayerProperties: React.FC = () => {
             }
         }
 
-    }, [])
+    }, [selectedLayerId])
 
     const handleInputChange = (field: keyof typeof rotatorLayerProperties, value: string) => {
         if (selectedLayerId) {
@@ -159,6 +159,7 @@ const RotatorLayerProperties: React.FC = () => {
                     layerManager.updateImageForSelectedLayer(value);
                 }
                 if (field === 'measure') {
+                    // layer.measure = value;
                     layerManager.updateMeasureForSelectedLayer(value);
                 }
 

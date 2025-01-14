@@ -563,7 +563,7 @@ class LayerManager {
           top: y,
           width: 200,
           height: 50,
-          fill: '#000',
+          fill: '#000000',
           hasControls: false,
         });
         const foreground = new Rect({

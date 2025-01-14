@@ -27,6 +27,7 @@ import SkinProperties from "./PropertiesSidebar/SkinProperties";
 import TextLayerProperties from "./PropertiesSidebar/TextProperties";
 import ImageLayerProperties from "./PropertiesSidebar/ImageProperties";
 import RotatorLayerProperties from "./PropertiesSidebar/RotatorProperties";
+import BarLayerProperties from "./PropertiesSidebar/BarProperties";
 
 
 export function SidebarRight({
@@ -128,6 +129,9 @@ export function SidebarRight({
         )}
         {selectedLayerId && (selectedLayer.type === 'rotator') && (
           <RotatorLayerProperties />
+        )}
+        {selectedLayerId && (selectedLayer.type === 'bar') && (
+          <BarLayerProperties />
         )}
       </SidebarContent>
       <SidebarFooter>
