@@ -25,6 +25,8 @@ import { useLayerContext } from "@/context/LayerContext";
 import ExportModal from "./ExportModal";
 import SkinProperties from "./PropertiesSidebar/SkinProperties";
 import TextLayerProperties from "./PropertiesSidebar/TextProperties";
+import ImageLayerProperties from "./PropertiesSidebar/ImageProperties";
+import RotatorLayerProperties from "./PropertiesSidebar/RotatorProperties";
 
 
 export function SidebarRight({
@@ -116,10 +118,16 @@ export function SidebarRight({
       <SidebarContent>
         {/* <DatePicker /> */}
         {!selectedLayerId && (
-            <SkinProperties />
+          <SkinProperties />
         )}
         {selectedLayerId && (selectedLayer.type === 'text') && (
-            <TextLayerProperties />
+          <TextLayerProperties />
+        )}
+        {selectedLayerId && (selectedLayer.type === 'image') && (
+          <ImageLayerProperties />
+        )}
+        {selectedLayerId && (selectedLayer.type === 'rotator') && (
+          <RotatorLayerProperties />
         )}
       </SidebarContent>
       <SidebarFooter>

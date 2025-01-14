@@ -6,13 +6,10 @@ import { localFontManager } from '@/services/LocalFontManager';
 import { useLayerContext } from '@/context/LayerContext';
 import { IText } from 'fabric';
 import { SingleFontLoad } from '@/services/singleFontLoad';
-import { Card, CardContent, CardHeader } from '../ui/card';
-import { ScrollArea } from '../ui/scroll-area';
-import { Slider } from '../ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { SidebarGroup, SidebarGroupLabel, SidebarSeparator } from '../ui/sidebar';
 import PropertyInput from '../customUI/PropertyInput';
-import { ALargeSmall, Axis3D, Blend, RotateCw, Sidebar, Type } from 'lucide-react';
+import { Axis3D, Blend, Type } from 'lucide-react';
 
 const TextLayerProperties: React.FC = () => {
 
