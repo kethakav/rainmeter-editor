@@ -3,22 +3,11 @@
 // import * as React from "react"
 import { useEffect, useState } from "react"
 import {
-  AudioWaveform,
-  Blocks,
-  Calendar,
-  Command,
-  Home,
   Import,
-  Inbox,
-  MessageCircleQuestion,
   Save,
-  Search,
-  Settings2,
-  Sparkles,
-  Trash2,
   User,
 } from "lucide-react"
-import appLogo from "@/../src-tauri/icons/128x128.png" // Adjust the path based on your project structure
+
 
 // import { NavFavorites } from "@/components/nav-favorites"
 // import { NavMain } from "@/components/nav-main"
@@ -35,18 +24,15 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarRail,
   SidebarSeparator,
 } from "@/components/ui/sidebar"
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { layerManager } from "@/services/LayerManager";
 import { Button } from "./ui/button";
-import { FaTrash, FaFont, FaImage, FaClock, FaMinus } from "react-icons/fa";
 import { useLayerContext } from "@/context/LayerContext";
 import { closestCenter, DndContext, DragEndEvent, KeyboardSensor, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
-import Toolbar from "./Toolbar";
 import { Type, Image, Gauge, Minus, Trash } from 'lucide-react';
 import { Badge } from "./ui/badge";
 import { version } from "../../package.json"

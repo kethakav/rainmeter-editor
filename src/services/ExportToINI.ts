@@ -298,6 +298,7 @@ export const exportSkin = async (resourcePath: string, metadata: { name: string;
     const barGroup = layer.fabricObject as Group;
     const background = barGroup._objects[0] as Rect;
     const foreground = barGroup._objects[1] as Rect;
+    console.log(width, height);
     exporter.addLayer({
       meter: {
         type: 'Bar',
