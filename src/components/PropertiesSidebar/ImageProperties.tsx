@@ -5,6 +5,8 @@ import { Axis3D } from "lucide-react";
 import { layerManager } from "@/services/LayerManager";
 import { useLayerContext } from "@/context/LayerContext";
 import { FabricImage } from "fabric";
+import { open } from "@tauri-apps/plugin-dialog";
+import { Button } from "../ui/button";
 
 const ImageLayerProperties: React.FC = () => {
 
@@ -91,10 +93,39 @@ const ImageLayerProperties: React.FC = () => {
 
     }
 
+    const handleImageSourceUpdate = async () => {
+        const selectedFile = await open({
+            title: 'Select an Image',
+            filters: [
+                {
+                    name: 'Images',
+                    extensions: ['png'],
+                },
+            ],
+        });
+        if (!selectedFile) return;
+        layerManager.updateImageForSelectedLayer(selectedFile);
+
+    }
+
     return (
         <div>
             <SidebarGroup>
                 <SidebarGroupLabel>Image Properties</SidebarGroupLabel>
+            </SidebarGroup>
+            <SidebarSeparator />
+            <SidebarGroup>
+                <SidebarGroupLabel>Image</SidebarGroupLabel>
+                <div className="flex space-x-4 px-2 py-2">
+                    {/* Source */}
+                    <Button 
+                        variant="outline" 
+                        onClick={handleImageSourceUpdate}
+                        className="shadow-none"
+                        >
+                        Change Image
+                    </Button>
+                </div>
             </SidebarGroup>
             <SidebarSeparator />
             <SidebarGroup>

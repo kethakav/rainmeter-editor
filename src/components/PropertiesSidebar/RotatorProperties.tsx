@@ -7,6 +7,8 @@ import PropertyInput from "../customUI/PropertyInput";
 import { CircleArrowOutUpRight, RotateCw, UnfoldHorizontal, UnfoldVertical } from "lucide-react";
 import { Input } from "../ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { Button } from "../ui/button";
+import { open } from "@tauri-apps/plugin-dialog";
 
 const RotatorLayerProperties: React.FC = () => {
 
@@ -173,6 +175,21 @@ const RotatorLayerProperties: React.FC = () => {
         }
     }
 
+    const handleImageSourceUpdate = async () => {
+        const selectedFile = await open({
+            title: 'Select an Image',
+            filters: [
+                {
+                    name: 'Images',
+                    extensions: ['png'],
+                },
+            ],
+        });
+        if (!selectedFile) return;
+        layerManager.updateImageForSelectedLayer(selectedFile);
+
+    }
+
     const handleMeasureTypeChange = (value: string) => {
         setMeasureType(value);
         if (value === 'time') {
@@ -194,23 +211,16 @@ const RotatorLayerProperties: React.FC = () => {
             </SidebarGroup>
             <SidebarSeparator />
             <SidebarGroup>
-                <SidebarGroupLabel>Change Rotator Image</SidebarGroupLabel>
+                <SidebarGroupLabel>Image</SidebarGroupLabel>
                 <div className="flex space-x-4 px-2 py-2">
                     {/* Source */}
-                    <Input
-                    id="rotator-image"
-                    type='file'
-                    className="w-52 shadow-none"
-                    accept=".png"
-                    onChange={e => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                        const fileURL = URL.createObjectURL(file);
-                        console.log(fileURL);
-                        handleInputChange('source', fileURL);
-                        }
-                    }}
-                    />
+                    <Button 
+                        variant="outline" 
+                        onClick={handleImageSourceUpdate}
+                        className="shadow-none"
+                        >
+                        Change Rotator Image
+                    </Button>
                 </div>
             </SidebarGroup>
             <SidebarSeparator />
@@ -231,23 +241,6 @@ const RotatorLayerProperties: React.FC = () => {
                         label='Y' 
                         value={rotatorLayerProperties.y} 
                         onChange={value => handleInputChange('y', value)}
-                    />
-                </div>
-                <div className="flex space-x-4 px-2 py-2">
-                    {/* Width */}
-                    <PropertyInput 
-                        id='rotator-width' 
-                        label='W' 
-                        value={rotatorLayerProperties.width} 
-                        onChange={value => handleInputChange('width', value)}
-                    />
-
-                    {/* Height */}
-                    <PropertyInput 
-                        id='rotator-height' 
-                        label='H' 
-                        value={rotatorLayerProperties.height} 
-                        onChange={value => handleInputChange('height', value)}
                     />
                 </div>
             </SidebarGroup>

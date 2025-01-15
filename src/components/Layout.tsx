@@ -16,13 +16,14 @@ import { SidebarRight } from './sidebar-right'
 const Layout: React.FC = () => {
   return (
     <SidebarProvider>
-    <SidebarLeft />
-    <SidebarInset>
-      <CanvasRenderer />
-      <Toolbar />
-    </SidebarInset>
-    <SidebarRight />
-  </SidebarProvider>
+      <SidebarLeft />
+      <SidebarInset>
+        <CanvasRenderer />
+        <Toolbar />
+      </SidebarInset>
+      <SidebarRight />
+      <Toaster />
+    </SidebarProvider>
     // <div className="flex flex-col h-screen">
     //   <Topbar />
     //   <div className="flex flex-col flex-1 overflow-hidden">

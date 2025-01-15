@@ -32,22 +32,26 @@ const BarLayerProperties: React.FC = () => {
         const updateLayerProperties = () => {
             if (layer && layer.type === 'bar') {
                 const bar = layer.fabricObject;
-            const measure = layer.measure || 'bar-cpu';
-            const barGroup = layer.fabricObject as Group;
-            const background = barGroup._objects[0] as Rect;
-            const foreground = barGroup._objects[1] as Rect
+                    
+                if (layer.measure === '') {
+                    layer.measure = 'bar-cpu';
+                }
+                const measure = layer.measure || 'bar-cpu';
+                const barGroup = layer.fabricObject as Group;
+                const background = barGroup._objects[0] as Rect;
+                const foreground = barGroup._objects[1] as Rect
 
-            setBarLayerProperties({
-              x: bar.left?.toString() || '0',
-              y: bar.top?.toString() || '0',
-              height: (barGroup.height * barGroup.scaleY)?.toString() || '100',
-              width: (barGroup.width * barGroup.scaleX)?.toString() || '100',
-              backgroundFill: background.fill?.toString() || '#000000',
-              backgroundOpacity: background.opacity?.toString() || '1',
-              foregroundFill: foreground.fill?.toString() || '#000000',
-              foregroundOpacity: foreground.opacity?.toString() || '1',
-              measure: measure,
-            });
+                setBarLayerProperties({
+                x: bar.left?.toString() || '0',
+                y: bar.top?.toString() || '0',
+                height: (barGroup.height * barGroup.scaleY)?.toString() || '100',
+                width: (barGroup.width * barGroup.scaleX)?.toString() || '100',
+                backgroundFill: background.fill?.toString() || '#000000',
+                backgroundOpacity: background.opacity?.toString() || '1',
+                foregroundFill: foreground.fill?.toString() || '#000000',
+                foregroundOpacity: foreground.opacity?.toString() || '1',
+                measure: measure,
+                });
             }
         }
         updateLayerProperties();
@@ -232,7 +236,7 @@ const BarLayerProperties: React.FC = () => {
                         defaultValue='bar-cpu'
                     >
                         <SelectTrigger id="disk-select" className='w-52 shadow-none'>
-                            <SelectValue placeholder="Select Disk Measure" />
+                            <SelectValue placeholder="Select Bar Measure" />
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="bar-cpu">CPU</SelectItem>

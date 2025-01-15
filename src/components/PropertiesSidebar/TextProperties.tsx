@@ -10,6 +10,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { SidebarGroup, SidebarGroupLabel, SidebarSeparator } from '../ui/sidebar';
 import PropertyInput from '../customUI/PropertyInput';
 import { Axis3D, Blend, Type } from 'lucide-react';
+import { Button } from '../ui/button';
+import { open } from '@tauri-apps/plugin-dialog';
+import { basename, join, resourceDir } from '@tauri-apps/api/path';
+import { copyFile } from '@tauri-apps/plugin-fs';
 
 const TextLayerProperties: React.FC = () => {
 
@@ -56,12 +60,23 @@ const TextLayerProperties: React.FC = () => {
         return { type: 'custom-text', category: '' };
     };
 
-    useEffect(() => {
-        const loadFonts = async () => {
-        const fonts = await localFontManager.scanLocalFonts();
-        setSystemFonts(fonts.map(font => font.name)); // Set the name property
-        };
+    const loadFonts = async () => {
+        try {
+            console.log('Loading fonts...');
+            const fonts = await localFontManager.scanLocalFonts();
+            // Ensure we have valid font names before updating state
+            const validFonts = fonts
+                .filter(font => font && font.name) // Filter out any null or undefined values
+                .map(font => font.name);
+            
+            console.log('Found fonts:', validFonts);
+            setSystemFonts(validFonts);
+        } catch (error) {
+            console.error('Error loading fonts:', error);
+        }
+    };
 
+    useEffect(() => {
         loadFonts();
         // preloadCustomFonts();
     }, []);
@@ -187,6 +202,49 @@ const TextLayerProperties: React.FC = () => {
         }
     }
 
+    const handleFontUpload = async () => {
+        try {
+            const selectedFile = await open({
+                multiple: true,
+                directory: false,
+                filters: [
+                    { name: 'Fonts', extensions: ['ttf', 'otf'] }
+                ]
+            });
+
+            if (!selectedFile) return;
+
+            const fontPath = await resourceDir() + `/_up_/public/fonts/`;
+            
+            // Handle both single file and multiple file selections
+            const files = Array.isArray(selectedFile) ? selectedFile : [selectedFile];
+            
+            const fontUploadPromises = files.map(async (path: string) => {
+                try {
+                    const fontName = await basename(path);
+                    if (!fontName) return;
+                    
+                    const newPath = await join(fontPath, fontName);
+                    console.log(`Copying font from ${path} to ${newPath}`);
+                    await copyFile(path, newPath);
+                } catch (error) {
+                    console.error(`Error processing font ${path}:`, error);
+                }
+            });
+
+            await Promise.all(fontUploadPromises);
+            console.log('All fonts uploaded successfully');
+            
+            // Force a refresh of the font list
+            await loadFonts();
+            
+            // Trigger a re-render of the select component
+            setSystemFonts(prev => [...prev]);
+        } catch (error) {
+            console.error('Error in handleFontUpload:', error);
+        }
+    };
+
     return (
         <div>
             <SidebarGroup>
@@ -277,6 +335,14 @@ const TextLayerProperties: React.FC = () => {
                         value={textLayerProperties.fontSize} 
                         onChange={value => handleInputChange('fontSize', value)}
                     />
+                    {/* Source */}
+                    <Button 
+                        variant="outline" 
+                        onClick={handleFontUpload}
+                        className="shadow-none"
+                        >
+                        Add Font File(s)
+                    </Button>
                 </div>
             </SidebarGroup>
             <SidebarSeparator />

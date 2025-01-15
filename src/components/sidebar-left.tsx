@@ -8,13 +8,17 @@ import {
   Calendar,
   Command,
   Home,
+  Import,
   Inbox,
   MessageCircleQuestion,
+  Save,
   Search,
   Settings2,
   Sparkles,
   Trash2,
+  User,
 } from "lucide-react"
+import appLogo from "@/../src-tauri/icons/128x128.png" // Adjust the path based on your project structure
 
 // import { NavFavorites } from "@/components/nav-favorites"
 // import { NavMain } from "@/components/nav-main"
@@ -44,6 +48,8 @@ import { closestCenter, DndContext, DragEndEvent, KeyboardSensor, PointerSensor,
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import Toolbar from "./Toolbar";
 import { Type, Image, Gauge, Minus, Trash } from 'lucide-react';
+import { Badge } from "./ui/badge";
+import { version } from "../../package.json"
 
 interface Layer {
     id: string;
@@ -185,28 +191,42 @@ const SidebarLeft: React.FC = () => {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <a href="#">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                  <Command className="size-4" />
-                </div>
+                {/* <div className="flex aspect-square size-8 items-center justify-center rounded-lg">
+                  <img 
+                    src={appLogo} 
+                    alt="Rainmeter Editor Logo" 
+                    className="w-full h-full object-contain"
+                  />
+                </div> */}
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">Acme Inc</span>
+                  <span className="truncate font-semibold">Rainmeter Editor</span>
                 </div>
+                <Badge variant="outline" className="ml-2">v{version}</Badge>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
-        {/* <SidebarMenu>
+        <SidebarSeparator className="mx-0"/>
+        <SidebarMenu>
+          <SidebarMenuItem>
+                <SidebarMenuButton>
+                    <span>
+                        <Save style={{width: '18px'}}/>
+                    </span>
+                    <span>Save Project (Coming Soon)</span>
+                </SidebarMenuButton>
+            </SidebarMenuItem>
             <SidebarMenuItem>
                 <SidebarMenuButton>
                     <span>
-                        <Search style={{ height: '14px' }} />
+                        <Import style={{width: '18px'}}/>
                     </span>
-                    <span>Search</span>
+                    <span>Import Project (Coming Soon)</span>
                 </SidebarMenuButton>
             </SidebarMenuItem>
-        </SidebarMenu> */}
+        </SidebarMenu>
       </SidebarHeader>
-        {/* <Toolbar /> */}
+      <SidebarSeparator />
         <SidebarContent >
         <SidebarGroup className="group-data-[collapsible=icon]:hidden">
           <SidebarGroupLabel>Layers</SidebarGroupLabel>
@@ -222,7 +242,7 @@ const SidebarLeft: React.FC = () => {
                 strategy={verticalListSortingStrategy}
               >
                 {layers.map((layer) => (
-                  <SidebarMenuItem key={layer.id}>
+                  <SidebarMenuItem key={layer.id} className="px-2">
                     <SortableItem
                       layer={layer}
                       isSelected={layer.id === selectedLayerId}
@@ -239,7 +259,11 @@ const SidebarLeft: React.FC = () => {
         {/* <SidebarRail /> */}
         <SidebarSeparator className="mx-0" />
         <SidebarFooter>
-                    Footer
+          {/* placeholder for account with avatar */}
+          <div className="flex items-center p-2 space-x-4">
+            <User /> {/* Placeholder for user avatar */}
+            <span>Account (Coming Soon)</span> {/* Placeholder for username */}
+          </div>
         </SidebarFooter>
     </Sidebar>
   )
