@@ -1,6 +1,5 @@
 //LayerManager.ts
 // import { useToolContext } from '@/context/ToolContext';
-import { open} from '@tauri-apps/plugin-dialog';
 import { arrayMove } from '@dnd-kit/sortable';
 import { join, resourceDir } from '@tauri-apps/api/path';
 import { Canvas, Circle, FabricObject, FabricObjectProps, Rect, Triangle, IText, FabricImage, Group, Line, Text} from 'fabric';
@@ -249,6 +248,9 @@ class LayerManager {
 
   public async updateImageForSelectedLayer(imageSource: string) {
     // const { setSelectedLayerId, setSelectedLayer } = useLayerContext();
+    const sourcePath = await join(imageSource as string);
+    const assetUrl = convertFileSrc(sourcePath);
+
     if (this.canvas) {
       console.log("update image");
       const activeObject = this.canvas.getActiveObject();
@@ -256,7 +258,7 @@ class LayerManager {
         const activeLayer = this.getLayerByFabricObject(activeObject);
         // Update the image source
         const fabricImage = activeObject as FabricImage;
-        await fabricImage.setSrc(imageSource);
+        await fabricImage.setSrc(assetUrl);
         if (activeLayer) {
           activeLayer.imageSrc = imageSource; // Update the image source
           const offsetX = activeLayer.properties.find(prop => prop.property === 'offsetX');
@@ -281,6 +283,7 @@ class LayerManager {
           left: activeLayer.fabricObject.left,
           top: activeLayer.fabricObject.top
         });
+        activeLayer?.fabricObject.setCoords();
         this.canvas.renderAll(); // Re-render the canvas to reflect changes
         
       }
@@ -327,7 +330,7 @@ class LayerManager {
             activeObject.set('text', "2025-01-01");
           }
           if (measure === "date-mm-dd-yy") {
-            activeObject.set('text', "01-01-25");
+            activeObject.set('text', "01/01/25");
           }
           if (measure === "custom-text") {
             activeObject.set('text', "Custom Text");
@@ -412,21 +415,24 @@ class LayerManager {
   async addImageLayer(x: number, y: number) {
     if (this.canvas) {
         // Open a file dialog to select an image
-        const selectedFile = await open({
-            title: 'Select an Image',
-            filters: [
-                {
-                    name: 'Images',
-                    extensions: ['png'],
-                },
-            ],
-        });
+        // const selectedFile = await open({
+        //     title: 'Select an Image',
+        //     filters: [
+        //         {
+        //             name: 'Images',
+        //             extensions: ['png'],
+        //         },
+        //     ],
+        // });
+
+        const resPath = await resourceDir();
+        const sourcePath = await join(resPath, '_up_/public/images/image-placeholder.png');
         
 
         // Check if a file was selected
-        if (selectedFile) {
+        if (sourcePath) {
             // Convert to the appropriate format (string if selectedFile is a File)
-            const sourcePath = await join(selectedFile as string);
+            // const sourcePath = await join(selectedFile as string);
             const assetUrl = convertFileSrc(sourcePath);
             console.log(sourcePath);
             console.log(assetUrl);
@@ -439,8 +445,10 @@ class LayerManager {
                     top: y,
                     outerHeight: img.height,
                     outerWidth: img.width,
-                    scaleX: 1,
-                    scaleY: 1,
+                    scaleX: 0.5,
+                    scaleY: 0.5,
+                    originX: 'center',
+                    originY: 'center',
                     hasControls: false,
                 });
                 this.addLayer(LayerType.IMAGE, img, sourcePath);
@@ -457,11 +465,26 @@ class LayerManager {
     if (this.canvas) {
       const resPath = await resourceDir();
       const source = await join(resPath, '_up_/public/images/Needle.png');
+      const backgroundSourcePath = await join(resPath, '_up_/public/images/RotatorBackground2.png');
       const assetUrl = convertFileSrc(source);
+      const backgroundAssetUrl = convertFileSrc(backgroundSourcePath);
       console.log(assetUrl);
       
       // Use fromURL correctly with await
       try {
+        const backgroundImg: FabricImage = await FabricImage.fromURL(backgroundAssetUrl, { crossOrigin: 'anonymous' });
+                backgroundImg.set({
+                    left: x,
+                    top: y,
+                    outerHeight: backgroundImg.height,
+                    outerWidth: backgroundImg.width,
+                    scaleX: 1,
+                    scaleY: 1,
+                    originX: 'center',
+                    originY: 'center',
+                    hasControls: false,
+                });
+                this.addLayer(LayerType.IMAGE, backgroundImg, backgroundSourcePath);
           const img: FabricImage = await FabricImage.fromURL(assetUrl, { crossOrigin: 'anonymous' });
           img.set({
               left: x,
@@ -472,7 +495,7 @@ class LayerManager {
               originY: 'center',
               centeredScaling: true,
               centeredRotation: true,
-              angle: 90,
+              angle: 0,
               scaleX: 1,
               scaleY: 1,
               hasControls: false,
@@ -485,7 +508,7 @@ class LayerManager {
             centeredRotation: true,
             left: x,
             top: y,
-            angle: 0,
+            angle: -90,
             startAngle: 0,
             endAngle: 90,
             stroke: '#0F0',
@@ -563,7 +586,7 @@ class LayerManager {
           top: y,
           width: 200,
           height: 50,
-          fill: '#000',
+          fill: '#000000',
           hasControls: false,
         });
         const foreground = new Rect({

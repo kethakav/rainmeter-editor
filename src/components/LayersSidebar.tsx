@@ -85,7 +85,15 @@ const SortableItem: React.FC<SortableItemProps> = ({ layer, isSelected, onSelect
 
 const LayersSidebar: React.FC = () => {
   const [layers, setLayers] = useState<Layer[]>(layerManager.getLayers());
-  const { selectedLayerId, setSelectedLayerId } = useLayerContext();
+  const { selectedLayer, setSelectedLayer } = useLayerContext();
+
+  const setSelectedLayerId = (id: string) => {
+    const layer = layerManager.getLayers().find(layer => layer.id === id);
+    if (!layer) return;
+    setSelectedLayer(layer);
+  };
+
+  const selectedLayerId = selectedLayer?.id;
 
   const sensors = useSensors(
     useSensor(PointerSensor, {

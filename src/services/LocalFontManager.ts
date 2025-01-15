@@ -2,15 +2,14 @@ import { readDir } from '@tauri-apps/plugin-fs';
 import { resourceDir } from '@tauri-apps/api/path';
 import { getFontNameFromFile } from './getFontName'; // Importing the function
 
-const fontCache: { [key: string]: { name: string; src: string } } = {}; // Cache for font data
+interface FontCache {
+  [key: string]: { name: string; src: string };
+}
+
+const fontCache: FontCache = {}; // Cache for font data
 
 export const localFontManager = {
   async scanLocalFonts() {
-    if (Object.keys(fontCache).length > 0) {
-      console.log('Returning cached fonts:', fontCache);
-      return Object.values(fontCache); // Return cached fonts if already loaded
-    }
-
     try {
       console.log("Scanning local fonts...");
       const resourcePath = await resourceDir();
@@ -21,32 +20,43 @@ export const localFontManager = {
       const entries = await readDir(fontPath);
       console.log('Entries:', entries);
 
-      // Filter and map entries to create an array of font files
-      const fontFiles = await Promise.all(entries
-        .filter(entry => 
-          entry.name?.toLowerCase().endsWith('.ttf') || 
-          entry.name?.toLowerCase().endsWith('.otf')
-        )
-        .map(async entry => {
-          const fontData = {
-            name: await getFontNameFromFile(`${fontPath}/${entry.name}`) || '', // Get the font name using the utility
-            src: entry.name,
-          };
-
-          fontCache[entry.name] = fontData; // Cache the font data
-          return fontData;
-        })
+      // Filter entries for font files
+      const fontFiles = entries.filter(entry => 
+        entry.name?.toLowerCase().endsWith('.ttf') || 
+        entry.name?.toLowerCase().endsWith('.otf')
       );
 
-      // Log and return the array of font files
-      console.log('Fonts loaded successfully:', fontFiles);
-      return fontFiles; // This now clearly indicates it returns an array of font files
+      // Process new font files and update the cache
+      const newFonts = await Promise.all(fontFiles.map(async entry => {
+        if (!fontCache[entry.name]) { // Only process fonts not already in the cache
+          const fontData = {
+            name: await getFontNameFromFile(`${fontPath}/${entry.name}`) || '', // Get the font name
+            src: entry.name,
+          };
+          fontCache[entry.name] = fontData; // Add to cache
+          return fontData; // Return the new font data
+        }
+        return null; // Skip already cached fonts
+      }));
+
+      const addedFonts = newFonts.filter(font => font !== null); // Filter out nulls (already cached fonts)
+
+      if (addedFonts.length > 0) {
+        console.log('New fonts added to cache:', addedFonts);
+      } else {
+        console.log('No new fonts found.');
+      }
+
+      console.log('Current font cache:', fontCache);
+
+      // Return all cached fonts
+      return Object.values(fontCache);
     } catch (error) {
       console.error('Error scanning local fonts:', error);
       return []; // Return an empty array in case of error
     }
   },
-  
+
   getCachedFonts() {
     return Object.values(fontCache); // Method to access cached fonts
   }

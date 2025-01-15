@@ -16,19 +16,23 @@ import { localFontManager } from '@/services/LocalFontManager';
 import { SingleFontLoad } from '@/services/singleFontLoad';
 import { Card, CardContent, CardHeader } from './ui/card';
 import { Slider } from "@/components/ui/slider"
+import SkinProperties from './PropertiesSidebar/SkinProperties';
+import TextLayerProperties from './PropertiesSidebar/TextProperties';
 
 const PropertiesSidebar: React.FC = () => {
-  const { selectedLayerId, selectedLayer } = useLayerContext();
+  const { selectedLayer } = useLayerContext();
   const xInputRef = useRef<HTMLInputElement>(null);
   const yInputRef = useRef<HTMLInputElement>(null);
 
-  const [skinProperties, setSkinProperties] = useState({
-    x: '',
-    y: '',
-    height: '',
-    width: '',
-    backgroundColor: '#FFFFFF',
-  });
+  const selectedLayerId = selectedLayer?.id;
+
+  // const [skinProperties, setSkinProperties] = useState({
+  //   x: '',
+  //   y: '',
+  //   height: '',
+  //   width: '',
+  //   backgroundColor: '#FFFFFF',
+  // });
 
   const [textLayerProperties, setTextLayerProperties] = useState({
     x: '',
@@ -223,14 +227,14 @@ const PropertiesSidebar: React.FC = () => {
         // update skin properties
         const backgroundGroup = layerManager.getSkinBackground() as Group;
         if (backgroundGroup) {
-          const backgroundRect = backgroundGroup._objects[0] as Rect;
-          setSkinProperties({
-            x: backgroundGroup.left?.toString() || '0',
-            y: backgroundGroup.top?.toString() || '0',
-            width: backgroundRect.width?.toString() || '100',
-            height: backgroundRect.height?.toString() || '100',
-            backgroundColor: canvas?.backgroundColor?.toString() || '0x000000',
-          });
+          // const backgroundRect = backgroundGroup._objects[0] as Rect;
+          // setSkinProperties({
+          //   x: backgroundGroup.left?.toString() || '0',
+          //   y: backgroundGroup.top?.toString() || '0',
+          //   width: backgroundRect.width?.toString() || '100',
+          //   height: backgroundRect.height?.toString() || '100',
+          //   backgroundColor: canvas?.backgroundColor?.toString() || '0x000000',
+          // });
         }
       }
     };
@@ -291,120 +295,120 @@ const PropertiesSidebar: React.FC = () => {
   }, [selectedLayerId, isInputFocused]);
 
   // Handlers for Skin Properties
-  const handleSkinInputChange = (field: keyof typeof skinProperties, value: string) => {
-    setSkinProperties(prev => ({ ...prev, [field]: value }));
-    if (field === 'x' || field === 'y') {
-      updateSkinPosition(field, value);
-    }
-  };
+  // const handleSkinInputChange = (field: keyof typeof skinProperties, value: string) => {
+  //   setSkinProperties(prev => ({ ...prev, [field]: value }));
+  //   if (field === 'x' || field === 'y') {
+  //     updateSkinPosition(field, value);
+  //   }
+  // };
 
-  const updateSkinPosition = (field: 'x' | 'y', value: string) => {
-    const canvas = layerManager.getCanvas();
-    // Get skinBackground object which is not a selected layer
-    const skinBackground = layerManager.getSkinBackground();
+  // const updateSkinPosition = (field: 'x' | 'y', value: string) => {
+  //   const canvas = layerManager.getCanvas();
+  //   // Get skinBackground object which is not a selected layer
+  //   const skinBackground = layerManager.getSkinBackground();
 
 
-    if (skinBackground) {
-      const numValue = Number(value);
+  //   if (skinBackground) {
+  //     const numValue = Number(value);
 
-      if (field === 'x') {
-        skinBackground.left = numValue;
-      } else if (field === 'y') {
-        skinBackground.top = numValue;
-      }
+  //     if (field === 'x') {
+  //       skinBackground.left = numValue;
+  //     } else if (field === 'y') {
+  //       skinBackground.top = numValue;
+  //     }
 
-      skinBackground.setCoords();
-      canvas?.renderAll();
-    }
-  };
+  //     skinBackground.setCoords();
+  //     canvas?.renderAll();
+  //   }
+  // };
 
-  const handleSkinKeyDown = (field: 'x' | 'y' | 'width' | 'height', event: KeyboardEvent<HTMLInputElement>) => {  
-    const stepSize = event.shiftKey ? 10 : 1;
-    if (event.key === 'Enter') {
-      if (field === 'x' || field === 'y') {
-        updateSkinPosition(field, (event.target as HTMLInputElement).value);
-        (event.target as HTMLInputElement).blur();
-      } else if (field === 'width' || field === 'height') {
-        updateSkinDimensions(field, (event.target as HTMLInputElement).value);
-        (event.target as HTMLInputElement).blur();
-      }
-    } else if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
-      event.preventDefault(); 
-      const currentValue = Number(skinProperties[field]);
-      const newValue = event.key === 'ArrowUp'
-        ? currentValue + stepSize
-        : currentValue - stepSize;
+  // const handleSkinKeyDown = (field: 'x' | 'y' | 'width' | 'height', event: KeyboardEvent<HTMLInputElement>) => {  
+  //   const stepSize = event.shiftKey ? 10 : 1;
+  //   if (event.key === 'Enter') {
+  //     if (field === 'x' || field === 'y') {
+  //       updateSkinPosition(field, (event.target as HTMLInputElement).value);
+  //       (event.target as HTMLInputElement).blur();
+  //     } else if (field === 'width' || field === 'height') {
+  //       updateSkinDimensions(field, (event.target as HTMLInputElement).value);
+  //       (event.target as HTMLInputElement).blur();
+  //     }
+  //   } else if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+  //     event.preventDefault(); 
+  //     const currentValue = Number(skinProperties[field]);
+  //     const newValue = event.key === 'ArrowUp'
+  //       ? currentValue + stepSize
+  //       : currentValue - stepSize;
   
-      setSkinProperties(prev => ({
-        ...prev,
-        [field]: newValue.toString()
-      }));
-    }
-  };  
+  //     setSkinProperties(prev => ({
+  //       ...prev,
+  //       [field]: newValue.toString()
+  //     }));
+  //   }
+  // };  
 
-  const handleSkinPositionBlur = (field: 'x' | 'y') => {
-    updateSkinPosition(field, skinProperties[field]);
-  };
+  // const handleSkinPositionBlur = (field: 'x' | 'y') => {
+  //   updateSkinPosition(field, skinProperties[field]);
+  // };
 
-  const updateSkinDimensions = (field: 'width' | 'height', value: string) => {
-    const canvas = layerManager.getCanvas();
-    const skinBackground = layerManager.getSkinBackground();
-    const backgroundGroup = skinBackground as Group;
-    const backgroundRect = backgroundGroup._objects[0] as Rect;
+  // const updateSkinDimensions = (field: 'width' | 'height', value: string) => {
+  //   const canvas = layerManager.getCanvas();
+  //   const skinBackground = layerManager.getSkinBackground();
+  //   const backgroundGroup = skinBackground as Group;
+  //   const backgroundRect = backgroundGroup._objects[0] as Rect;
   
-    if (backgroundRect && skinBackground) {
-      const numValue = Math.max(1, Number(value)); // Ensure minimum value is 1
-      if (field === 'width') {
-        backgroundRect.set({ 
-          width: numValue,
-          left: 0,
-          top: 0
-        }); // Update the rect's width
-        // Update the group width while keeping the child objects positions the same
-        backgroundGroup.set({ width: numValue }); 
-        setSkinProperties(prev => ({
-          ...prev,
-          width: numValue.toString()
-        }));
-      } else if (field === 'height') {
-        backgroundRect.set({ 
-          height: numValue,
-          left: 0,
-          top: 0
-        }); // Update the rect's height
-        // Update the group height while keeping the child objects positions the same
-        backgroundGroup.set({ height: numValue });
-        setSkinProperties(prev => ({
-          ...prev,
-          height: numValue.toString()
-        }));
-      }
+  //   if (backgroundRect && skinBackground) {
+  //     const numValue = Math.max(1, Number(value)); // Ensure minimum value is 1
+  //     if (field === 'width') {
+  //       backgroundRect.set({ 
+  //         width: numValue,
+  //         left: 0,
+  //         top: 0
+  //       }); // Update the rect's width
+  //       // Update the group width while keeping the child objects positions the same
+  //       backgroundGroup.set({ width: numValue }); 
+  //       setSkinProperties(prev => ({
+  //         ...prev,
+  //         width: numValue.toString()
+  //       }));
+  //     } else if (field === 'height') {
+  //       backgroundRect.set({ 
+  //         height: numValue,
+  //         left: 0,
+  //         top: 0
+  //       }); // Update the rect's height
+  //       // Update the group height while keeping the child objects positions the same
+  //       backgroundGroup.set({ height: numValue });
+  //       setSkinProperties(prev => ({
+  //         ...prev,
+  //         height: numValue.toString()
+  //       }));
+  //     }
   
-      backgroundRect.setCoords();
-      backgroundGroup.setCoords(); // Update the group's coordinates
-      canvas?.renderAll();
-    }
-  };
+  //     backgroundRect.setCoords();
+  //     backgroundGroup.setCoords(); // Update the group's coordinates
+  //     canvas?.renderAll();
+  //   }
+  // };
   
 
 
-  const handleSkinDimensionsBlur = (field: 'width' | 'height') => {
-    updateSkinDimensions(field, skinProperties[field]);
-  };
+  // const handleSkinDimensionsBlur = (field: 'width' | 'height') => {
+  //   updateSkinDimensions(field, skinProperties[field]);
+  // };
 
-  const handleSkinDimensionsChange = (field: 'width' | 'height', value: string) => {
-    setSkinProperties(prev => ({ ...prev, [field]: value }));
-    if (field === 'width' || field === 'height') {
-      updateSkinDimensions(field, value);
-    }
-  };  
+  // const handleSkinDimensionsChange = (field: 'width' | 'height', value: string) => {
+  //   setSkinProperties(prev => ({ ...prev, [field]: value }));
+  //   if (field === 'width' || field === 'height') {
+  //     updateSkinDimensions(field, value);
+  //   }
+  // };  
 
-  const handleSkinBackgroundColorChange = (value: string) => {
-    const canvas = layerManager.getCanvas();
-    // console.log("handleSkinBackgroundColorChange" + value);
-    canvas?.set({ backgroundColor: value });
-    setSkinProperties(prev => ({ ...prev, backgroundColor: value }));
-  };
+  // const handleSkinBackgroundColorChange = (value: string) => {
+  //   const canvas = layerManager.getCanvas();
+  //   // console.log("handleSkinBackgroundColorChange" + value);
+  //   canvas?.set({ backgroundColor: value });
+  //   setSkinProperties(prev => ({ ...prev, backgroundColor: value }));
+  // };
 
   // Handlers for Text Layer
   const handleTextInputChange = (field: keyof typeof textLayerProperties, value: string) => {
@@ -1069,369 +1073,371 @@ const PropertiesSidebar: React.FC = () => {
   return (
     <>
       {!selectedLayerId && (
-        <Card className='w-50 m-4 rounded-2xl'>
-          <CardHeader className='font-semibold text-xl border-b'>Skin Properties</CardHeader>
-          <CardContent>
-            <div className="overflow-y-auto mt-6" style={{ maxHeight: 'calc(100vh - 256px)' }}>
-              <ScrollArea className="h-full">
-                <div className="px-4 pb-4">
-                  <div className="space-y-4">
-                    <div className="flex space-x-4">
-                      {/* X Position */}
-                      <div className='space-y-2'>
-                        <Label htmlFor='skin-x'>X</Label>
-                        <Input 
-                          ref={xInputRef} 
-                          id='skin-x' 
-                          placeholder='X' 
-                          value={skinProperties.x} 
-                          onChange={e => handleSkinInputChange('x', e.target.value)} 
-                          onKeyDown={e => handleSkinKeyDown('x', e)}
-                          onBlur={() => { 
-                            handleSkinPositionBlur('x');
-                            setIsInputFocused(false); 
-                          }}
-                          onFocus={() => setIsInputFocused(true)} 
-                          className='w-20' 
-                        />
-                      </div>
+        // <Card className='w-50 m-4 rounded-2xl'>
+        //   <CardHeader className='font-semibold text-xl border-b'>Skin Properties</CardHeader>
+        //   <CardContent>
+        //     <div className="overflow-y-auto mt-6" style={{ maxHeight: 'calc(100vh - 256px)' }}>
+        //       <ScrollArea className="h-full">
+        //         <div className="px-4 pb-4">
+        //           <div className="space-y-4">
+        //             <div className="flex space-x-4">
+        //               {/* X Position */}
+        //               <div className='space-y-2'>
+        //                 <Label htmlFor='skin-x'>X</Label>
+        //                 <Input 
+        //                   ref={xInputRef} 
+        //                   id='skin-x' 
+        //                   placeholder='X' 
+        //                   value={skinProperties.x} 
+        //                   onChange={e => handleSkinInputChange('x', e.target.value)} 
+        //                   onKeyDown={e => handleSkinKeyDown('x', e)}
+        //                   onBlur={() => { 
+        //                     handleSkinPositionBlur('x');
+        //                     setIsInputFocused(false); 
+        //                   }}
+        //                   onFocus={() => setIsInputFocused(true)} 
+        //                   className='w-20' 
+        //                 />
+        //               </div>
 
-                      {/* Y Position */}
-                      <div className='space-y-2'>
-                        <Label htmlFor='skin-y'>Y</Label>
-                        <Input 
-                          ref={yInputRef} 
-                          id='skin-y' 
-                          placeholder='Y' 
-                          value={skinProperties.y} 
-                          onChange={e => handleSkinInputChange('y', e.target.value)} 
-                          onKeyDown={e => handleSkinKeyDown('y', e)}
-                          onBlur={() => { 
-                            handleSkinPositionBlur('y');
-                            setIsInputFocused(false);
-                          }} 
-                          onFocus={() => setIsInputFocused(true)}
-                          className='w-20'
-                        />
-                      </div>
-                    </div>
-                    <div className="flex space-x-4">
-                      {/* Width */}
-                      <div className='space-y-2'>
-                        <Label htmlFor='skin-width'>Width</Label>
-                        <Input 
-                          id='skin-width' 
-                          placeholder='Width' 
-                          value={skinProperties.width} 
-                          onChange={e => handleSkinDimensionsChange('width', e.target.value)} 
-                          onKeyDown={e => handleSkinKeyDown('width', e)}
-                          onBlur={() => { 
-                            handleSkinDimensionsBlur('width');
-                            setIsInputFocused(false);
-                          }} 
-                          onFocus={() => setIsInputFocused(true)}
-                          className='w-20'
-                        />
-                      </div>
-                      {/* Height */}
-                      <div className='space-y-2'>
-                        <Label htmlFor='skin-height'>Height</Label>
-                        <Input 
-                          id='skin-height' 
-                          placeholder='Height' 
-                          value={skinProperties.height} 
-                          onChange={e => handleSkinDimensionsChange('height', e.target.value)} 
-                          onKeyDown={e => handleSkinKeyDown('height', e)}
-                          onBlur={() => { 
-                            handleSkinDimensionsBlur('height');
-                            setIsInputFocused(false);
-                          }} 
-                          onFocus={() => setIsInputFocused(true)}
-                          className='w-20'
-                        />
-                      </div>
-                    </div>
-                    {/* Background Color */}
-                    <div className="space-y-2">
-                      <Label htmlFor="skin-background-color">Background Color</Label>
-                      <Input
-                        id="skin-background-color"
-                        type="color"
-                        className="h-10 w-44"
-                        value={skinProperties.backgroundColor}
-                        onChange={e => handleSkinBackgroundColorChange(e.target.value)}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </ScrollArea>
-            </div>
-          </CardContent>
-        </Card>
+        //               {/* Y Position */}
+        //               <div className='space-y-2'>
+        //                 <Label htmlFor='skin-y'>Y</Label>
+        //                 <Input 
+        //                   ref={yInputRef} 
+        //                   id='skin-y' 
+        //                   placeholder='Y' 
+        //                   value={skinProperties.y} 
+        //                   onChange={e => handleSkinInputChange('y', e.target.value)} 
+        //                   onKeyDown={e => handleSkinKeyDown('y', e)}
+        //                   onBlur={() => { 
+        //                     handleSkinPositionBlur('y');
+        //                     setIsInputFocused(false);
+        //                   }} 
+        //                   onFocus={() => setIsInputFocused(true)}
+        //                   className='w-20'
+        //                 />
+        //               </div>
+        //             </div>
+        //             <div className="flex space-x-4">
+        //               {/* Width */}
+        //               <div className='space-y-2'>
+        //                 <Label htmlFor='skin-width'>Width</Label>
+        //                 <Input 
+        //                   id='skin-width' 
+        //                   placeholder='Width' 
+        //                   value={skinProperties.width} 
+        //                   onChange={e => handleSkinDimensionsChange('width', e.target.value)} 
+        //                   onKeyDown={e => handleSkinKeyDown('width', e)}
+        //                   onBlur={() => { 
+        //                     handleSkinDimensionsBlur('width');
+        //                     setIsInputFocused(false);
+        //                   }} 
+        //                   onFocus={() => setIsInputFocused(true)}
+        //                   className='w-20'
+        //                 />
+        //               </div>
+        //               {/* Height */}
+        //               <div className='space-y-2'>
+        //                 <Label htmlFor='skin-height'>Height</Label>
+        //                 <Input 
+        //                   id='skin-height' 
+        //                   placeholder='Height' 
+        //                   value={skinProperties.height} 
+        //                   onChange={e => handleSkinDimensionsChange('height', e.target.value)} 
+        //                   onKeyDown={e => handleSkinKeyDown('height', e)}
+        //                   onBlur={() => { 
+        //                     handleSkinDimensionsBlur('height');
+        //                     setIsInputFocused(false);
+        //                   }} 
+        //                   onFocus={() => setIsInputFocused(true)}
+        //                   className='w-20'
+        //                 />
+        //               </div>
+        //             </div>
+        //             {/* Background Color */}
+        //             <div className="space-y-2">
+        //               <Label htmlFor="skin-background-color">Background Color</Label>
+        //               <Input
+        //                 id="skin-background-color"
+        //                 type="color"
+        //                 className="h-10 w-44"
+        //                 value={skinProperties.backgroundColor}
+        //                 onChange={e => handleSkinBackgroundColorChange(e.target.value)}
+        //               />
+        //             </div>
+        //           </div>
+        //         </div>
+        //       </ScrollArea>
+        //     </div>
+        //   </CardContent>
+        // </Card>
+        <SkinProperties />
       )}
       {selectedLayerId && selectedLayer?.type === 'text' && (
-        <Card className='w-50 m-4 rounded-2xl'>
-          <CardHeader className='font-semibold text-xl border-b'>Text Properties</CardHeader>
-          <CardContent>
-            <div className="overflow-y-auto mt-6" style={{ maxHeight: 'calc(100vh - 256px)' }}>
-              <ScrollArea className="h-full">
-                <div className="px-4 pb-4">
-                  <div className="space-y-4">
-                    <div className="flex space-x-4">
-                      {/* X Position */}
-                      <div className="space-y-2">
-                        <Label htmlFor="text-x">X</Label>
-                        <Input
-                          ref={xInputRef}
-                          id="text-x"
-                          placeholder="X"
-                          value={textLayerProperties.x}
-                          onChange={e => handleTextInputChange('x', e.target.value)}
-                          onKeyDown={e => handleTextKeyDown('x', e)}
-                          onBlur={() => {
-                            handleTextPositionBlur('x');
-                            setIsInputFocused(false);
-                          }}
-                          onFocus={() => setIsInputFocused(true)}
-                          className="w-20"
-                        />
-                      </div>
-                      {/* Y Position */}
-                      <div className="space-y-2">
-                        <Label htmlFor="text-y">Y</Label>
-                        <Input
-                          ref={yInputRef}
-                          id="text-y"
-                          placeholder="Y"
-                          value={textLayerProperties.y}
-                          onChange={e => handleTextInputChange('y', e.target.value)}
-                          onKeyDown={e => handleTextKeyDown('y', e)}
-                          onBlur={() => {
-                            handleTextPositionBlur('y');
-                            setIsInputFocused(false);
-                          }}
-                          onFocus={() => setIsInputFocused(true)}
-                          className="w-20"
-                        />
-                      </div>
-                    </div>
-                    <div className="flex space-x-4">
-                      {/* Font Size */}
-                      <div className="space-y-2">
-                        <Label htmlFor="text-font-size">Font Size</Label>
-                        <Input
-                          id="text-font-size"
-                          placeholder="Font Size"
-                          value={textLayerProperties.fontSize}
-                          onChange={e => handleTextInputChange('fontSize', e.target.value)}
-                          onKeyDown={e => handleTextKeyDown('fontSize', e)}
-                          onBlur={() => {
-                            updateFontSize(textLayerProperties.fontSize);
-                            setIsInputFocused(false);
-                          }}
-                          onFocus={() => setIsInputFocused(true)}
-                          className="w-20"
-                        />
-                      </div>
-                      {/* Rotation */}
-                      <div className="space-y-2">
-                        <Label htmlFor="text-rotation">Rotation</Label>
-                        <Input
-                          id="text-rotation"
-                          placeholder="Rotation"
-                          value={textLayerProperties.rotation}
-                          onChange={e => handleTextInputChange('rotation', e.target.value)}
-                          onKeyDown={e => handleTextKeyDown('rotation', e)}
-                          onBlur={() => {
-                            handleTextRotationBlur('rotation');
-                            setIsInputFocused(false);
-                          }}
-                          onFocus={() => setIsInputFocused(true)}
-                          className="w-20"
-                        />
-                      </div>
-                    </div>
-                    {/* Color */}
-                    <div className="space-y-2">
-                      <Label htmlFor="text-color">Color</Label>
-                      <Input
-                        id="text-color"
-                        type="color"
-                        className="h-10 w-44"
-                        value={textLayerProperties.color}
-                        onChange={e => handleColorChange(e.target.value)}
-                      />
-                    </div>
+        // <Card className='w-50 m-4 rounded-2xl'>
+        //   <CardHeader className='font-semibold text-xl border-b'>Text Properties</CardHeader>
+        //   <CardContent>
+        //     <div className="overflow-y-auto mt-6" style={{ maxHeight: 'calc(100vh - 256px)' }}>
+        //       <ScrollArea className="h-full">
+        //         <div className="px-4 pb-4">
+        //           <div className="space-y-4">
+        //             <div className="flex space-x-4">
+        //               {/* X Position */}
+        //               <div className="space-y-2">
+        //                 <Label htmlFor="text-x">X</Label>
+        //                 <Input
+        //                   ref={xInputRef}
+        //                   id="text-x"
+        //                   placeholder="X"
+        //                   value={textLayerProperties.x}
+        //                   onChange={e => handleTextInputChange('x', e.target.value)}
+        //                   onKeyDown={e => handleTextKeyDown('x', e)}
+        //                   onBlur={() => {
+        //                     handleTextPositionBlur('x');
+        //                     setIsInputFocused(false);
+        //                   }}
+        //                   onFocus={() => setIsInputFocused(true)}
+        //                   className="w-20"
+        //                 />
+        //               </div>
+        //               {/* Y Position */}
+        //               <div className="space-y-2">
+        //                 <Label htmlFor="text-y">Y</Label>
+        //                 <Input
+        //                   ref={yInputRef}
+        //                   id="text-y"
+        //                   placeholder="Y"
+        //                   value={textLayerProperties.y}
+        //                   onChange={e => handleTextInputChange('y', e.target.value)}
+        //                   onKeyDown={e => handleTextKeyDown('y', e)}
+        //                   onBlur={() => {
+        //                     handleTextPositionBlur('y');
+        //                     setIsInputFocused(false);
+        //                   }}
+        //                   onFocus={() => setIsInputFocused(true)}
+        //                   className="w-20"
+        //                 />
+        //               </div>
+        //             </div>
+        //             <div className="flex space-x-4">
+        //               {/* Font Size */}
+        //               <div className="space-y-2">
+        //                 <Label htmlFor="text-font-size">Font Size</Label>
+        //                 <Input
+        //                   id="text-font-size"
+        //                   placeholder="Font Size"
+        //                   value={textLayerProperties.fontSize}
+        //                   onChange={e => handleTextInputChange('fontSize', e.target.value)}
+        //                   onKeyDown={e => handleTextKeyDown('fontSize', e)}
+        //                   onBlur={() => {
+        //                     updateFontSize(textLayerProperties.fontSize);
+        //                     setIsInputFocused(false);
+        //                   }}
+        //                   onFocus={() => setIsInputFocused(true)}
+        //                   className="w-20"
+        //                 />
+        //               </div>
+        //               {/* Rotation */}
+        //               <div className="space-y-2">
+        //                 <Label htmlFor="text-rotation">Rotation</Label>
+        //                 <Input
+        //                   id="text-rotation"
+        //                   placeholder="Rotation"
+        //                   value={textLayerProperties.rotation}
+        //                   onChange={e => handleTextInputChange('rotation', e.target.value)}
+        //                   onKeyDown={e => handleTextKeyDown('rotation', e)}
+        //                   onBlur={() => {
+        //                     handleTextRotationBlur('rotation');
+        //                     setIsInputFocused(false);
+        //                   }}
+        //                   onFocus={() => setIsInputFocused(true)}
+        //                   className="w-20"
+        //                 />
+        //               </div>
+        //             </div>
+        //             {/* Color */}
+        //             <div className="space-y-2">
+        //               <Label htmlFor="text-color">Color</Label>
+        //               <Input
+        //                 id="text-color"
+        //                 type="color"
+        //                 className="h-10 w-44"
+        //                 value={textLayerProperties.color}
+        //                 onChange={e => handleColorChange(e.target.value)}
+        //               />
+        //             </div>
 
-                    {/* Opacity Slider */}
-                    <div className="space-y-2">
-                      <Label htmlFor="text-opacity">Opacity</Label>
-                      <Slider
-                        id="text-opacity"
-                        value={[parseFloat(textLayerProperties.opacity)]}
-                        min={0}
-                        max={1}
-                        step={0.01}
-                        onValueChange={(value) => handleOpacityChange(value[0].toString())}
-                        className="w-44"
-                      />
-                      <div className="text-sm text-muted-foreground">
-                        Opacity: {(parseFloat(textLayerProperties.opacity) * 100).toFixed(0)}%
-                      </div>
-                    </div>
+        //             {/* Opacity Slider */}
+        //             <div className="space-y-2">
+        //               <Label htmlFor="text-opacity">Opacity</Label>
+        //               <Slider
+        //                 id="text-opacity"
+        //                 value={[parseFloat(textLayerProperties.opacity)]}
+        //                 min={0}
+        //                 max={1}
+        //                 step={0.01}
+        //                 onValueChange={(value) => handleOpacityChange(value[0].toString())}
+        //                 className="w-44"
+        //               />
+        //               <div className="text-sm text-muted-foreground">
+        //                 Opacity: {(parseFloat(textLayerProperties.opacity) * 100).toFixed(0)}%
+        //               </div>
+        //             </div>
                     
-                    {/* Font Select */}
-                    <div className="space-y-2">
-                      <Label htmlFor="font-select" className="block text-sm font-medium text-gray-700 mb-1">
-                        Font
-                      </Label>
-                      <Select
-                        value={textLayerProperties.font}
-                        onValueChange={handleFontChange}
-                        defaultValue='Times New Roman'
-                      >
-                        <SelectTrigger id="font-select" className='w-44'>
-                          <SelectValue placeholder="Times New Roman" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {systemFonts.map(font => (
-                            <SelectItem key={font} value={font}>{font}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    {/* Measure Type */}
-                    <div className="space-y-2 w-44">
-                      <Label htmlFor="text-measure-type-select" className="block text-sm font-medium text-gray-700 mb-1">
-                        Measure Type
-                      </Label>
-                      <Select onValueChange={handleTextMeasureTypeChange} value={measureType}>
-                        <SelectTrigger id="measure-type-select" className="w-44">
-                          <SelectValue placeholder="Select Measure Type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="custom-text">Custom Text</SelectItem>
-                          <SelectItem value="time-date">Time/Date</SelectItem>
-                          <SelectItem value="cpu">CPU</SelectItem>
-                          <SelectItem value="disk">Disk</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+        //             {/* Font Select */}
+        //             <div className="space-y-2">
+        //               <Label htmlFor="font-select" className="block text-sm font-medium text-gray-700 mb-1">
+        //                 Font
+        //               </Label>
+        //               <Select
+        //                 value={textLayerProperties.font}
+        //                 onValueChange={handleFontChange}
+        //                 defaultValue='Times New Roman'
+        //               >
+        //                 <SelectTrigger id="font-select" className='w-44'>
+        //                   <SelectValue placeholder="Times New Roman" />
+        //                 </SelectTrigger>
+        //                 <SelectContent>
+        //                   {systemFonts.map(font => (
+        //                     <SelectItem key={font} value={font}>{font}</SelectItem>
+        //                   ))}
+        //                 </SelectContent>
+        //               </Select>
+        //             </div>
+        //             {/* Measure Type */}
+        //             <div className="space-y-2 w-44">
+        //               <Label htmlFor="text-measure-type-select" className="block text-sm font-medium text-gray-700 mb-1">
+        //                 Measure Type
+        //               </Label>
+        //               <Select onValueChange={handleTextMeasureTypeChange} value={measureType}>
+        //                 <SelectTrigger id="measure-type-select" className="w-44">
+        //                   <SelectValue placeholder="Select Measure Type" />
+        //                 </SelectTrigger>
+        //                 <SelectContent>
+        //                   <SelectItem value="custom-text">Custom Text</SelectItem>
+        //                   <SelectItem value="time-date">Time/Date</SelectItem>
+        //                   <SelectItem value="cpu">CPU</SelectItem>
+        //                   <SelectItem value="disk">Disk</SelectItem>
+        //                 </SelectContent>
+        //               </Select>
+        //             </div>
 
-                    {/* Category based on Measure Type */}
-                    {measureType === 'time-date' && (
-                      <div className="space-y-2">
-                        <Label htmlFor="text-category-select" className="block text-sm font-medium text-gray-700 mb-1 w-44">
-                          Category
-                        </Label>
-                        <Select onValueChange={handleTextCategoryChange} value={category}>
-                          <SelectTrigger id="text-category-select" className="w-44">
-                            <SelectValue placeholder="Select Category" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="time">Time</SelectItem>
-                            <SelectItem value="date">Date</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    )}
+        //             {/* Category based on Measure Type */}
+        //             {measureType === 'time-date' && (
+        //               <div className="space-y-2">
+        //                 <Label htmlFor="text-category-select" className="block text-sm font-medium text-gray-700 mb-1 w-44">
+        //                   Category
+        //                 </Label>
+        //                 <Select onValueChange={handleTextCategoryChange} value={category}>
+        //                   <SelectTrigger id="text-category-select" className="w-44">
+        //                     <SelectValue placeholder="Select Category" />
+        //                   </SelectTrigger>
+        //                   <SelectContent>
+        //                     <SelectItem value="time">Time</SelectItem>
+        //                     <SelectItem value="date">Date</SelectItem>
+        //                   </SelectContent>
+        //                 </Select>
+        //               </div>
+        //             )}
 
-                    {measureType === 'cpu' && (
-                      <div className="space-y-2">
-                        <Label htmlFor="text-category-select" className="block text-sm font-medium text-gray-700 mb-1">
-                          Category
-                        </Label>
-                        <Select onValueChange={handleTextMeasureChange} value={category}>
-                          <SelectTrigger id="text-category-select" className="w-44">
-                            <SelectValue placeholder="Select Category" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="cpu-average">Average CPU Usage</SelectItem>
-                            <SelectItem value="cpu-core-1">Core 1 Usage</SelectItem>
-                            <SelectItem value="cpu-core-2">Core 2 Usage</SelectItem>
-                            <SelectItem value="cpu-core-3">Core 3 Usage</SelectItem>
-                            <SelectItem value="cpu-core-4">Core 4 Usage</SelectItem>
-                            <SelectItem value="cpu-core-5">Core 5 Usage</SelectItem>
-                            <SelectItem value="cpu-core-6">Core 6 Usage</SelectItem>
-                            <SelectItem value="cpu-core-7">Core 7 Usage</SelectItem>
-                            <SelectItem value="cpu-core-8">Core 8 Usage</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    )}
+        //             {measureType === 'cpu' && (
+        //               <div className="space-y-2">
+        //                 <Label htmlFor="text-category-select" className="block text-sm font-medium text-gray-700 mb-1">
+        //                   Category
+        //                 </Label>
+        //                 <Select onValueChange={handleTextMeasureChange} value={category}>
+        //                   <SelectTrigger id="text-category-select" className="w-44">
+        //                     <SelectValue placeholder="Select Category" />
+        //                   </SelectTrigger>
+        //                   <SelectContent>
+        //                     <SelectItem value="cpu-average">Average CPU Usage</SelectItem>
+        //                     <SelectItem value="cpu-core-1">Core 1 Usage</SelectItem>
+        //                     <SelectItem value="cpu-core-2">Core 2 Usage</SelectItem>
+        //                     <SelectItem value="cpu-core-3">Core 3 Usage</SelectItem>
+        //                     <SelectItem value="cpu-core-4">Core 4 Usage</SelectItem>
+        //                     <SelectItem value="cpu-core-5">Core 5 Usage</SelectItem>
+        //                     <SelectItem value="cpu-core-6">Core 6 Usage</SelectItem>
+        //                     <SelectItem value="cpu-core-7">Core 7 Usage</SelectItem>
+        //                     <SelectItem value="cpu-core-8">Core 8 Usage</SelectItem>
+        //                   </SelectContent>
+        //                 </Select>
+        //               </div>
+        //             )}
 
-                    {measureType === 'disk' && (
-                      <div className="space-y-2">
-                        <Label htmlFor="text-category-select" className="block text-sm font-medium text-gray-700 mb-1 w-44">
-                          Disk
-                        </Label>
-                        <Select onValueChange={handleTextMeasureChange} value={category}>
-                          <SelectTrigger id="text-category-select" className="w-44">
-                            <SelectValue placeholder="Select Disk Property" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="disk-c-label">Disk C Label</SelectItem>
-                            <SelectItem value="disk-c-total-space">Disk C Total Space</SelectItem>
-                            <SelectItem value="disk-c-free-space">Disk C Free Space</SelectItem>
-                            <SelectItem value="disk-c-used-space">Disk C Used Space</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    )}
+        //             {measureType === 'disk' && (
+        //               <div className="space-y-2">
+        //                 <Label htmlFor="text-category-select" className="block text-sm font-medium text-gray-700 mb-1 w-44">
+        //                   Disk
+        //                 </Label>
+        //                 <Select onValueChange={handleTextMeasureChange} value={category}>
+        //                   <SelectTrigger id="text-category-select" className="w-44">
+        //                     <SelectValue placeholder="Select Disk Property" />
+        //                   </SelectTrigger>
+        //                   <SelectContent>
+        //                     <SelectItem value="disk-c-label">Disk C Label</SelectItem>
+        //                     <SelectItem value="disk-c-total-space">Disk C Total Space</SelectItem>
+        //                     <SelectItem value="disk-c-free-space">Disk C Free Space</SelectItem>
+        //                     <SelectItem value="disk-c-used-space">Disk C Used Space</SelectItem>
+        //                   </SelectContent>
+        //                 </Select>
+        //               </div>
+        //             )}
 
-                    {/* Measure based on Measure Type and Category */}
-                    {measureType === 'time-date' && category === 'time' && (
-                      <div className="space-y-2">
-                        <Label htmlFor="text-measure-select" className="block text-sm font-medium text-gray-700 mb-1 w-44">
-                          Measure
-                        </Label>
-                        <Select onValueChange={handleTextMeasureChange} value={textLayerProperties.measure}>
-                          <SelectTrigger id="text-measure-select" className="w-44">
-                            <SelectValue placeholder="Select Measure" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="time-hour-minute-24">15:15 (Time 24 hr)</SelectItem>
-                            <SelectItem value="time-hour-minute-12">03:15 PM (Time 12 hr)</SelectItem>
-                            <SelectItem value="time-hour-24">15 (Hour 24 hr)</SelectItem>
-                            <SelectItem value="time-hour-12">03 (Hour 12 hr)</SelectItem>
-                            <SelectItem value="time-minute">30 (Minute)</SelectItem>
-                            <SelectItem value="time-second">45 (Second)</SelectItem>
-                            <SelectItem value="time-am-pm">PM (AM / PM Indicator)</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    )}
+        //             {/* Measure based on Measure Type and Category */}
+        //             {measureType === 'time-date' && category === 'time' && (
+        //               <div className="space-y-2">
+        //                 <Label htmlFor="text-measure-select" className="block text-sm font-medium text-gray-700 mb-1 w-44">
+        //                   Measure
+        //                 </Label>
+        //                 <Select onValueChange={handleTextMeasureChange} value={textLayerProperties.measure}>
+        //                   <SelectTrigger id="text-measure-select" className="w-44">
+        //                     <SelectValue placeholder="Select Measure" />
+        //                   </SelectTrigger>
+        //                   <SelectContent>
+        //                     <SelectItem value="time-hour-minute-24">15:15 (Time 24 hr)</SelectItem>
+        //                     <SelectItem value="time-hour-minute-12">03:15 PM (Time 12 hr)</SelectItem>
+        //                     <SelectItem value="time-hour-24">15 (Hour 24 hr)</SelectItem>
+        //                     <SelectItem value="time-hour-12">03 (Hour 12 hr)</SelectItem>
+        //                     <SelectItem value="time-minute">30 (Minute)</SelectItem>
+        //                     <SelectItem value="time-second">45 (Second)</SelectItem>
+        //                     <SelectItem value="time-am-pm">PM (AM / PM Indicator)</SelectItem>
+        //                   </SelectContent>
+        //                 </Select>
+        //               </div>
+        //             )}
 
-                    {measureType === 'time-date' && category === 'date' && (
-                      <div className="space-y-2">
-                        <Label htmlFor="text-measure-select" className="block text-sm font-medium text-gray-700 mb-1">
-                          Measure
-                        </Label>
-                        <Select onValueChange={handleTextMeasureChange} value={textLayerProperties.measure}>
-                          <SelectTrigger id="text-measure-select" className="w-44">
-                            <SelectValue placeholder="Select Measure" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="date-yyyy-mm-dd">2025-01-01 (yyyy-mm-dd)</SelectItem>
-                            <SelectItem value="date-mm-dd-yy">01/01/25 (mm/dd/yy)</SelectItem>
-                            <SelectItem value="date-month-number">01 (Month Number)</SelectItem>
-                            <SelectItem value="date-month-full">January (Month Name Full)</SelectItem>
-                            <SelectItem value="date-month-short">Jan (Month Name Short)</SelectItem>
-                            <SelectItem value="date-day-number">01 (Day Number)</SelectItem>
-                            <SelectItem value="date-day-full">Monday (Day Name Full)</SelectItem>
-                            <SelectItem value="date-day-short">Mon (Day Name Short)</SelectItem>
-                            <SelectItem value="date-year-short">25 (Year Short)</SelectItem>
-                            <SelectItem value="date-year-full">2025 (Year Full)</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </ScrollArea>
-            </div>
-          </CardContent>
-        </Card>
+        //             {measureType === 'time-date' && category === 'date' && (
+        //               <div className="space-y-2">
+        //                 <Label htmlFor="text-measure-select" className="block text-sm font-medium text-gray-700 mb-1">
+        //                   Measure
+        //                 </Label>
+        //                 <Select onValueChange={handleTextMeasureChange} value={textLayerProperties.measure}>
+        //                   <SelectTrigger id="text-measure-select" className="w-44">
+        //                     <SelectValue placeholder="Select Measure" />
+        //                   </SelectTrigger>
+        //                   <SelectContent>
+                            // <SelectItem value="date-yyyy-mm-dd">2025-01-01 (yyyy-mm-dd)</SelectItem>
+                            // <SelectItem value="date-mm-dd-yy">01/01/25 (mm/dd/yy)</SelectItem>
+                            // <SelectItem value="date-month-number">01 (Month Number)</SelectItem>
+                            // <SelectItem value="date-month-full">January (Month Name Full)</SelectItem>
+                            // <SelectItem value="date-month-short">Jan (Month Name Short)</SelectItem>
+                            // <SelectItem value="date-day-number">01 (Day Number)</SelectItem>
+                            // <SelectItem value="date-day-full">Monday (Day Name Full)</SelectItem>
+                            // <SelectItem value="date-day-short">Mon (Day Name Short)</SelectItem>
+                            // <SelectItem value="date-year-short">25 (Year Short)</SelectItem>
+                            // <SelectItem value="date-year-full">2025 (Year Full)</SelectItem>
+        //                   </SelectContent>
+        //                 </Select>
+        //               </div>
+        //             )}
+        //           </div>
+        //         </div>
+        //       </ScrollArea>
+        //     </div>
+        //   </CardContent>
+        // </Card>
+        <TextLayerProperties />
       )}
 
       {selectedLayerId && selectedLayer?.type === 'image' && (

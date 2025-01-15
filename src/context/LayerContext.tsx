@@ -10,9 +10,9 @@ interface Layer {
 
 // Define the type for the context
 interface LayerContextType {
-  selectedLayerId: string | null;
+  // selectedLayerId: string | null;
   selectedLayer: Layer | null; // Add selectedLayer to context type
-  setSelectedLayerId: (id: string | null) => void;
+  // setSelectedLayerId: (id: string | null) => void;
   setSelectedLayer: (layer: Layer | null) => void; // Add setter for selectedLayer
 }
 
@@ -24,11 +24,11 @@ interface LayerProviderProps {
 const LayerContext = createContext<LayerContextType | undefined>(undefined);
 
 export const LayerProvider: React.FC<LayerProviderProps> = ({ children }) => {
-  const [selectedLayerId, setSelectedLayerId] = useState<string | null>(null);
+  // const [selectedLayerId, setSelectedLayerId] = useState<string | null>(null);
   const [selectedLayer, setSelectedLayer] = useState<Layer | null>(null); // State for selectedLayer
 
   return (
-    <LayerContext.Provider value={{ selectedLayerId, selectedLayer, setSelectedLayerId, setSelectedLayer }}>
+    <LayerContext.Provider value={{ selectedLayer, setSelectedLayer }}>
       {children}
     </LayerContext.Provider>
   );

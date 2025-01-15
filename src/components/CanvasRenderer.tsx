@@ -6,32 +6,33 @@ import { useLayerContext } from '@/context/LayerContext';
 
 const CanvasRenderer: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const { setSelectedLayerId, setSelectedLayer } = useLayerContext();
+  const { setSelectedLayer } = useLayerContext();
+  
 
-  useEffect(() => {
-  const disableRefresh = () => {
-    document.addEventListener('keydown', function (event) {
-      // Prevent F5 or Ctrl+R (Windows/Linux) and Command+R (Mac) from refreshing the page
-      if (event.key === 'F5' || (event.ctrlKey && event.key === 'r') || (event.metaKey && event.key === 'r')) {
-        event.preventDefault();
-      }
-    });
+//   useEffect(() => {
+//   const disableRefresh = () => {
+//     document.addEventListener('keydown', function (event) {
+//       // Prevent F5 or Ctrl+R (Windows/Linux) and Command+R (Mac) from refreshing the page
+//       if (event.key === 'F5' || (event.ctrlKey && event.key === 'r') || (event.metaKey && event.key === 'r')) {
+//         event.preventDefault();
+//       }
+//     });
 
-    document.addEventListener('contextmenu', function (event) {
-      event.preventDefault();
-    });
-  };
+//     document.addEventListener('contextmenu', function (event) {
+//       event.preventDefault();
+//     });
+//   };
 
-  disableRefresh();
+//   disableRefresh();
 
-  // Other existing code continues here...
+//   // Other existing code continues here...
 
-  return () => {
-    // Cleanup event listeners to prevent memory leaks
-    document.removeEventListener('keydown', disableRefresh);
-    document.removeEventListener('contextmenu', disableRefresh);
-  };
-}, []);
+//   return () => {
+//     // Cleanup event listeners to prevent memory leaks
+//     document.removeEventListener('keydown', disableRefresh);
+//     document.removeEventListener('contextmenu', disableRefresh);
+//   };
+// }, []);
 
   useEffect(() => {
     // Function to convert HSL to Hex
@@ -97,8 +98,8 @@ const CanvasRenderer: React.FC = () => {
     if (canvasRef.current) {
       const canvas = new Canvas(canvasRef.current, {
         preserveObjectStacking: true,
-        height: window.innerHeight - 64,
-        width: window.innerWidth,
+        height: window.innerHeight - 7,
+        width: window.innerWidth - 500,
         backgroundColor: cssVariableToHex('--card'),
       });
 
@@ -122,7 +123,7 @@ const CanvasRenderer: React.FC = () => {
         const layer = layerManager.getLayerByFabricObject(selectedObject);
         
         if (layer?.UIElements) {
-          setSelectedLayerId(layer.id);
+          // setSelectedLayerId(layer.id);
           setSelectedLayer(layer);
           layer.UIElements.set({
             visible:true,
@@ -149,12 +150,12 @@ const CanvasRenderer: React.FC = () => {
           if (target) {
             const layer = layerManager.getLayers().find(layer => layer.fabricObject === target);
             if (layer) {
-              setSelectedLayerId(layer.id);
+              // setSelectedLayerId(layer.id);
               setSelectedLayer(layer);
             }
           } else {
             canvas.discardActiveObject();
-            setSelectedLayerId(null);
+            // setSelectedLayerId(null);
             setSelectedLayer(null);
           }
         } else {
@@ -200,11 +201,11 @@ const CanvasRenderer: React.FC = () => {
         const currentWidth = canvas.getWidth();
         const currentHeight = canvas.getHeight();
 
-        if (currentWidth < window.innerWidth){
-          canvas.setWidth(window.innerWidth);
+        if (currentWidth < window.innerWidth - 500){
+          canvas.setWidth(window.innerWidth - 500);
         }
-        if (currentHeight <( window.innerHeight - 64)){
-          canvas.setHeight(window.innerHeight - 64);
+        if (currentHeight <( window.innerHeight - 7)){
+          canvas.setHeight(window.innerHeight - 7);
         }
         canvas.renderAll();
       };
@@ -227,8 +228,8 @@ const CanvasRenderer: React.FC = () => {
   }, []);
 
   return (
-    <div className="flex items-center justify-center bg-gray-100 h-full">
-      <div className="max-w-full max-h-full overflow-auto" style={{ maxHeight: `calc(100vh - 64px)`, maxWidth: '100vw' }}>
+    <div className="flex items-center justify-center bg-gray-100 h-full overflow-auto">
+      <div className="max-h-full max-w-full" style={{ maxHeight: 'calc(100vh - 7px)',maxWidth: 'calc(100vw - 500px)' }}>
         <canvas ref={canvasRef} className="w-full h-full" />
       </div>
     </div>
