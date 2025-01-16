@@ -79,7 +79,6 @@ export function SidebarRight({
               <p>Export Skin</p>
             </TooltipContent>
           </Tooltip>
-
       </SidebarHeader>
       <SidebarContent>
         {/* <DatePicker /> */}

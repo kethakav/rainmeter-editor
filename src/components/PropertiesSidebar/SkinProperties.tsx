@@ -5,8 +5,7 @@ import { layerManager } from '@/services/LayerManager';
 import { Group, Rect } from 'fabric';
 import { SidebarGroup, SidebarGroupLabel, SidebarSeparator } from '../ui/sidebar';
 import PropertyInput from '../customUI/PropertyInput';
-import { Sidebar } from 'lucide-react';
-import { Card, CardTitle } from '../ui/card';
+import { Card } from '../ui/card';
 
 const SkinProperties: React.FC = () => {
 
@@ -150,7 +149,7 @@ const SkinProperties: React.FC = () => {
             </SidebarGroup>
             <SidebarSeparator />
             <SidebarGroup>
-                <SidebarGroupLabel>Color</SidebarGroupLabel>
+                <SidebarGroupLabel>Background Color</SidebarGroupLabel>
                 <div className='flex space-x-4 px-2 py-2'>
                     <div className="flex items-center rounded-md border border-input pl-2 w-24">
                         <Input
@@ -164,7 +163,6 @@ const SkinProperties: React.FC = () => {
                     </div>
                 </div>
             </SidebarGroup>
-            <SidebarSeparator />
             <SidebarGroup>
                 <Card className='shadow-none bg-sidebar'>
                     <div className="p-4">

@@ -1,11 +1,10 @@
 import { useLayerContext } from "@/context/LayerContext";
 import { layerManager } from "@/services/LayerManager";
-import { Circle, FabricImage, FabricObject, Group } from "fabric";
+import { Circle, FabricImage, Group } from "fabric";
 import { useEffect, useState } from "react";
 import { SidebarGroup, SidebarGroupLabel, SidebarSeparator } from "../ui/sidebar";
 import PropertyInput from "../customUI/PropertyInput";
 import { CircleArrowOutUpRight, RotateCw, UnfoldHorizontal, UnfoldVertical } from "lucide-react";
-import { Input } from "../ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Button } from "../ui/button";
 import { open } from "@tauri-apps/plugin-dialog";

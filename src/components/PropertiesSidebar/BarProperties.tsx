@@ -4,7 +4,7 @@ import { Group, Rect } from "fabric";
 import { useEffect, useState } from "react";
 import { SidebarGroup, SidebarGroupLabel, SidebarSeparator } from "../ui/sidebar";
 import PropertyInput from "../customUI/PropertyInput";
-import { Axis3D, Blend } from "lucide-react";
+import { Blend } from "lucide-react";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
