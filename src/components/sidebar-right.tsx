@@ -1,16 +1,10 @@
 import { useEffect, useState } from "react"
-import { Plus } from "lucide-react"
 
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
-  SidebarGroup,
-  SidebarGroupLabel,
   SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
   SidebarSeparator,
 } from "@/components/ui/sidebar"
 import { checkForAppUpdates } from "@/services/CheckForAppUpdates";
@@ -40,6 +34,7 @@ export function SidebarRight({
 
   useEffect(() => {
     checkForAppUpdates(false);
+    console.log(version);
     // Fetch version number if needed
     // setVersion(fetchVersionNumber());
     setVersion(v);
@@ -76,36 +71,6 @@ export function SidebarRight({
         {/* <NavUser user={data.user} /> */}
         <Tooltip>
             <TooltipTrigger asChild>
-              <Button 
-                variant="outline"
-                onClick={() => open("https://discord.gg/tzY82KkS4H")} 
-                className="hover:text-primary"
-              >
-                <FaDiscord />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Join our Discord</p>
-            </TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button 
-                variant="outline"
-                onClick={() => open("https://github.com/kethakav/rainmeter-editor-releases/issues")} 
-                
-                className="hover:text-destructive"
-              >
-                <Bug />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Report a Bug</p>
-            </TooltipContent>
-          </Tooltip>
-        <Tooltip>
-            <TooltipTrigger asChild>
               <Button className="w-fit" variant="default" onClick={() => setIsExportModalOpen(true)}>
                 Export
               </Button>
@@ -134,7 +99,38 @@ export function SidebarRight({
           <BarLayerProperties />
         )}
       </SidebarContent>
-      <SidebarFooter>
+      <SidebarSeparator />
+      <SidebarFooter className="h-fit flex flex-row justify-end border-b border-sidebar-border">
+      <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="outline"
+                onClick={() => open("https://discord.gg/tzY82KkS4H")} 
+                className="hover:text-primary"
+              >
+                <FaDiscord />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Join our Discord</p>
+            </TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="outline"
+                onClick={() => open("https://github.com/kethakav/rainmeter-editor-releases/issues")} 
+                
+                className="hover:text-destructive"
+              >
+                <Bug />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Report a Bug</p>
+            </TooltipContent>
+          </Tooltip>
       </SidebarFooter>
       <ExportModal
         onExport={handleExport} 

@@ -52,7 +52,7 @@ const Toolbar: React.FC = () => {
   return (
     <TooltipProvider>
       <div className="flex items-center justify-center fixed bottom-0 left-1/2 transform -translate-x-1/2 mb-4">
-        <div className="h-14 w-fit bg-card border rounded-xl shadow-none flex items-center justify-between px-3">
+        <div className="h-14 w-fit bg-sidebar-accent border rounded-xl shadow-none flex items-center justify-between px-3">
           
           <div className="flex items-center justify-center space-x-2">
             <Tooltip>
