@@ -5,6 +5,8 @@ import { layerManager } from '@/services/LayerManager';
 import { Group, Rect } from 'fabric';
 import { SidebarGroup, SidebarGroupLabel, SidebarSeparator } from '../ui/sidebar';
 import PropertyInput from '../customUI/PropertyInput';
+import { Sidebar } from 'lucide-react';
+import { Card, CardTitle } from '../ui/card';
 
 const SkinProperties: React.FC = () => {
 
@@ -161,6 +163,14 @@ const SkinProperties: React.FC = () => {
                         <Label className="text-xs mb-0.5">{skinProperties.backgroundColor.toUpperCase()}</Label>
                     </div>
                 </div>
+            </SidebarGroup>
+            <SidebarSeparator />
+            <SidebarGroup>
+                <Card className='shadow-none bg-sidebar'>
+                    <div className="p-4">
+                        <p className="text-sm">When designing a Rainmeter skin, the background color you see in the editor is just a visual reference to help you during development. You can set this color to match your desktop's color scheme to better visualize how the skin will look, but this color won't be included in the final skin - the background will be transparent when you actually use it on your desktop.</p>
+                    </div>
+                </Card>
             </SidebarGroup>
         </div>
         // <Card className='w-50 m-4 rounded-2xl'>

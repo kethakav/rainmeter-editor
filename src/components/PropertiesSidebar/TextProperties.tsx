@@ -312,6 +312,14 @@ const TextLayerProperties: React.FC = () => {
             <SidebarGroup>
                 <SidebarGroupLabel>Typography</SidebarGroupLabel>
                 <div className="flex-col space-y-4 px-2 py-2">
+                    {/* Source */}
+                    <Button 
+                        variant="outline" 
+                        onClick={handleFontUpload}
+                        className="shadow-none"
+                        >
+                        Add Your Font File(s)
+                    </Button>
                     {/* Font Family */}
                     <Select
                         value={textLayerProperties.font}
@@ -335,14 +343,6 @@ const TextLayerProperties: React.FC = () => {
                         value={textLayerProperties.fontSize} 
                         onChange={value => handleInputChange('fontSize', value)}
                     />
-                    {/* Source */}
-                    <Button 
-                        variant="outline" 
-                        onClick={handleFontUpload}
-                        className="shadow-none"
-                        >
-                        Add Font File(s)
-                    </Button>
                 </div>
             </SidebarGroup>
             <SidebarSeparator />

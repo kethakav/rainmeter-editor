@@ -199,7 +199,7 @@ const SidebarLeft: React.FC = () => {
                     <span>
                         <Save style={{width: '18px'}}/>
                     </span>
-                    <span>Save Project (Coming Soon)</span>
+                    <span className="text-xs font-semibold">Save Project (Coming Soon)</span>
                 </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
@@ -207,7 +207,7 @@ const SidebarLeft: React.FC = () => {
                     <span>
                         <Import style={{width: '18px'}}/>
                     </span>
-                    <span>Import Project (Coming Soon)</span>
+                    <span className="text-xs font-semibold">Import Project (Coming Soon)</span>
                 </SidebarMenuButton>
             </SidebarMenuItem>
         </SidebarMenu>
@@ -247,8 +247,8 @@ const SidebarLeft: React.FC = () => {
         <SidebarFooter>
           {/* placeholder for account with avatar */}
           <div className="flex items-center p-2 space-x-4">
-            <User /> {/* Placeholder for user avatar */}
-            <span>Account (Coming Soon)</span> {/* Placeholder for username */}
+            <User style={{ width: '18px'}}/> {/* Placeholder for user avatar */}
+            <span className="text-xs font-semibold">Account (Coming Soon)</span> {/* Placeholder for username */}
           </div>
         </SidebarFooter>
     </Sidebar>
