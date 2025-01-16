@@ -1,15 +1,10 @@
 // src/components/Layout.tsx
 import React from 'react'
 import CanvasRenderer from './CanvasRenderer'
-import PropertiesSidebar from './PropertiesSidebar'
-import LayersSidebar from './LayersSidebar'
 import Toolbar from './Toolbar'
 import { Toaster } from './ui/toaster'
-import Topbar from './Topbar'
-import { SidebarInset, SidebarProvider, SidebarTrigger } from './ui/sidebar'
-import { AppSidebar } from './app-sidebar'
+import { SidebarInset, SidebarProvider } from './ui/sidebar'
 import SidebarLeft from './sidebar-left'
-import { Separator } from '@radix-ui/react-select'
 import { SidebarRight } from './sidebar-right'
 // Test comment
 
