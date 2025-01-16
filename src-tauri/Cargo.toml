@@ -1,6 +1,6 @@
 [package]
 name = "rainmeter-editor"
-version = "0.1.10"
+version = "0.2.0"
 description = "A GUI based editor for creating rainmeter skins"
 authors = ["you"]
 edition = "2021"

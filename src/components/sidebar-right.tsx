@@ -14,7 +14,7 @@ import { version as appVersion } from '../../package.json';
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { Button } from "./ui/button";
 import { Bug } from 'lucide-react';
-import { FaDiscord } from "react-icons/fa";
+import { FaDiscord, FaReddit } from "react-icons/fa";
 import { useLayerContext } from "@/context/LayerContext";
 import ExportModal from "./ExportModal";
 import SkinProperties from "./PropertiesSidebar/SkinProperties";
@@ -100,36 +100,51 @@ export function SidebarRight({
       </SidebarContent>
       <SidebarSeparator />
       <SidebarFooter className="h-fit flex flex-row justify-end border-b border-sidebar-border">
-      <Tooltip>
-            <TooltipTrigger asChild>
-              <Button 
-                variant="outline"
-                onClick={() => open("https://discord.gg/tzY82KkS4H")} 
-                className="hover:text-primary"
-              >
-                <FaDiscord />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Join our Discord</p>
-            </TooltipContent>
-          </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button 
+              variant="outline"
+              onClick={() => open("https://www.reddit.com/r/rainmetereditor/")} 
+              
+              className="hover:text-primary"
+            >
+              <FaReddit />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Join our Subreddit</p>
+          </TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button 
+              variant="outline"
+              onClick={() => open("https://discord.gg/tzY82KkS4H")} 
+              className="hover:text-primary"
+            >
+              <FaDiscord />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Join our Discord</p>
+          </TooltipContent>
+        </Tooltip>
 
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button 
-                variant="outline"
-                onClick={() => open("https://github.com/kethakav/rainmeter-editor-releases/issues")} 
-                
-                className="hover:text-destructive"
-              >
-                <Bug />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Report a Bug</p>
-            </TooltipContent>
-          </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button 
+              variant="outline"
+              onClick={() => open("https://github.com/kethakav/rainmeter-editor-releases/issues")} 
+              
+              className="hover:text-destructive"
+            >
+              <Bug />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Report a Bug</p>
+          </TooltipContent>
+        </Tooltip>
       </SidebarFooter>
       <ExportModal
         onExport={handleExport} 
