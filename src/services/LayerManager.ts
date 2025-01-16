@@ -817,6 +817,12 @@ class LayerManager {
           this.canvas.add(layer.fabricObject)
         }
     });
+
+    if (this.skinBackground) {
+      this.canvas.add(this.skinBackground);
+      this.canvas.sendObjectToBack(this.skinBackground);
+  }
+
     if(selected) {
       this.canvas.setActiveObject(selected);
     }
