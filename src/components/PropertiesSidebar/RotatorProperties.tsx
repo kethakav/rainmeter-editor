@@ -99,10 +99,13 @@ const RotatorLayerProperties: React.FC = () => {
             const layer = layerManager.getLayers().find(layer => layer.id === selectedLayerId);
             if (layer && layer.type === 'rotator') {
                 const rotatorLayer = layer.fabricObject as FabricImage;
+                const rotatorUI = layer.UIElements;
                 if (field === 'x') {
                     rotatorLayer.set({ left: Number(value) });
+                    rotatorUI.set({ left: Number(value)} );
                 } else if (field === 'y') {
                     rotatorLayer.set({ top: Number(value) });
+                    rotatorUI.set({ top: Number(value)} );
                 }
 
 
