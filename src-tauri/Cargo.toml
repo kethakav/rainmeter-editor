@@ -1,6 +1,6 @@
 [package]
 name = "rainmeter-editor"
-version = "0.2.4"
+version = "0.2.5"
 description = "A GUI based editor for creating rainmeter skins"
 authors = ["you"]
 edition = "2021"
@@ -30,8 +30,4 @@ rust-ini = "0.21"
 image = { version = "0.24", features = ["bmp"] }
 tauri-plugin-updater = "2"
 tauri-plugin-process = "2"
-
-[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
-tauri-plugin-updater = "2"
-
 
