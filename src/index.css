@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -38,6 +37,8 @@
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    --scrollbar: 0 0% 78%;
+    --scrollbar-hover: 0 0% 51%;
   }
 
   .dark {
@@ -73,17 +74,17 @@
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    --scrollbar: 0 0% 25%;
+    --scrollbar-hover: 0 0% 35%;
   }
 }
 
-
 body {
-	position: fixed;
-	width: 100%;
-	height: 100%;
-	overflow: hidden;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
 }
-
 
 /* width */
 ::-webkit-scrollbar {
@@ -91,17 +92,17 @@ body {
   height: 6px;
 }
 
-
 /* Handle */
 ::-webkit-scrollbar-thumb {
-  background: #c7c7c7;
+  background: hsl(var(--scrollbar));
   border-radius: 5px;
 }
 
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
-  background: #838383;
+  background: hsl(var(--scrollbar-hover));
 }
+
 @layer base {
   * {
     @apply border-border;
