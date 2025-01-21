@@ -83,7 +83,8 @@ const SkinProperties: React.FC = () => {
             }));
         }
         if (field === 'backgroundColor') {
-            canvas?.set({ backgroundColor: value });
+            // canvas?.set({ backgroundColor: value });
+            backgroundRect.set({ fill: value });
         }
     
         setSkinProperties(prev => ({ ...prev, [field]: value }));

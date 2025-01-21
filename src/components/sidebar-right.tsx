@@ -22,6 +22,7 @@ import TextLayerProperties from "./PropertiesSidebar/TextProperties";
 import ImageLayerProperties from "./PropertiesSidebar/ImageProperties";
 import RotatorLayerProperties from "./PropertiesSidebar/RotatorProperties";
 import BarLayerProperties from "./PropertiesSidebar/BarProperties";
+import { ModeToggle } from "./mode-toggle";
 
 
 export function SidebarRight({
@@ -67,8 +68,9 @@ export function SidebarRight({
       className="sticky hidden lg:flex top-0 h-svh border-l"
       {...props}
     >
-      <SidebarHeader className="h-fit flex flex-row justify-end border-b border-sidebar-border">
+      <SidebarHeader className="h-fit flex flex-row justify-between border-b border-sidebar-border">
         {/* <NavUser user={data.user} /> */}
+        <ModeToggle />
         <Tooltip>
             <TooltipTrigger asChild>
               <Button className="w-fit" variant="default" onClick={() => setIsExportModalOpen(true)}>

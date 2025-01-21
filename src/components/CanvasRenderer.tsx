@@ -228,7 +228,7 @@ const CanvasRenderer: React.FC = () => {
   }, []);
 
   return (
-    <div className="flex items-center justify-center bg-gray-100 h-full overflow-auto">
+    <div className="flex items-center justify-center bg-card h-full overflow-auto">
       <div className="max-h-full max-w-full" style={{ maxHeight: 'calc(100vh - 7px)',maxWidth: 'calc(100vw - 500px)' }}>
         <canvas ref={canvasRef} className="w-full h-full" />
       </div>

@@ -3,12 +3,15 @@
 import Layout from './components/Layout'
 import "./index.css";
 import { LayerProvider } from './context/LayerContext';
+import { ThemeProvider } from './components/theme-provider';
 
 function App() {
   return (
-    <LayerProvider>
-      <Layout />
-    </LayerProvider>
+    <ThemeProvider>
+      <LayerProvider>
+        <Layout />
+      </LayerProvider>
+    </ThemeProvider>
   )
 }
 
