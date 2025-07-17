@@ -10,7 +10,7 @@ const version = process.env.GITHUB_REF_NAME || 'v0.0.0';
 const notes = process.env.RELEASE_NOTES || '';
 
 // Find the signature file (adjust the path if your bundle structure is different)
-const bundleDir = path.join(__dirname, '../../src-tauri/target/release/bundle/nsis');
+const bundleDir = path.join(__dirname, '../../src-tauri/target/release/bundle/msi');
 const files = fs.readdirSync(bundleDir);
 // Find the MSI file and its signature
 const msiFile = files.find(f => f.endsWith('.msi'));
