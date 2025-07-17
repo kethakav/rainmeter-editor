@@ -15,7 +15,9 @@ const files = fs.readdirSync(bundleDir);
 const sigFile = files.find(f => f.endsWith('.sig'));
 const signature = sigFile ? fs.readFileSync(path.join(bundleDir, sigFile), 'utf8').trim() : '';
 
-const url = `https://github.com/kethakav/rainmeter-editor/releases/download/${version}/RainmeterEditorSetup.exe`;
+// Remove leading 'v' from version for filename
+const versionForFilename = version.startsWith('v') ? version.slice(1) : version;
+const url = `https://github.com/kethakav/rainmeter-editor/releases/download/${version}/Rainmeter.Editor_${versionForFilename}_x64_en-US.msi`;
 
 const latest = {
   version,
