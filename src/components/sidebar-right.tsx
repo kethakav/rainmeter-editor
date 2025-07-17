@@ -136,7 +136,7 @@ export function SidebarRight({
           <TooltipTrigger asChild>
             <Button 
               variant="outline"
-              onClick={() => open("https://github.com/kethakav/rainmeter-editor-releases/issues")} 
+              onClick={() => open("https://github.com/kethakav/rainmeter-editor/issues")} 
               
               className="hover:text-destructive"
             >
