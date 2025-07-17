@@ -1,0 +1,42 @@
+name: Bug Report
+description: File a bug report to help us improve Rainmeter Editor.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting a bug! Please provide the following details so we can investigate and fix it.
+  - type: textarea
+    attributes:
+      label: Describe the bug
+      description: A clear and concise description of what the bug is.
+      placeholder: What went wrong?
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Steps to Reproduce
+      description: List all the steps needed to reproduce the issue.
+      placeholder: Step 1 ..., Step 2 ..., etc.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Expected Behavior
+      description: Explain what you expected to happen.
+      placeholder: The expected outcome is...
+  - type: textarea
+    attributes:
+      label: Actual Behavior
+      description: Explain what actually happened.
+      placeholder: The actual outcome is...
+  - type: input
+    attributes:
+      label: Environment
+      description: Provide details about the environment where the bug occurred.
+      placeholder: OS, Rainmeter Editor version, etc.
+  - type: textarea
+    attributes:
+      label: Additional Context
+      description: Add any other context or screenshots about the issue here.

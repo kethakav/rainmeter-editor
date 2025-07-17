@@ -28,7 +28,7 @@ const SkinProperties: React.FC = () => {
                 y: skinBackground.top.toString(),
                 height: backgroundRect.height.toString(),
                 width: backgroundRect.width.toString(),
-                backgroundColor: canvas?.backgroundColor?.toString() || '#FFFFFF',
+                backgroundColor: backgroundRect.fill?.toString() || '#FFFFFF',
             })
         };
         updateLayerProperties();
