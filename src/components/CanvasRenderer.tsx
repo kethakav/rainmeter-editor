@@ -3,98 +3,65 @@ import { Canvas, FabricObject, Group } from 'fabric';
 import { canvasManager } from '../services/CanvasManager';
 import { layerManager } from '@/services/LayerManager';
 import { useLayerContext } from '@/context/LayerContext';
+import { useTheme } from './theme-provider';
 
 const CanvasRenderer: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const { setSelectedLayer } = useLayerContext();
-  
+  const { theme } = useTheme();
+  const canvasInstanceRef = useRef<Canvas | null>(null);
 
-//   useEffect(() => {
-//   const disableRefresh = () => {
-//     document.addEventListener('keydown', function (event) {
-//       // Prevent F5 or Ctrl+R (Windows/Linux) and Command+R (Mac) from refreshing the page
-//       if (event.key === 'F5' || (event.ctrlKey && event.key === 'r') || (event.metaKey && event.key === 'r')) {
-//         event.preventDefault();
-//       }
-//     });
-
-//     document.addEventListener('contextmenu', function (event) {
-//       event.preventDefault();
-//     });
-//   };
-
-//   disableRefresh();
-
-//   // Other existing code continues here...
-
-//   return () => {
-//     // Cleanup event listeners to prevent memory leaks
-//     document.removeEventListener('keydown', disableRefresh);
-//     document.removeEventListener('contextmenu', disableRefresh);
-//   };
-// }, []);
+  // Utility functions for color conversion
+  function hslToHex(h: number, s: number, l: number): string {
+    h = Number(h);
+    s = Number(s);
+    l = Number(l);
+    if (isNaN(h) || isNaN(s) || isNaN(l)) {
+      console.warn('Invalid HSL values:', { h, s, l });
+      return '#000000';
+    }
+    s /= 100;
+    l /= 100;
+    const c = (1 - Math.abs(2 * l - 1)) * s;
+    const x = c * (1 - Math.abs((h / 60) % 2 - 1));
+    const m = l - c/2;
+    let r = 0, g = 0, b = 0;
+    if (0 <= h && h < 60) {
+      r = c; g = x; b = 0;
+    } else if (60 <= h && h < 120) {
+      r = x; g = c; b = 0;
+    } else if (120 <= h && h < 180) {
+      r = 0; g = c; b = x;
+    } else if (180 <= h && h < 240) {
+      r = 0; g = x; b = c;
+    } else if (240 <= h && h < 300) {
+      r = x; g = 0; b = c;
+    } else if (300 <= h && h < 360) {
+      r = c; g = 0; b = x;
+    }
+    const toHex = (n: number): string => {
+      const hex = Math.round((n + m) * 255).toString(16);
+      return hex.length === 1 ? '0' + hex : hex;
+    };
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+  }
+  function getCSSVariableValue(variableName: string): string {
+    return getComputedStyle(document.documentElement)
+      .getPropertyValue(variableName)
+      .trim();
+  }
+  function cssVariableToHex(variableName: string): string {
+    const hslValue = getCSSVariableValue(variableName);
+    const hslMatch = hslValue.match(/(\d+(\.\d+)?)/g);
+    if (!hslMatch || hslMatch.length < 3) {
+      console.warn('Invalid HSL format:', hslValue);
+      return '#000000';
+    }
+    const [h, s, l] = hslMatch.map(Number);
+    return hslToHex(h, s, l);
+  }
 
   useEffect(() => {
-    // Function to convert HSL to Hex
-    function hslToHex(h: number, s: number, l: number): string {
-      h = Number(h);
-      s = Number(s);
-      l = Number(l);
-
-      if (isNaN(h) || isNaN(s) || isNaN(l)) {
-        console.warn('Invalid HSL values:', { h, s, l });
-        return '#000000';
-      }
-
-      s /= 100;
-      l /= 100;
-
-      const c = (1 - Math.abs(2 * l - 1)) * s;
-      const x = c * (1 - Math.abs((h / 60) % 2 - 1));
-      const m = l - c/2;
-      let r = 0, g = 0, b = 0;
-
-      if (0 <= h && h < 60) {
-        r = c; g = x; b = 0;
-      } else if (60 <= h && h < 120) {
-        r = x; g = c; b = 0;
-      } else if (120 <= h && h < 180) {
-        r = 0; g = c; b = x;
-      } else if (180 <= h && h < 240) {
-        r = 0; g = x; b = c;
-      } else if (240 <= h && h < 300) {
-        r = x; g = 0; b = c;
-      } else if (300 <= h && h < 360) {
-        r = c; g = 0; b = x;
-      }
-
-      const toHex = (n: number): string => {
-        const hex = Math.round((n + m) * 255).toString(16);
-        return hex.length === 1 ? '0' + hex : hex;
-      };
-
-      return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
-    }
-
-    function getCSSVariableValue(variableName: string): string {
-      return getComputedStyle(document.documentElement)
-        .getPropertyValue(variableName)
-        .trim();
-    }
-
-    function cssVariableToHex(variableName: string): string {
-      const hslValue = getCSSVariableValue(variableName);
-      const hslMatch = hslValue.match(/(\d+(\.\d+)?)/g);
-      
-      if (!hslMatch || hslMatch.length < 3) {
-        console.warn('Invalid HSL format:', hslValue);
-        return '#000000';
-      }
-
-      const [h, s, l] = hslMatch.map(Number);
-      return hslToHex(h, s, l);
-    }
-
     if (canvasRef.current) {
       const canvas = new Canvas(canvasRef.current, {
         preserveObjectStacking: true,
@@ -102,11 +69,10 @@ const CanvasRenderer: React.FC = () => {
         width: window.innerWidth - 500,
         backgroundColor: cssVariableToHex('--card'),
       });
-
+      canvasInstanceRef.current = canvas;
       canvasManager.setCanvas(canvas);
       layerManager.setCanvas(canvas);
       canvas.renderAll();
-
       layerManager.setSkinBackground();
 
       const handleSelectionEvent = (event: any) => {
@@ -223,9 +189,19 @@ const CanvasRenderer: React.FC = () => {
         canvas.off('object:moving', handleObjectMoving);
         canvas.dispose();
         window.removeEventListener('resize', handleResize);
+        canvasInstanceRef.current = null;
       };
     }
   }, []);
+
+  // Update canvas background color when theme changes
+  useEffect(() => {
+    const canvas = canvasInstanceRef.current;
+    if (canvas) {
+      canvas.set({ backgroundColor: cssVariableToHex('--card') });
+      canvas.renderAll();
+    }
+  }, [theme]);
 
   return (
     <div className="flex items-center justify-center bg-card h-full overflow-auto">
