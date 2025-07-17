@@ -12,7 +12,7 @@ const notes = process.env.RELEASE_NOTES || '';
 // Find the signature file (adjust the path if your bundle structure is different)
 const bundleDir = path.join(__dirname, '../../src-tauri/target/release/bundle/nsis');
 const files = fs.readdirSync(bundleDir);
-const sigFile = files.find(f => f.endsWith('.sig'));
+const sigFile = files.find(f => f.endsWith('.msi.sig'));
 const signature = sigFile ? fs.readFileSync(path.join(bundleDir, sigFile), 'utf8').trim() : '';
 
 // Remove leading 'v' from version for filename
