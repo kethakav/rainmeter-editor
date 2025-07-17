@@ -6,8 +6,8 @@ on:
       - 'v*.*.*'
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  build-windows:
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
       - name: Set up Node.js
@@ -19,18 +19,19 @@ jobs:
         with:
           toolchain: stable
           profile: minimal
+          target: x86_64-pc-windows-msvc
       - name: Install dependencies
         run: npm install
-      - name: Build Tauri app
+      - name: Build Tauri app (Windows)
         run: npm run tauri build
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
       - name: Generate latest.json
         run: node .github/scripts/generate-latest-json.js
-      - name: Create Release
+      - name: Upload Release Artifacts
         uses: softprops/action-gh-release@v2
         with:
           files: |
             src-tauri/target/release/bundle/**/*
-            latest.json 
+            latest.json
