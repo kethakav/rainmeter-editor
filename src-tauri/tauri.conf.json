@@ -35,7 +35,7 @@
   "plugins": {
     "updater": {
       "endpoints": [
-        "https://github.com/yourusername/rainmeter-editor/releases/latest/download/latest.json"
+        "https://github.com/kethakav/rainmeter-editor/releases/latest/download/latest.json"
       ],
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDlGM0Q3MjY3OThDNjQ5RkEKUldUNlNjYVlaM0k5bjNCQy9ObXFkZjcyNGhDSG5BYitzZklvV2JVQ2NZcW1xRVJudjltYlA0b3AK"
     }
