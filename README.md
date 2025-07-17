@@ -1,7 +1,18 @@
-# Tauri + React + Typescript
+# Rainmeter Editor
 
-This template should help get you started developing with Tauri, React and Typescript in Vite.
+[![MIT License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![GitHub release](https://img.shields.io/github/v/release/kethakav/rainmeter-editor)](https://github.com/kethakav/rainmeter-editor/releases)
 
-## Recommended IDE Setup
+A modern, open-source GUI editor for Rainmeter skins.
 
-- [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+## Security
+
+See [SECURITY.md](SECURITY.md) for reporting vulnerabilities.
+
+## Auto-Update
+
+This app will automatically check for updates from [GitHub Releases](https://github.com/kethakav/rainmeter-editor/releases).
