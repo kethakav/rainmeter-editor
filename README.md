@@ -106,7 +106,10 @@ MIT License (see [LICENSE](LICENSE))
 
 ## Screenshots & Videos
 
-- [YouTube Tutorial](https://youtu.be/FxBZCdO-a5o)
+#### YouTube Tutorial (Click on the image)
+[![Video 2](media/images/explorer_QlFPmVzH8R.png)](https://youtu.be/FxBZCdO-a5o)  
+#### Screenshots
+![Screenshot 1](media/images/ss-rm-editor.png)
 
 ---
 
