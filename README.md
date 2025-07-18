@@ -7,7 +7,6 @@ A modern, open-source GUI editor for [Rainmeter](https://www.rainmeter.net/) ski
 
 > **Note:** Rainmeter Editor and Rainmeter itself are **Windows-only**. This app will not run on macOS or Linux.
 
----
 
 ## Features
 
@@ -22,7 +21,6 @@ A modern, open-source GUI editor for [Rainmeter](https://www.rainmeter.net/) ski
   - Fast, lightweight Tauri backend
 - **Community:** Discord and Reddit for support, feedback, and sharing
 
----
 
 ## Quick Start (Development)
 
@@ -50,7 +48,6 @@ A modern, open-source GUI editor for [Rainmeter](https://www.rainmeter.net/) ski
    ```
    The app will open in a native window. You can now start designing Rainmeter skins!
 
----
 
 ## Download and Install (Windows)
 
@@ -66,7 +63,6 @@ Alternatively, you can also find releases on the [GitHub Releases](https://githu
    - Click on "More info".
    - Click on "Run anyway".
 
----
 
 ## Usage
 
@@ -75,7 +71,6 @@ Alternatively, you can also find releases on the [GitHub Releases](https://githu
 - Export your skin via the Export button; the app will generate a Rainmeter-compatible folder with all assets and an `.ini` file.
 - Import/export project support is coming soon.
 
----
 
 ## Community & Support
 
@@ -84,25 +79,21 @@ Alternatively, you can also find releases on the [GitHub Releases](https://githu
 - [Report a Bug](https://github.com/kethakav/rainmeter-editor/issues/new?template=bug_report.yml)
 - [Request a Feature](https://github.com/kethakav/rainmeter-editor/issues/new?template=feature_request.yml)
 
----
 
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. All contributions, bug reports, and feature requests are welcome!
 
----
 
 ## Security
 
 See [SECURITY.md](SECURITY.md) for reporting vulnerabilities.
 
----
 
 ## License
 
 MIT License (see [LICENSE](LICENSE))
 
----
 
 ## Screenshots & Videos
 
@@ -111,7 +102,6 @@ MIT License (see [LICENSE](LICENSE))
 #### Screenshots
 ![Screenshot 1](media/images/ss-rm-editor.png)
 
----
 
 ## Acknowledgements
 
