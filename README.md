@@ -22,6 +22,15 @@ A modern, open-source GUI editor for [Rainmeter](https://www.rainmeter.net/) ski
 - **Community:** Discord and Reddit for support, feedback, and sharing
 
 
+## Screenshots & Videos
+
+#### YouTube Tutorial (Click on the image)
+[![Video 2](media/images/explorer_QlFPmVzH8R.png)](https://youtu.be/FxBZCdO-a5o)  
+#### Screenshots
+![Screenshot 1](media/images/ss-rm-editor.png)
+
+
+
 ## Quick Start (Development)
 
 1. **Install Prerequisites:**
@@ -93,15 +102,6 @@ See [SECURITY.md](SECURITY.md) for reporting vulnerabilities.
 ## License
 
 MIT License (see [LICENSE](LICENSE))
-
-
-## Screenshots & Videos
-
-#### YouTube Tutorial (Click on the image)
-[![Video 2](media/images/explorer_QlFPmVzH8R.png)](https://youtu.be/FxBZCdO-a5o)  
-#### Screenshots
-![Screenshot 1](media/images/ss-rm-editor.png)
-
 
 ## Acknowledgements
 
