@@ -1,7 +1,7 @@
 // ExportToINI.ts
 import { copyFile } from '@tauri-apps/plugin-fs';
 import { layerManager } from './LayerManager';
-import { Group, IText, Rect, TFiller } from 'fabric';
+import { Group, IText, Line, Rect, TFiller } from 'fabric';
 import { open} from '@tauri-apps/plugin-dialog';
 import { mkdir, writeFile, exists } from '@tauri-apps/plugin-fs'; // Imp
 import { resourceDir } from '@tauri-apps/api/path';
@@ -1175,6 +1175,80 @@ export const exportSkin = async (resourcePath: string, metadata: { name: string;
         });
         addBarMeterLayerOneMeasure(exporter, layer, adjustedX, adjustedY, layer.fabricObject.width, layer.fabricObject.height);
       }
+    } else if (layer.type === 'shape') {
+      const shapeType = layer.properties?.find(p => p.property === 'shapeType')?.value || 'rect';
+      const shape = layer.fabricObject;
+      const strokeWidth = shape.strokeWidth || 0;
+
+      // Parse fill color+opacity from rgba or hex
+      const fillColor = parseColorWithAlpha(shape.fill as string, shape.opacity ?? 1);
+      // Parse stroke color+opacity from rgba or hex
+      const strokeColor = parseColorWithAlpha(shape.stroke as string, 1);
+
+      let shapeDef = '';
+      const w = Math.round(shape.width * shape.scaleX);
+      const h = Math.round(shape.height * shape.scaleY);
+      const extraOptions: Record<string, string> = {};
+
+      if (shapeType === 'rect') {
+        const rect = shape as Rect;
+        const rx = rect.rx || 0;
+        const ry = rect.ry || 0;
+        shapeDef = `Rectangle 0,0,(${w} * #Scale#),(${h} * #Scale#),(${rx} * #Scale#),(${ry} * #Scale#)`;
+      } else if (shapeType === 'circle') {
+        const rx = Math.round(w / 2);
+        const ry = Math.round(h / 2);
+        shapeDef = `Ellipse (${rx} * #Scale#),(${ry} * #Scale#),(${rx} * #Scale#),(${ry} * #Scale#)`;
+      } else if (shapeType === 'triangle') {
+        // Triangle: Path must be defined as a separate named option in Rainmeter
+        const halfW = Math.round(w / 2);
+        const pathName = layer.name + 'Path';
+        shapeDef = `Path1 ${pathName}`;
+        extraOptions[pathName] = `(${halfW} * #Scale#),0 | LineTo (${w} * #Scale#),(${h} * #Scale#) | LineTo 0,(${h} * #Scale#) | ClosePath 1`;
+      } else if (shapeType === 'line') {
+        const line = shape as Line;
+        const lineW = Math.round(line.width * line.scaleX);
+        shapeDef = `Line 0,0,(${lineW} * #Scale#),0`;
+      }
+
+      // Fill attribute: skip for lines
+      const fillAttr = shapeType === 'line' ? '' : ` | Fill Color ${fillColor}`;
+
+      // Stroke attribute: ALWAYS emit to suppress Rainmeter's default 1px black stroke
+      let strokeAttr: string;
+      if (strokeWidth > 0) {
+        strokeAttr = ` | StrokeWidth (${strokeWidth} * #Scale#) | Stroke Color ${strokeColor}`;
+      } else {
+        // Explicitly disable stroke to prevent Rainmeter default
+        strokeAttr = ` | StrokeWidth 0 | Stroke Color 0,0,0,0`;
+      }
+
+      // Rotation transform modifier
+      const angle = shape.angle || 0;
+      const rotateAttr = angle !== 0 ? ` | Rotate ${angle}` : '';
+
+      // Compute position using the shape's center point.
+      // Rainmeter's Rotate modifier rotates around center (anchor 0.5, 0.5),
+      // so the meter must be placed such that center aligns with Fabric.js center.
+      // Rainmeter center = (X + W/2, Y + H/2)  →  X = centerX - W/2, Y = centerY - H/2
+      const center = shape.getCenterPoint();
+      const wRaw = shape.width * shape.scaleX;
+      const hRaw = shape.height * shape.scaleY;
+      const shapeX = center.x - minX - wRaw / 2;
+      const shapeY = center.y - minY - hRaw / 2;
+
+      exporter.addLayer({
+        meter: {
+          type: 'Shape',
+          name: layer.name,
+          options: {
+            X: ('(' + shapeX.toString() + ' * #Scale#)'),
+            Y: ('(' + shapeY.toString() + ' * #Scale#)'),
+            Shape: shapeDef + fillAttr + strokeAttr + rotateAttr,
+            ...extraOptions,
+          }
+        }
+      });
     }
   });
 
@@ -1278,4 +1352,25 @@ function hexToRgb(hex: string | TFiller, opacity: number): string {
   }
 
   return `0,0,0,${Math.round(opacity * 255)}`;
+}
+
+// Parse color from hex (#RRGGBB) or rgba(r,g,b,a) → Rainmeter "R,G,B,A" format
+// Used for shape fill/stroke which may carry independent opacity as rgba()
+function parseColorWithAlpha(color: string | TFiller | null, fallbackOpacity: number): string {
+  if (!color || typeof color !== 'string') {
+    return `0,0,0,${Math.round(fallbackOpacity * 255)}`;
+  }
+
+  // Try parsing rgba(r,g,b,a)
+  const rgbaMatch = color.match(/rgba?\(\s*(\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\s*\)/);
+  if (rgbaMatch) {
+    const r = parseInt(rgbaMatch[1]);
+    const g = parseInt(rgbaMatch[2]);
+    const b = parseInt(rgbaMatch[3]);
+    const a = rgbaMatch[4] !== undefined ? parseFloat(rgbaMatch[4]) : 1;
+    return `${r},${g},${b},${Math.round(a * 255)}`;
+  }
+
+  // Fall back to hex parsing
+  return hexToRgb(color, fallbackOpacity);
 }

@@ -6,11 +6,18 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { layerManager } from '@/services/LayerManager';
-import { CircleGauge, Image, Minus, MousePointer, Type } from 'lucide-react';
+import { CircleGauge, Image, Minus, MousePointer, Type, Square, Circle, Triangle, Slash, Shapes, ChevronDown } from 'lucide-react';
 
 const Toolbar: React.FC = () => {
   const [selectedTool, setSelectedTool] = useState<string>('select');
+  const [selectedShapeType, setSelectedShapeType] = useState<string>('rect');
 
   useEffect(() => {
     // Update the selected tool when it changes
@@ -47,25 +54,37 @@ const Toolbar: React.FC = () => {
     layerManager.setActiveTool('bar');
   };
 
-  const isSelected = (tool: string) => selectedTool === tool;  
+  const handleAddShape = (shapeType: 'rect' | 'circle' | 'triangle' | 'line') => {
+    setSelectedShapeType(shapeType);
+    layerManager.setShapeSubType(shapeType);
+    layerManager.setActiveTool('shape');
+  };
+
+  const isSelected = (tool: string) => selectedTool === tool;
+
+  const shapeIcon = () => {
+    switch (selectedShapeType) {
+      case 'rect': return <Square className="w-4 h-4" />;
+      case 'circle': return <Circle className="w-4 h-4" />;
+      case 'triangle': return <Triangle className="w-4 h-4" />;
+      case 'line': return <Slash className="w-4 h-4" />;
+      default: return <Shapes className="w-4 h-4" />;
+    }
+  };
 
   return (
     <TooltipProvider>
       <div className="flex items-center justify-center fixed bottom-0 left-1/2 transform -translate-x-1/2 mb-4">
         <div className="h-14 w-fit bg-sidebar-accent border rounded-xl shadow-none flex items-center justify-between px-3">
-          
+
           <div className="flex items-center justify-center space-x-2">
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button 
+                <Button
                   variant={isSelected('select') ? 'default' : 'ghost'}
                   size="icon"
                   onClick={handleSelectTool}
                 >
-                  {/* <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
-                    <path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/>
-                    <path d="M13 13l6 6"/>
-                  </svg> */}
                   <MousePointer />
                   <span className="sr-only">Select</span>
                 </Button>
@@ -77,16 +96,11 @@ const Toolbar: React.FC = () => {
 
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button 
+                <Button
                   onClick={handleAddText}
                   variant={isSelected('text') ? 'default' : 'ghost'}
                   size="icon"
                 >
-                  {/* <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
-                    <path d="M4 7V4h16v3"/>
-                    <path d="M9 20h6"/>
-                    <path d="M12 4v16"/>
-                  </svg> */}
                   <Type />
                   <span className="sr-only">Text</span>
                 </Button>
@@ -98,16 +112,11 @@ const Toolbar: React.FC = () => {
 
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button 
+                <Button
                   onClick={handleAddImage}
                   variant={isSelected('image') ? 'default' : 'ghost'}
                   size="icon"
                 >
-                  {/* <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                    <circle cx="8.5" cy="8.5" r="1.5"/>
-                    <polyline points="21 15 16 10 5 21"/>
-                  </svg> */}
                   <Image />
                   <span className="sr-only">Image</span>
                 </Button>
@@ -117,9 +126,49 @@ const Toolbar: React.FC = () => {
               </TooltipContent>
             </Tooltip>
 
+            {/* Shape Tool with dropdown */}
+            <DropdownMenu>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant={isSelected('shape') ? 'default' : 'ghost'}
+                      className="gap-0.5 px-2"
+                    >
+                      {shapeIcon()}
+                      <ChevronDown className="w-3 h-3 opacity-60" />
+                      <span className="sr-only">Shape</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Shape Tool</p>
+                </TooltipContent>
+              </Tooltip>
+              <DropdownMenuContent align="center" side="top" className="min-w-[140px]">
+                <DropdownMenuItem onClick={() => handleAddShape('rect')} className="gap-2 cursor-pointer">
+                  <Square className="w-4 h-4" />
+                  Rectangle
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleAddShape('circle')} className="gap-2 cursor-pointer">
+                  <Circle className="w-4 h-4" />
+                  Circle
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleAddShape('triangle')} className="gap-2 cursor-pointer">
+                  <Triangle className="w-4 h-4" />
+                  Triangle
+                </DropdownMenuItem>
+                {/* The line tool is currently not working properly. Fix this later */}
+                {/* <DropdownMenuItem onClick={() => handleAddShape('line')} className="gap-2 cursor-pointer">
+                  <Slash className="w-4 h-4" />
+                  Line
+                </DropdownMenuItem> */}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button 
+                <Button
                   onClick={handleAddRotator}
                   variant={isSelected('rotator') ? 'default' : 'ghost'}
                   size="icon"
@@ -134,14 +183,11 @@ const Toolbar: React.FC = () => {
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button 
+                <Button
                   onClick={handleAddBar}
                   variant={isSelected('bar') ? 'default' : 'ghost'}
                   size="icon"
                 >
-                  {/* <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
-                    <rect x="3" y="11" width="18" height="2" rx="1" ry="1"/>
-                  </svg> */}
                   <Minus />
                   <span className="sr-only">Bar</span>
                 </Button>

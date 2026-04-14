@@ -33,7 +33,7 @@ import { Button } from "./ui/button";
 import { useLayerContext } from "@/context/LayerContext";
 import { closestCenter, DndContext, DragEndEvent, KeyboardSensor, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
-import { Type, Image, Gauge, Minus, Trash } from 'lucide-react';
+import { Type, Image, Gauge, Minus, Trash, Square } from 'lucide-react';
 import { Badge } from "./ui/badge";
 import { version } from "../../package.json"
 
@@ -88,6 +88,7 @@ interface Layer {
                 {layer.type === 'image' && <Image style={{ height: '14px' }} />}
                 {layer.type === 'rotator' && <Gauge style={{ height: '14px' }} />}
                 {layer.type === 'bar' && <Minus style={{ height: '14px' }} />}
+                {layer.type === 'shape' && <Square style={{ height: '14px' }} />}
             </span>
             <span className={``}>
                 {layer.name.replace(/(\D)(\d)/, '$1 $2')}

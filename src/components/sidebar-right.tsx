@@ -22,6 +22,7 @@ import TextLayerProperties from "./PropertiesSidebar/TextProperties";
 import ImageLayerProperties from "./PropertiesSidebar/ImageProperties";
 import RotatorLayerProperties from "./PropertiesSidebar/RotatorProperties";
 import BarLayerProperties from "./PropertiesSidebar/BarProperties";
+import ShapeLayerProperties from "./PropertiesSidebar/ShapeProperties";
 import { ModeToggle } from "./mode-toggle";
 
 
@@ -98,6 +99,9 @@ export function SidebarRight({
         )}
         {selectedLayerId && (selectedLayer.type === 'bar') && (
           <BarLayerProperties />
+        )}
+        {selectedLayerId && (selectedLayer.type === 'shape') && (
+          <ShapeLayerProperties />
         )}
       </SidebarContent>
       <SidebarSeparator />

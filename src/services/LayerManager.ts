@@ -2,7 +2,7 @@
 // import { useToolContext } from '@/context/ToolContext';
 import { arrayMove } from '@dnd-kit/sortable';
 import { join, resourceDir } from '@tauri-apps/api/path';
-import { Canvas, Circle, FabricObject, FabricObjectProps, Rect, Triangle, IText, FabricImage, Group, Line, Text} from 'fabric';
+import { Canvas, Circle, FabricObject, FabricObjectProps, Rect, Triangle, IText, FabricImage, Group, Line, Text } from 'fabric';
 import { convertFileSrc } from '@tauri-apps/api/core';
 import { SingleFontLoad } from './singleFontLoad';
 
@@ -14,6 +14,9 @@ enum LayerType {
   ROTATOR = 'rotator',
   BAR = 'bar',
 }
+
+// Sub-types of shapes
+type ShapeSubType = 'rect' | 'circle' | 'triangle' | 'line';
 
 interface LayerProperties {
   property: string;
@@ -42,6 +45,7 @@ class LayerManager {
     private skinBackground: FabricObject | null = null;
 
     public activeTool: string = 'select';
+    public shapeSubType: ShapeSubType = 'rect';
   
     public layers: LayerConfig[] = [];
 
@@ -137,6 +141,10 @@ class LayerManager {
     this.toolChangeListeners.forEach(listener => listener());
   }
 
+  setShapeSubType(subType: ShapeSubType) {
+    this.shapeSubType = subType;
+  }
+
   // Add methods to subscribe and unsubscribe to tool changes
   subscribeToToolChanges(listener: () => void) {
     this.toolChangeListeners.push(listener);
@@ -162,6 +170,10 @@ class LayerManager {
       }
       if (this.activeTool === 'bar') {
         this.addBarLayer(x, y);
+        this.setActiveTool('select');
+      }
+      if (this.activeTool === 'shape') {
+        this.addShapeLayer(this.shapeSubType, { left: x, top: y });
         this.setActiveTool('select');
       }
     }
@@ -638,47 +650,77 @@ class LayerManager {
 }
 
   // Add shape layer
-  addShapeLayer(type: 'rect' | 'circle' | 'triangle', options: Partial<FabricObjectProps> = {}) {
+  addShapeLayer(type: ShapeSubType = 'rect', options: Partial<FabricObjectProps> = {}) {
     if (this.canvas) {
         let shapeObject: FabricObject;
+        const defaultProps = {
+          hasControls: true,
+          strokeUniform: true,
+        };
     
         switch(type) {
         case 'rect':
             shapeObject = new Rect({
-            width: 100,
-            height: 100,
-            fill: 'blue',
-            left: 100,
-            top: 100,
-            ...options
+              width: 100,
+              height: 100,
+              fill: '#4A90D9',
+              stroke: '#2C5F8A',
+              strokeWidth: 2,
+              rx: 0,
+              ry: 0,
+              ...defaultProps,
+              ...options,
             });
             break;
         case 'circle':
             shapeObject = new Circle({
-            radius: 50,
-            fill: 'green',
-            left: 100,
-            top: 100,
-            ...options
+              radius: 50,
+              fill: '#50B86C',
+              stroke: '#2D7A42',
+              strokeWidth: 2,
+              ...defaultProps,
+              ...options,
             });
             break;
         case 'triangle':
             shapeObject = new Triangle({
-            width: 100,
-            height: 100,
-            fill: 'red',
-            left: 100,
-            top: 100,
-            ...options
+              width: 100,
+              height: 100,
+              fill: '#E05D5D',
+              stroke: '#9B2C2C',
+              strokeWidth: 2,
+              ...defaultProps,
+              ...options,
             });
             break;
+        case 'line':
+            shapeObject = new Line([0, 0, 150, 0], {
+              stroke: '#333333',
+              strokeWidth: 3,
+              left: options.left || 100,
+              top: options.top || 100,
+              ...defaultProps,
+            });
+            break;
+        default:
+            shapeObject = new Rect({
+              width: 100,
+              height: 100,
+              fill: '#4A90D9',
+              stroke: '#2C5F8A',
+              strokeWidth: 2,
+              ...defaultProps,
+              ...options,
+            });
         }
 
-        this.addLayer(LayerType.SHAPE, shapeObject);
-    } 
-    // else {
-    //     return null;
-    // }
+        // Store the shape sub-type in properties
+        const shapeProperties: LayerProperties[] = [
+          { property: 'shapeType', value: type },
+        ];
+
+        this.addLayer(LayerType.SHAPE, shapeObject, '', new Group(), shapeProperties);
+    }
   }
 
   // Add image layer
@@ -841,15 +883,27 @@ class LayerManager {
   // Generate default layer name
   private generateLayerName(type: LayerType): string {
     this.layerCounts[type] += 1;
-    const typeLabels = {
-      [LayerType.TEXT]: 'Text',
-      [LayerType.SHAPE]: 'Shape',
-      [LayerType.IMAGE]: 'Image',
-      [LayerType.ROTATOR]: 'Rotator',
-      [LayerType.BAR]: 'Bar',
-    };
+    let label: string;
+    if (type === LayerType.SHAPE) {
+      const subTypeLabels: Record<ShapeSubType, string> = {
+        'rect': 'Rectangle',
+        'circle': 'Circle',
+        'triangle': 'Triangle',
+        'line': 'Line',
+      };
+      label = subTypeLabels[this.shapeSubType] || 'Shape';
+    } else {
+      const typeLabels = {
+        [LayerType.TEXT]: 'Text',
+        [LayerType.SHAPE]: 'Shape',
+        [LayerType.IMAGE]: 'Image',
+        [LayerType.ROTATOR]: 'Rotator',
+        [LayerType.BAR]: 'Bar',
+      };
+      label = typeLabels[type];
+    }
     
-    return `${typeLabels[type]}${this.layerCounts[type]}`;
+    return `${label}${this.layerCounts[type]}`;
   }
 
   // Get all layers
