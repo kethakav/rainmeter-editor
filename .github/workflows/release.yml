@@ -4,7 +4,6 @@ on:
   push:
     tags:
       - 'v*.*.*'
-  workflow_dispatch:
 
 permissions:
   contents: write
@@ -36,7 +35,7 @@ jobs:
       - name: Upload Release Artifacts
         uses: softprops/action-gh-release@v2
         with:
-          token: ${{ secrets.GITHUB_TOKEN }} # GH_PAT
+          token: ${{ secrets.GH_PAT }}
           files: |
             src-tauri/target/release/bundle/**/*
             latest.json
