@@ -1,23 +1,22 @@
 // ExportToINI.ts
-import { copyFile } from '@tauri-apps/plugin-fs';
-import { layerManager } from './LayerManager';
-import { Group, IText, Line, Rect, TFiller } from 'fabric';
-import { open} from '@tauri-apps/plugin-dialog';
-import { mkdir, writeFile, exists } from '@tauri-apps/plugin-fs'; // Imp
-import { resourceDir } from '@tauri-apps/api/path';
-import { localFontManager } from './LocalFontManager';
+import { copyFile } from "@tauri-apps/plugin-fs";
+import { layerManager } from "./LayerManager";
+import { Group, IText, Line, Rect, TFiller } from "fabric";
+import { open } from "@tauri-apps/plugin-dialog";
+import { mkdir, writeFile, exists } from "@tauri-apps/plugin-fs"; // Imp
+import { localFontManager } from "./LocalFontManager";
 // import { appDataDir } from '@tauri-apps/api/path';
 
 // Types for Rainmeter Skin Components
 interface RainmeterMetadata {
-    name: string;
-    author: string;
-    version: string;
-    description: string;
+  name: string;
+  author: string;
+  version: string;
+  description: string;
 }
 
 interface RainmeterSkinProperties {
-  allowScrollResize: boolean
+  allowScrollResize: boolean;
 }
 
 interface RainmeterVariable {
@@ -26,13 +25,23 @@ interface RainmeterVariable {
 }
 
 interface RainmeterMeasure {
-  type: 'Time' | 'Calc' | 'String' | 'Plugin' | 'CPU' | 'FreeDiskSpace';
+  type: "Time" | "Calc" | "String" | "Plugin" | "CPU" | "FreeDiskSpace";
   name: string;
   options: Record<string, string>;
 }
 
 interface RainmeterMeter {
-  type: 'String' | 'Image' | 'Shape' | 'Rotator' | 'Bar' | 'Button' | 'Audio' | 'WebParser' | 'Measure' | 'Meter';
+  type:
+    | "String"
+    | "Image"
+    | "Shape"
+    | "Rotator"
+    | "Bar"
+    | "Button"
+    | "Audio"
+    | "WebParser"
+    | "Measure"
+    | "Meter";
   name: string;
   measureName?: string;
   measureName2?: string;
@@ -59,7 +68,11 @@ class RainmeterSkinExporter {
   public properties: RainmeterSkinProperties = { allowScrollResize: false };
   private variables: RainmeterVariable[] = [];
 
-  constructor(metadata: RainmeterMetadata, skinWidth: number, skinHeight: number) {
+  constructor(
+    metadata: RainmeterMetadata,
+    skinWidth: number,
+    skinHeight: number,
+  ) {
     this.metadata = metadata;
     this.skinWidth = skinWidth;
     this.skinHeight = skinHeight;
@@ -81,8 +94,7 @@ SkinWidth=(${this.skinWidth.toString()} * #Scale#)
 SkinHeight=(${this.skinHeight.toString()} * #Scale#)
 AccurateText=1
 `;
-}
-
+  }
 
   addVariable(key: string, value: string): this {
     this.variables.push({ key, value });
@@ -100,44 +112,46 @@ AccurateText=1
     // Add scoll resizing here ==================================================================
 
     if (this.properties.allowScrollResize) {
-      exportContent += 'MouseScrollUpAction=[!SetVariable Scale "(#Scale#+#ScrollMouseIncrement#)"][!WriteKeyValue Variables Scale "(#Scale#+#ScrollMouseIncrement#)"][!Refresh] \n';
-      exportContent += 'MouseScrollDownAction=[!SetVariable Scale "(#Scale#-#ScrollMouseIncrement# < 0.2 ? 0.2 : #Scale#-#ScrollMouseIncrement#)"][!WriteKeyValue Variables Scale "(#Scale#-#ScrollMouseIncrement# < 0.2 ? 0.2 : #Scale#-#ScrollMouseIncrement#)"][!Refresh]\n';
-      exportContent += '\n';
+      exportContent +=
+        'MouseScrollUpAction=[!SetVariable Scale "(#Scale#+#ScrollMouseIncrement#)"][!WriteKeyValue Variables Scale "(#Scale#+#ScrollMouseIncrement#)"][!Refresh] \n';
+      exportContent +=
+        'MouseScrollDownAction=[!SetVariable Scale "(#Scale#-#ScrollMouseIncrement# < 0.2 ? 0.2 : #Scale#-#ScrollMouseIncrement#)"][!WriteKeyValue Variables Scale "(#Scale#-#ScrollMouseIncrement# < 0.2 ? 0.2 : #Scale#-#ScrollMouseIncrement#)"][!Refresh]\n';
+      exportContent += "\n";
     } else {
-      exportContent += '\n';
+      exportContent += "\n";
     }
     // Add Variables section
     if (this.variables.length > 0) {
-      exportContent += '[Variables]\n';
-      this.variables.forEach(variable => {
+      exportContent += "[Variables]\n";
+      this.variables.forEach((variable) => {
         exportContent += `${variable.key}=${variable.value}\n`;
       });
-      exportContent += '\n';
+      exportContent += "\n";
     }
 
     // Add Measures
     this.layers
-      .filter(layer => layer.measure)
+      .filter((layer) => layer.measure)
       .forEach((layer) => {
         const measure = layer.measure!;
         exportContent += `[${measure.name}]\n`;
         exportContent += `Measure=${measure.type}\n`;
-        
+
         Object.entries(measure.options).forEach(([key, value]) => {
           exportContent += `${key}=${value}\n`;
         });
-        
-        exportContent += '\n';
+
+        exportContent += "\n";
       });
 
     // Add Meters
     this.layers
-      .filter(layer => layer.meter)
+      .filter((layer) => layer.meter)
       .forEach((layer) => {
         const meter = layer.meter!;
         exportContent += `[${meter.name}]\n`;
         exportContent += `Meter=${meter.type}\n`;
-        
+
         if (meter.measureName) {
           exportContent += `MeasureName=${meter.measureName}\n`;
         }
@@ -163,12 +177,11 @@ AccurateText=1
           exportContent += `MeasureName8=${meter.measureName8}\n`;
         }
 
-        
         Object.entries(meter.options).forEach(([key, value]) => {
           exportContent += `${key}=${value}\n`;
         });
-        
-        exportContent += '\n';
+
+        exportContent += "\n";
       });
 
     return exportContent;
@@ -178,49 +191,65 @@ AccurateText=1
 // Add a function to check if the font file exists in the public/fonts directory
 async function fontExistsInPublic(fontName: string): Promise<boolean> {
   console.log("Font name", fontName);
-  const fontPath = await resourceDir() + `/_up_/public/fonts/${fontName}`;
+  const fontPath = localFontManager
+    .getCachedFonts()
+    .find((font) => font.src === fontName)?.path;
+  if (!fontPath) return false;
   return await exists(fontPath);
 }
 
-function getRotatedBounds(width: number, height: number, angleInDegrees: number) {
+function getRotatedBounds(
+  width: number,
+  height: number,
+  angleInDegrees: number,
+) {
   // Convert angle to radians
-  const angle = Math.abs(angleInDegrees * Math.PI / 180);
-  
+  const angle = Math.abs((angleInDegrees * Math.PI) / 180);
+
   // Calculate the bounds of the rotated rectangle
   const absCos = Math.abs(Math.cos(angle));
   const absSin = Math.abs(Math.sin(angle));
-  
+
   // Calculate the dimensions of the bounding box
   const boundWidth = width * absCos + height * absSin;
   const boundHeight = width * absSin + height * absCos;
-  
+
   return {
     width: boundWidth,
     height: boundHeight,
-    scale: Math.min(width / boundWidth, height / boundHeight)
+    scale: Math.min(width / boundWidth, height / boundHeight),
   };
 }
 
-
 // Modify the exportSkin function
-export const exportSkin = async (resourcePath: string, metadata: { name: string; author: string; version: string; description: string }, allowScrollResize: boolean) => {
+export const exportSkin = async (
+  resourcePath: string,
+  metadata: {
+    name: string;
+    author: string;
+    version: string;
+    description: string;
+  },
+  allowScrollResize: boolean,
+) => {
   const scaleCorrection = 1.33;
   const layers = layerManager.getLayers();
   const skinBackground = layerManager.getSkinBackground();
 
-
-  const exporter = new RainmeterSkinExporter({
-    name: metadata.name,
-    author: metadata.author,
-    version: metadata.version,
-    description: metadata.description,
-  },
+  const exporter = new RainmeterSkinExporter(
+    {
+      name: metadata.name,
+      author: metadata.author,
+      version: metadata.version,
+      description: metadata.description,
+    },
     skinBackground?.width || 0,
-    skinBackground?.height || 0
-);
-  
+    skinBackground?.height || 0,
+  );
+
   exporter.properties.allowScrollResize = allowScrollResize;
-  
+
+  await localFontManager.scanLocalFonts();
   const systemFonts = localFontManager.getCachedFonts();
 
   const fontsToCopy = new Set<string>(); // To track fonts to copy
@@ -242,104 +271,143 @@ export const exportSkin = async (resourcePath: string, metadata: { name: string;
   //   return min;
   // }, Infinity);
 
-  exporter.addVariable('Scale', '1.0');
-  exporter.addVariable('ScrollMouseIncrement', '0.05');
+  exporter.addVariable("Scale", "1.0");
+  exporter.addVariable("ScrollMouseIncrement", "0.05");
 
-  const addStringMeterLayerOneMeasure = (exporter: RainmeterSkinExporter, layer: any, text: IText, fontFace: string, stringStyle: string, adjustedX: number, adjustedY: number, strCont: string) => {
-    
+  const addStringMeterLayerOneMeasure = (
+    exporter: RainmeterSkinExporter,
+    layer: any,
+    text: IText,
+    fontFace: string,
+    stringStyle: string,
+    adjustedX: number,
+    adjustedY: number,
+    strCont: string,
+  ) => {
     exporter.addLayer({
       meter: {
-        type: 'String',
+        type: "String",
         name: layer.name,
-        measureName: 'Measure' + layer.name,
+        measureName: "Measure" + layer.name,
         options: {
           FontFace: fontFace,
-          FontSize: ('(' + (text.fontSize / scaleCorrection).toString() + ' * #Scale#)'),
-          FontColor: layer.fabricObject.fill ? hexToRgb(layer.fabricObject.fill, layer.fabricObject.opacity) : '0,0,0,255',
+          FontSize:
+            "(" + (text.fontSize / scaleCorrection).toString() + " * #Scale#)",
+          FontColor: layer.fabricObject.fill
+            ? hexToRgb(layer.fabricObject.fill, layer.fabricObject.opacity)
+            : "0,0,0,255",
           StringStyle: stringStyle,
-          X: ('(' + adjustedX.toString() + ' * #Scale#)'),
-          Y: ('(' + adjustedY.toString() + ' * #Scale#)'),
+          X: "(" + adjustedX.toString() + " * #Scale#)",
+          Y: "(" + adjustedY.toString() + " * #Scale#)",
           Angle: (layer.fabricObject.angle * (Math.PI / 180)).toString(),
           AntiAlias: "1",
           Text: strCont,
-        }
-      }
+        },
+      },
     });
   };
 
-  const addRotatorMeterLayerOneMeasure = (exporter: RainmeterSkinExporter, layer: any, adjustedX: number, adjustedY: number, width: number, height: number, ImageName: string, OffsetX: number, OffsetY: number, startAngle: number, rotationAngle: number, valueRemainder?: number) => {
+  const addRotatorMeterLayerOneMeasure = (
+    exporter: RainmeterSkinExporter,
+    layer: any,
+    adjustedX: number,
+    adjustedY: number,
+    width: number,
+    height: number,
+    ImageName: string,
+    OffsetX: number,
+    OffsetY: number,
+    startAngle: number,
+    rotationAngle: number,
+    valueRemainder?: number,
+  ) => {
     const options: any = {
-        ImageName: ImageName,
-        W: ('(' + (width).toString() + ' * #Scale#)'),
-        H: ('(' + (height).toString() + ' * #Scale#)'),
-        X: ('(' + (adjustedX).toString() + ' * #Scale#)'),
-        Y: ('(' + (adjustedY).toString() + ' * #Scale#)'),
-        StartAngle: ((startAngle) * (Math.PI / 180)).toString(),
-        RotationAngle: ((rotationAngle) * (Math.PI / 180)).toString(),
-        OffsetX: ('(' + (OffsetX + (width / 2)).toString() + ' * #Scale#)'),
-        OffsetY: ('(' + (OffsetY + (height / 2)).toString() + ' * #Scale#)')
+      ImageName: ImageName,
+      W: "(" + width.toString() + " * #Scale#)",
+      H: "(" + height.toString() + " * #Scale#)",
+      X: "(" + adjustedX.toString() + " * #Scale#)",
+      Y: "(" + adjustedY.toString() + " * #Scale#)",
+      StartAngle: (startAngle * (Math.PI / 180)).toString(),
+      RotationAngle: (rotationAngle * (Math.PI / 180)).toString(),
+      OffsetX: "(" + (OffsetX + width / 2).toString() + " * #Scale#)",
+      OffsetY: "(" + (OffsetY + height / 2).toString() + " * #Scale#)",
     };
 
     if (valueRemainder !== undefined) {
-        options.ValueRemainder = valueRemainder.toString();
+      options.ValueRemainder = valueRemainder.toString();
     }
 
     exporter.addLayer({
-        meter: {
-            type: 'Rotator',
-            name: layer.name,
-            measureName: 'Measure' + layer.name,
-            options: options
-        }
+      meter: {
+        type: "Rotator",
+        name: layer.name,
+        measureName: "Measure" + layer.name,
+        options: options,
+      },
     });
-  }
+  };
 
-  const addBarMeterLayerOneMeasure = (exporter: RainmeterSkinExporter, layer: any, adjustedX: number, adjustedY: number, width: number, height: number) => {
+  const addBarMeterLayerOneMeasure = (
+    exporter: RainmeterSkinExporter,
+    layer: any,
+    adjustedX: number,
+    adjustedY: number,
+    width: number,
+    height: number,
+  ) => {
     const barGroup = layer.fabricObject as Group;
     const background = barGroup._objects[0] as Rect;
     const foreground = barGroup._objects[1] as Rect;
     console.log(width, height);
     exporter.addLayer({
       meter: {
-        type: 'Bar',
+        type: "Bar",
         name: layer.name,
-        measureName: 'Measure' + layer.name,
+        measureName: "Measure" + layer.name,
         options: {
-          X: ('(' + adjustedX.toString() + ' * #Scale#)'),
-          Y: ('(' + adjustedY.toString() + ' * #Scale#)'),
-          W: ('(' + (barGroup.width * barGroup.scaleX).toString() + ' * #Scale#)'),
-          H: ('(' + (barGroup.height * barGroup.scaleY).toString() + ' * #Scale#)'),
-          BarOrientation: 'Horizontal',
-          BarColor: background.fill ? hexToRgb(background.fill, background.opacity) : '0,0,0,255',
-          SolidColor: foreground.fill ? hexToRgb(foreground.fill, foreground.opacity) : '0,0,0,255',
-        }
-      }
+          X: "(" + adjustedX.toString() + " * #Scale#)",
+          Y: "(" + adjustedY.toString() + " * #Scale#)",
+          W:
+            "(" + (barGroup.width * barGroup.scaleX).toString() + " * #Scale#)",
+          H:
+            "(" +
+            (barGroup.height * barGroup.scaleY).toString() +
+            " * #Scale#)",
+          BarOrientation: "Horizontal",
+          BarColor: background.fill
+            ? hexToRgb(background.fill, background.opacity)
+            : "0,0,0,255",
+          SolidColor: foreground.fill
+            ? hexToRgb(foreground.fill, foreground.opacity)
+            : "0,0,0,255",
+        },
+      },
     });
-  }
+  };
 
-  layers.forEach(layer => {
-    const adjustedX = (layer.fabricObject.left - minX); // Adjust x value
-    const adjustedY = (layer.fabricObject.top - minY); // Adjust y value
-    if (layer.type === 'text') {
+  layers.forEach((layer) => {
+    const adjustedX = layer.fabricObject.left - minX; // Adjust x value
+    const adjustedY = layer.fabricObject.top - minY; // Adjust y value
+    if (layer.type === "text") {
       const text = layer.fabricObject as IText;
 
-      const font = systemFonts.find(font => font.name === text.fontFamily);
+      const font = systemFonts.find((font) => font.name === text.fontFamily);
       // console.log('tt', font);
 
       let stringStyle = "normal";
       let fontFace = text.fontFamily;
 
-      if(text.fontFamily.includes(" Bold")) {
+      if (text.fontFamily.includes(" Bold")) {
         stringStyle = "bold";
         fontFace = text.fontFamily.replace(" Bold", "");
       }
 
-      if(text.fontFamily.includes(" Italic")) {
+      if (text.fontFamily.includes(" Italic")) {
         stringStyle = "italic";
         fontFace = text.fontFamily.replace(" Italic", "");
       }
 
-      if(text.fontFamily.includes(" Regular")) {
+      if (text.fontFamily.includes(" Regular")) {
         stringStyle = "normal";
         fontFace = text.fontFamily.replace(" Regular", "");
       }
@@ -347,452 +415,730 @@ export const exportSkin = async (resourcePath: string, metadata: { name: string;
       if (layer.measure === "custom-text") {
         exporter.addLayer({
           meter: {
-            type: 'String',
+            type: "String",
             name: layer.name,
             options: {
               FontFace: fontFace,
-              FontSize: ('(' + (text.fontSize / scaleCorrection).toString() + ' * #Scale#)'),
-              FontColor: layer.fabricObject.fill ? hexToRgb(layer.fabricObject.fill, layer.fabricObject.opacity) : '0,0,0',
+              FontSize:
+                "(" +
+                (text.fontSize / scaleCorrection).toString() +
+                " * #Scale#)",
+              FontColor: layer.fabricObject.fill
+                ? hexToRgb(layer.fabricObject.fill, layer.fabricObject.opacity)
+                : "0,0,0",
               StringStyle: stringStyle,
-              X: ('(' + adjustedX.toString() + ' * #Scale#)'),
-              Y: ('(' + adjustedY.toString() + ' * #Scale#)'),
+              X: "(" + adjustedX.toString() + " * #Scale#)",
+              Y: "(" + adjustedY.toString() + " * #Scale#)",
               Angle: (layer.fabricObject.angle * (Math.PI / 180)).toString(),
               AntiAlias: "1",
               Text: text.text,
-            }
-          }
+            },
+          },
         });
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
-      } else if (layer.measure === "date-yyyy-mm-dd") { // Date ====================================================
+      } else if (layer.measure === "date-yyyy-mm-dd") {
+        // Date ====================================================
         exporter.addLayer({
           measure: {
-            type: 'Time',
-            name: 'Measure' + layer.name,
+            type: "Time",
+            name: "Measure" + layer.name,
             options: {
-              Format: '%F',
-            }
-          }
+              Format: "%F",
+            },
+          },
         });
-        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
+        addStringMeterLayerOneMeasure(
+          exporter,
+          layer,
+          text,
+          fontFace,
+          stringStyle,
+          adjustedX,
+          adjustedY,
+          "%1",
+        );
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
       } else if (layer.measure === "date-mm-dd-yy") {
         exporter.addLayer({
           measure: {
-            type: 'Time',
-            name: 'Measure' + layer.name,
+            type: "Time",
+            name: "Measure" + layer.name,
             options: {
-              Format: '%D',
-            }
-          }
+              Format: "%D",
+            },
+          },
         });
-        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
+        addStringMeterLayerOneMeasure(
+          exporter,
+          layer,
+          text,
+          fontFace,
+          stringStyle,
+          adjustedX,
+          adjustedY,
+          "%1",
+        );
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
       } else if (layer.measure === "date-month-number") {
         exporter.addLayer({
           measure: {
-            type: 'Time',
-            name: 'Measure' + layer.name,
+            type: "Time",
+            name: "Measure" + layer.name,
             options: {
-              Format: '%m',
-            }
-          }
+              Format: "%m",
+            },
+          },
         });
-        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
+        addStringMeterLayerOneMeasure(
+          exporter,
+          layer,
+          text,
+          fontFace,
+          stringStyle,
+          adjustedX,
+          adjustedY,
+          "%1",
+        );
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
       } else if (layer.measure === "date-month-full") {
         exporter.addLayer({
           measure: {
-            type: 'Time',
-            name: 'Measure' + layer.name,
+            type: "Time",
+            name: "Measure" + layer.name,
             options: {
-              Format: '%B',
-            }
-          }
+              Format: "%B",
+            },
+          },
         });
-        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
+        addStringMeterLayerOneMeasure(
+          exporter,
+          layer,
+          text,
+          fontFace,
+          stringStyle,
+          adjustedX,
+          adjustedY,
+          "%1",
+        );
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
       } else if (layer.measure === "date-month-short") {
         exporter.addLayer({
           measure: {
-            type: 'Time',
-            name: 'Measure' + layer.name,
+            type: "Time",
+            name: "Measure" + layer.name,
             options: {
-              Format: '%b',
-            }
-          }
+              Format: "%b",
+            },
+          },
         });
-        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
+        addStringMeterLayerOneMeasure(
+          exporter,
+          layer,
+          text,
+          fontFace,
+          stringStyle,
+          adjustedX,
+          adjustedY,
+          "%1",
+        );
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
       } else if (layer.measure === "date-day-number") {
         exporter.addLayer({
           measure: {
-            type: 'Time',
-            name: 'Measure' + layer.name,
+            type: "Time",
+            name: "Measure" + layer.name,
             options: {
-              Format: '%d',
-            }
-          }
+              Format: "%d",
+            },
+          },
         });
-        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
+        addStringMeterLayerOneMeasure(
+          exporter,
+          layer,
+          text,
+          fontFace,
+          stringStyle,
+          adjustedX,
+          adjustedY,
+          "%1",
+        );
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
       } else if (layer.measure === "date-day-full") {
         exporter.addLayer({
           measure: {
-            type: 'Time',
-            name: 'Measure' + layer.name,
+            type: "Time",
+            name: "Measure" + layer.name,
             options: {
-              Format: '%A',
-            }
-          }
+              Format: "%A",
+            },
+          },
         });
-        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
+        addStringMeterLayerOneMeasure(
+          exporter,
+          layer,
+          text,
+          fontFace,
+          stringStyle,
+          adjustedX,
+          adjustedY,
+          "%1",
+        );
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
       } else if (layer.measure === "date-day-short") {
         exporter.addLayer({
           measure: {
-            type: 'Time',
-            name: 'Measure' + layer.name,
+            type: "Time",
+            name: "Measure" + layer.name,
             options: {
-              Format: '%a',
-            }
-          }
+              Format: "%a",
+            },
+          },
         });
-        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
+        addStringMeterLayerOneMeasure(
+          exporter,
+          layer,
+          text,
+          fontFace,
+          stringStyle,
+          adjustedX,
+          adjustedY,
+          "%1",
+        );
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
       } else if (layer.measure === "date-year-short") {
         exporter.addLayer({
           measure: {
-            type: 'Time',
-            name: 'Measure' + layer.name,
+            type: "Time",
+            name: "Measure" + layer.name,
             options: {
-              Format: '%g',
-            }
-          }
+              Format: "%g",
+            },
+          },
         });
-        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
+        addStringMeterLayerOneMeasure(
+          exporter,
+          layer,
+          text,
+          fontFace,
+          stringStyle,
+          adjustedX,
+          adjustedY,
+          "%1",
+        );
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
       } else if (layer.measure === "date-year-full") {
         exporter.addLayer({
           measure: {
-            type: 'Time',
-            name: 'Measure' + layer.name,
+            type: "Time",
+            name: "Measure" + layer.name,
             options: {
-              Format: '%G',
-            }
-          }
+              Format: "%G",
+            },
+          },
         });
-        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
+        addStringMeterLayerOneMeasure(
+          exporter,
+          layer,
+          text,
+          fontFace,
+          stringStyle,
+          adjustedX,
+          adjustedY,
+          "%1",
+        );
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
-      } else if (layer.measure === "time-hour-minute-24") { // Time ====================================================
+      } else if (layer.measure === "time-hour-minute-24") {
+        // Time ====================================================
         exporter.addLayer({
           measure: {
-            type: 'Time',
-            name: 'Measure' + layer.name,
+            type: "Time",
+            name: "Measure" + layer.name,
             options: {
-              Format: '%H:%M',
-            }
-          }
+              Format: "%H:%M",
+            },
+          },
         });
-        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
+        addStringMeterLayerOneMeasure(
+          exporter,
+          layer,
+          text,
+          fontFace,
+          stringStyle,
+          adjustedX,
+          adjustedY,
+          "%1",
+        );
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
       } else if (layer.measure === "time-hour-minute-12") {
         exporter.addLayer({
           measure: {
-            type: 'Time',
-            name: 'Measure' + layer.name,
+            type: "Time",
+            name: "Measure" + layer.name,
             options: {
-              Format: '%I:%M %p',
-            }
-          }
+              Format: "%I:%M %p",
+            },
+          },
         });
-        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
+        addStringMeterLayerOneMeasure(
+          exporter,
+          layer,
+          text,
+          fontFace,
+          stringStyle,
+          adjustedX,
+          adjustedY,
+          "%1",
+        );
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
       } else if (layer.measure === "time-hour-24") {
         exporter.addLayer({
           measure: {
-            type: 'Time',
-            name: 'Measure' + layer.name,
+            type: "Time",
+            name: "Measure" + layer.name,
             options: {
-              Format: '%H',
-            }
-          }
+              Format: "%H",
+            },
+          },
         });
-        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
+        addStringMeterLayerOneMeasure(
+          exporter,
+          layer,
+          text,
+          fontFace,
+          stringStyle,
+          adjustedX,
+          adjustedY,
+          "%1",
+        );
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
       } else if (layer.measure === "time-hour-12") {
         exporter.addLayer({
           measure: {
-            type: 'Time',
-            name: 'Measure' + layer.name,
+            type: "Time",
+            name: "Measure" + layer.name,
             options: {
-              Format: '%I',
-            }
-          }
+              Format: "%I",
+            },
+          },
         });
-        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
+        addStringMeterLayerOneMeasure(
+          exporter,
+          layer,
+          text,
+          fontFace,
+          stringStyle,
+          adjustedX,
+          adjustedY,
+          "%1",
+        );
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
       } else if (layer.measure === "time-minute") {
         exporter.addLayer({
           measure: {
-            type: 'Time',
-            name: 'Measure' + layer.name,
+            type: "Time",
+            name: "Measure" + layer.name,
             options: {
-              Format: '%M',
-            }
-          }
+              Format: "%M",
+            },
+          },
         });
-        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
+        addStringMeterLayerOneMeasure(
+          exporter,
+          layer,
+          text,
+          fontFace,
+          stringStyle,
+          adjustedX,
+          adjustedY,
+          "%1",
+        );
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
       } else if (layer.measure === "time-second") {
         exporter.addLayer({
           measure: {
-            type: 'Time',
-            name: 'Measure' + layer.name,
+            type: "Time",
+            name: "Measure" + layer.name,
             options: {
-              Format: '%S',
-            }
-          }
+              Format: "%S",
+            },
+          },
         });
-        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
+        addStringMeterLayerOneMeasure(
+          exporter,
+          layer,
+          text,
+          fontFace,
+          stringStyle,
+          adjustedX,
+          adjustedY,
+          "%1",
+        );
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
       } else if (layer.measure === "time-am-pm") {
         exporter.addLayer({
           measure: {
-            type: 'Time',
-            name: 'Measure' + layer.name,
+            type: "Time",
+            name: "Measure" + layer.name,
             options: {
-              Format: '%p',
-            }
-          }
+              Format: "%p",
+            },
+          },
         });
-        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
+        addStringMeterLayerOneMeasure(
+          exporter,
+          layer,
+          text,
+          fontFace,
+          stringStyle,
+          adjustedX,
+          adjustedY,
+          "%1",
+        );
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
-      } else if (layer.measure === "cpu-average") { // CPU ====================================================
+      } else if (layer.measure === "cpu-average") {
+        // CPU ====================================================
         exporter.addLayer({
           measure: {
-            type: 'CPU',
-            name: 'Measure' + layer.name,
-            options: {
-            }
-          }
+            type: "CPU",
+            name: "Measure" + layer.name,
+            options: {},
+          },
         });
-        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1%');
+        addStringMeterLayerOneMeasure(
+          exporter,
+          layer,
+          text,
+          fontFace,
+          stringStyle,
+          adjustedX,
+          adjustedY,
+          "%1%",
+        );
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
       } else if (layer.measure === "cpu-core-1") {
         exporter.addLayer({
           measure: {
-            type: 'CPU',
-            name: 'Measure' + layer.name,
+            type: "CPU",
+            name: "Measure" + layer.name,
             options: {
-              Processor: '1',
-            }
-          }
+              Processor: "1",
+            },
+          },
         });
-        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1%');
+        addStringMeterLayerOneMeasure(
+          exporter,
+          layer,
+          text,
+          fontFace,
+          stringStyle,
+          adjustedX,
+          adjustedY,
+          "%1%",
+        );
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
       } else if (layer.measure === "cpu-core-2") {
         exporter.addLayer({
           measure: {
-            type: 'CPU',
-            name: 'Measure' + layer.name,
+            type: "CPU",
+            name: "Measure" + layer.name,
             options: {
-              Processor: '2',
-            }
-          }
+              Processor: "2",
+            },
+          },
         });
-        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1%');
+        addStringMeterLayerOneMeasure(
+          exporter,
+          layer,
+          text,
+          fontFace,
+          stringStyle,
+          adjustedX,
+          adjustedY,
+          "%1%",
+        );
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
       } else if (layer.measure === "cpu-core-3") {
         exporter.addLayer({
           measure: {
-            type: 'CPU',
-            name: 'Measure' + layer.name,
+            type: "CPU",
+            name: "Measure" + layer.name,
             options: {
-              Processor: '3',
-            }
-          }
+              Processor: "3",
+            },
+          },
         });
-        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1%');
+        addStringMeterLayerOneMeasure(
+          exporter,
+          layer,
+          text,
+          fontFace,
+          stringStyle,
+          adjustedX,
+          adjustedY,
+          "%1%",
+        );
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
       } else if (layer.measure === "cpu-core-4") {
         exporter.addLayer({
           measure: {
-            type: 'CPU',
-            name: 'Measure' + layer.name,
+            type: "CPU",
+            name: "Measure" + layer.name,
             options: {
-              Processor: '4',
-            }
-          }
+              Processor: "4",
+            },
+          },
         });
-        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1%');
+        addStringMeterLayerOneMeasure(
+          exporter,
+          layer,
+          text,
+          fontFace,
+          stringStyle,
+          adjustedX,
+          adjustedY,
+          "%1%",
+        );
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
       } else if (layer.measure === "cpu-core-5") {
         exporter.addLayer({
           measure: {
-            type: 'CPU',
-            name: 'Measure' + layer.name,
+            type: "CPU",
+            name: "Measure" + layer.name,
             options: {
-              Processor: '5',
-            }
-          }
+              Processor: "5",
+            },
+          },
         });
-        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1%');
+        addStringMeterLayerOneMeasure(
+          exporter,
+          layer,
+          text,
+          fontFace,
+          stringStyle,
+          adjustedX,
+          adjustedY,
+          "%1%",
+        );
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
       } else if (layer.measure === "cpu-core-6") {
         exporter.addLayer({
           measure: {
-            type: 'CPU',
-            name: 'Measure' + layer.name,
+            type: "CPU",
+            name: "Measure" + layer.name,
             options: {
-              Processor: '6',
-            }
-          }
+              Processor: "6",
+            },
+          },
         });
-        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1%');
+        addStringMeterLayerOneMeasure(
+          exporter,
+          layer,
+          text,
+          fontFace,
+          stringStyle,
+          adjustedX,
+          adjustedY,
+          "%1%",
+        );
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
       } else if (layer.measure === "cpu-core-7") {
         exporter.addLayer({
           measure: {
-            type: 'CPU',
-            name: 'Measure' + layer.name,
+            type: "CPU",
+            name: "Measure" + layer.name,
             options: {
-              Processor: '7',
-            }
-          }
+              Processor: "7",
+            },
+          },
         });
-        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1%');
+        addStringMeterLayerOneMeasure(
+          exporter,
+          layer,
+          text,
+          fontFace,
+          stringStyle,
+          adjustedX,
+          adjustedY,
+          "%1%",
+        );
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
       } else if (layer.measure === "cpu-core-8") {
         exporter.addLayer({
           measure: {
-            type: 'CPU',
-            name: 'Measure' + layer.name,
+            type: "CPU",
+            name: "Measure" + layer.name,
             options: {
-              Processor: '8',
-            }
-          }
+              Processor: "8",
+            },
+          },
         });
-        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1%');
+        addStringMeterLayerOneMeasure(
+          exporter,
+          layer,
+          text,
+          fontFace,
+          stringStyle,
+          adjustedX,
+          adjustedY,
+          "%1%",
+        );
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
-      } else if (layer.measure === "disk-c-label") { // DISK ====================================================
+      } else if (layer.measure === "disk-c-label") {
+        // DISK ====================================================
         exporter.addLayer({
           measure: {
-            type: 'FreeDiskSpace',
-            name: 'Measure' + layer.name,
+            type: "FreeDiskSpace",
+            name: "Measure" + layer.name,
             options: {
-              Drive: 'C:',
-              Label: '1',
-              UpdateDivider: '5',
-            }
-          }
+              Drive: "C:",
+              Label: "1",
+              UpdateDivider: "5",
+            },
+          },
         });
-        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1');
+        addStringMeterLayerOneMeasure(
+          exporter,
+          layer,
+          text,
+          fontFace,
+          stringStyle,
+          adjustedX,
+          adjustedY,
+          "%1",
+        );
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
-      } else if (layer.measure === "disk-c-total-space") { 
+      } else if (layer.measure === "disk-c-total-space") {
         exporter.addLayer({
           measure: {
-            type: 'FreeDiskSpace',
-            name: 'Measure' + layer.name,
+            type: "FreeDiskSpace",
+            name: "Measure" + layer.name,
             options: {
-              Drive: 'C:',
-              Total: '1',
-              UpdateDivider: '5',
-            }
-          }
+              Drive: "C:",
+              Total: "1",
+              UpdateDivider: "5",
+            },
+          },
         });
-        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1 B');
+        addStringMeterLayerOneMeasure(
+          exporter,
+          layer,
+          text,
+          fontFace,
+          stringStyle,
+          adjustedX,
+          adjustedY,
+          "%1 B",
+        );
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
-      } else if (layer.measure === "disk-c-free-space") { 
+      } else if (layer.measure === "disk-c-free-space") {
         exporter.addLayer({
           measure: {
-            type: 'FreeDiskSpace',
-            name: 'Measure' + layer.name,
+            type: "FreeDiskSpace",
+            name: "Measure" + layer.name,
             options: {
-              Drive: 'C:',
-              UpdateDivider: '5',
-            }
-          }
+              Drive: "C:",
+              UpdateDivider: "5",
+            },
+          },
         });
-        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1 B');
+        addStringMeterLayerOneMeasure(
+          exporter,
+          layer,
+          text,
+          fontFace,
+          stringStyle,
+          adjustedX,
+          adjustedY,
+          "%1 B",
+        );
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
-      } else if (layer.measure === "disk-c-used-space") { 
+      } else if (layer.measure === "disk-c-used-space") {
         exporter.addLayer({
           measure: {
-            type: 'FreeDiskSpace',
-            name: 'Measure' + layer.name,
+            type: "FreeDiskSpace",
+            name: "Measure" + layer.name,
             options: {
-              Drive: 'C:',
-              InvertMeasure: '1',
-              UpdateDivider: '5',
-            }
-          }
+              Drive: "C:",
+              InvertMeasure: "1",
+              UpdateDivider: "5",
+            },
+          },
         });
-        addStringMeterLayerOneMeasure(exporter, layer, text, fontFace, stringStyle, adjustedX, adjustedY, '%1 B');
+        addStringMeterLayerOneMeasure(
+          exporter,
+          layer,
+          text,
+          fontFace,
+          stringStyle,
+          adjustedX,
+          adjustedY,
+          "%1 B",
+        );
         if (font) {
           fontsToCopy.add(font.src); // Track the font
         }
-      } 
-    } else if (layer.type === 'image') {
+      }
+    } else if (layer.type === "image") {
       if (!imagesToCopy.includes(layer.imageSrc)) {
         imagesToCopy.push(layer.imageSrc); // Track the image
       }
@@ -803,39 +1149,43 @@ export const exportSkin = async (resourcePath: string, metadata: { name: string;
       // const correctedW = d * Math.sin(beta);
       // const correctedH = d * Math.cos(beta);
       const { width: correctedW, height: correctedH } = getRotatedBounds(
-        layer.fabricObject.width * layer.fabricObject.scaleX, 
-        layer.fabricObject.height * layer.fabricObject.scaleY, 
-        layer.fabricObject.angle
+        layer.fabricObject.width * layer.fabricObject.scaleX,
+        layer.fabricObject.height * layer.fabricObject.scaleY,
+        layer.fabricObject.angle,
       );
       // console log each step of the calculation
-      
+
       exporter.addLayer({
         meter: {
-          type: 'Image',
+          type: "Image",
           name: layer.name,
           options: {
-            ImageName: '#@#Images/' + imagesToCopy.findIndex(img => img === layer.imageSrc).toString() + '.png',
-            W: ('(' + (correctedW).toString() + ' * #Scale#)'),
-            H: ('(' + (correctedH).toString() + ' * #Scale#)'),
-            X: ('(' + (adjustedX - (correctedW / 2)).toString() + ' * #Scale#)'),
-            Y: ('(' + (adjustedY - (correctedH / 2)).toString() + ' * #Scale#)'),
-            ImageRotate: (layer.fabricObject.angle).toString(),
-          }
-        }
+            ImageName:
+              "#@#Images/" +
+              imagesToCopy
+                .findIndex((img) => img === layer.imageSrc)
+                .toString() +
+              ".png",
+            W: "(" + correctedW.toString() + " * #Scale#)",
+            H: "(" + correctedH.toString() + " * #Scale#)",
+            X: "(" + (adjustedX - correctedW / 2).toString() + " * #Scale#)",
+            Y: "(" + (adjustedY - correctedH / 2).toString() + " * #Scale#)",
+            ImageRotate: layer.fabricObject.angle.toString(),
+          },
+        },
       });
-    } else if (layer.type === 'rotator') {
+    } else if (layer.type === "rotator") {
       if (!imagesToCopy.includes(layer.imageSrc)) {
         imagesToCopy.push(layer.imageSrc); // Track the image
       }
-      if (layer.measure === 'rotator-time-second') {
+      if (layer.measure === "rotator-time-second") {
         exporter.addLayer({
           measure: {
-            type: 'Time',
-            name: 'Measure' + layer.name,
-            options: {
-            }
-          }
-        })
+            type: "Time",
+            name: "Measure" + layer.name,
+            options: {},
+          },
+        });
         addRotatorMeterLayerOneMeasure(
           exporter,
           layer,
@@ -843,376 +1193,552 @@ export const exportSkin = async (resourcePath: string, metadata: { name: string;
           adjustedY - layer.fabricObject.height / 2,
           layer.fabricObject.width * layer.fabricObject.scaleX,
           layer.fabricObject.height * layer.fabricObject.scaleY,
-          '#@#Images/' + imagesToCopy.findIndex(img => img === layer.imageSrc).toString() + '.png',
-          Number(layer.properties.find(prop => prop.property === 'offsetX')?.value),
-          Number(layer.properties.find(prop => prop.property === 'offsetY')?.value),
-          Number(layer.properties.find(prop => prop.property === 'startAngle')?.value),
-          Number(layer.properties.find(prop => prop.property === 'rotationAngle')?.value),
-          60
-        )
+          "#@#Images/" +
+            imagesToCopy.findIndex((img) => img === layer.imageSrc).toString() +
+            ".png",
+          Number(
+            layer.properties.find((prop) => prop.property === "offsetX")?.value,
+          ),
+          Number(
+            layer.properties.find((prop) => prop.property === "offsetY")?.value,
+          ),
+          Number(
+            layer.properties.find((prop) => prop.property === "startAngle")
+              ?.value,
+          ),
+          Number(
+            layer.properties.find((prop) => prop.property === "rotationAngle")
+              ?.value,
+          ),
+          60,
+        );
+      } else if (layer.measure === "rotator-time-minute") {
+        exporter.addLayer({
+          measure: {
+            type: "Time",
+            name: "Measure" + layer.name,
+            options: {},
+          },
+        });
+        addRotatorMeterLayerOneMeasure(
+          exporter,
+          layer,
+          adjustedX - layer.fabricObject.width / 2,
+          adjustedY - layer.fabricObject.height / 2,
+          layer.fabricObject.width * layer.fabricObject.scaleX,
+          layer.fabricObject.height * layer.fabricObject.scaleY,
+          "#@#Images/" +
+            imagesToCopy.findIndex((img) => img === layer.imageSrc).toString() +
+            ".png",
+          Number(
+            layer.properties.find((prop) => prop.property === "offsetX")?.value,
+          ),
+          Number(
+            layer.properties.find((prop) => prop.property === "offsetY")?.value,
+          ),
+          Number(
+            layer.properties.find((prop) => prop.property === "startAngle")
+              ?.value,
+          ),
+          Number(
+            layer.properties.find((prop) => prop.property === "rotationAngle")
+              ?.value,
+          ),
+          3600,
+        );
+      } else if (layer.measure === "rotator-time-hour") {
+        exporter.addLayer({
+          measure: {
+            type: "Time",
+            name: "Measure" + layer.name,
+            options: {},
+          },
+        });
+        addRotatorMeterLayerOneMeasure(
+          exporter,
+          layer,
+          adjustedX - layer.fabricObject.width / 2,
+          adjustedY - layer.fabricObject.height / 2,
+          layer.fabricObject.width * layer.fabricObject.scaleX,
+          layer.fabricObject.height * layer.fabricObject.scaleY,
+          "#@#Images/" +
+            imagesToCopy.findIndex((img) => img === layer.imageSrc).toString() +
+            ".png",
+          Number(
+            layer.properties.find((prop) => prop.property === "offsetX")?.value,
+          ),
+          Number(
+            layer.properties.find((prop) => prop.property === "offsetY")?.value,
+          ),
+          Number(
+            layer.properties.find((prop) => prop.property === "startAngle")
+              ?.value,
+          ),
+          Number(
+            layer.properties.find((prop) => prop.property === "rotationAngle")
+              ?.value,
+          ),
+          43200,
+        );
+      } else if (layer.measure === "rotator-cpu-average") {
+        exporter.addLayer({
+          measure: {
+            type: "CPU",
+            name: "Measure" + layer.name,
+            options: {},
+          },
+        });
+        addRotatorMeterLayerOneMeasure(
+          exporter,
+          layer,
+          adjustedX - layer.fabricObject.width / 2,
+          adjustedY - layer.fabricObject.height / 2,
+          layer.fabricObject.width * layer.fabricObject.scaleX,
+          layer.fabricObject.height * layer.fabricObject.scaleY,
+          "#@#Images/" +
+            imagesToCopy.findIndex((img) => img === layer.imageSrc).toString() +
+            ".png",
+          Number(
+            layer.properties.find((prop) => prop.property === "offsetX")?.value,
+          ),
+          Number(
+            layer.properties.find((prop) => prop.property === "offsetY")?.value,
+          ),
+          Number(
+            layer.properties.find((prop) => prop.property === "startAngle")
+              ?.value,
+          ),
+          Number(
+            layer.properties.find((prop) => prop.property === "rotationAngle")
+              ?.value,
+          ),
+        );
+      } else if (layer.measure === "rotator-cpu-core-1") {
+        exporter.addLayer({
+          measure: {
+            type: "CPU",
+            name: "Measure" + layer.name,
+            options: {
+              Processor: "1",
+            },
+          },
+        });
+        addRotatorMeterLayerOneMeasure(
+          exporter,
+          layer,
+          adjustedX - layer.fabricObject.width / 2,
+          adjustedY - layer.fabricObject.height / 2,
+          layer.fabricObject.width * layer.fabricObject.scaleX,
+          layer.fabricObject.height * layer.fabricObject.scaleY,
+          "#@#Images/" +
+            imagesToCopy.findIndex((img) => img === layer.imageSrc).toString() +
+            ".png",
+          Number(
+            layer.properties.find((prop) => prop.property === "offsetX")?.value,
+          ),
+          Number(
+            layer.properties.find((prop) => prop.property === "offsetY")?.value,
+          ),
+          Number(
+            layer.properties.find((prop) => prop.property === "startAngle")
+              ?.value,
+          ),
+          Number(
+            layer.properties.find((prop) => prop.property === "rotationAngle")
+              ?.value,
+          ),
+        );
+      } else if (layer.measure === "rotator-cpu-core-2") {
+        exporter.addLayer({
+          measure: {
+            type: "CPU",
+            name: "Measure" + layer.name,
+            options: {
+              Processor: "2",
+            },
+          },
+        });
+        addRotatorMeterLayerOneMeasure(
+          exporter,
+          layer,
+          adjustedX - layer.fabricObject.width / 2,
+          adjustedY - layer.fabricObject.height / 2,
+          layer.fabricObject.width * layer.fabricObject.scaleX,
+          layer.fabricObject.height * layer.fabricObject.scaleY,
+          "#@#Images/" +
+            imagesToCopy.findIndex((img) => img === layer.imageSrc).toString() +
+            ".png",
+          Number(
+            layer.properties.find((prop) => prop.property === "offsetX")?.value,
+          ),
+          Number(
+            layer.properties.find((prop) => prop.property === "offsetY")?.value,
+          ),
+          Number(
+            layer.properties.find((prop) => prop.property === "startAngle")
+              ?.value,
+          ),
+          Number(
+            layer.properties.find((prop) => prop.property === "rotationAngle")
+              ?.value,
+          ),
+        );
+      } else if (layer.measure === "rotator-cpu-core-3") {
+        exporter.addLayer({
+          measure: {
+            type: "CPU",
+            name: "Measure" + layer.name,
+            options: {
+              Processor: "3",
+            },
+          },
+        });
+        addRotatorMeterLayerOneMeasure(
+          exporter,
+          layer,
+          adjustedX - layer.fabricObject.width / 2,
+          adjustedY - layer.fabricObject.height / 2,
+          layer.fabricObject.width * layer.fabricObject.scaleX,
+          layer.fabricObject.height * layer.fabricObject.scaleY,
+          "#@#Images/" +
+            imagesToCopy.findIndex((img) => img === layer.imageSrc).toString() +
+            ".png",
+          Number(
+            layer.properties.find((prop) => prop.property === "offsetX")?.value,
+          ),
+          Number(
+            layer.properties.find((prop) => prop.property === "offsetY")?.value,
+          ),
+          Number(
+            layer.properties.find((prop) => prop.property === "startAngle")
+              ?.value,
+          ),
+          Number(
+            layer.properties.find((prop) => prop.property === "rotationAngle")
+              ?.value,
+          ),
+        );
+      } else if (layer.measure === "rotator-cpu-core-4") {
+        exporter.addLayer({
+          measure: {
+            type: "CPU",
+            name: "Measure" + layer.name,
+            options: {
+              Processor: "4",
+            },
+          },
+        });
+        addRotatorMeterLayerOneMeasure(
+          exporter,
+          layer,
+          adjustedX - layer.fabricObject.width / 2,
+          adjustedY - layer.fabricObject.height / 2,
+          layer.fabricObject.width * layer.fabricObject.scaleX,
+          layer.fabricObject.height * layer.fabricObject.scaleY,
+          "#@#Images/" +
+            imagesToCopy.findIndex((img) => img === layer.imageSrc).toString() +
+            ".png",
+          Number(
+            layer.properties.find((prop) => prop.property === "offsetX")?.value,
+          ),
+          Number(
+            layer.properties.find((prop) => prop.property === "offsetY")?.value,
+          ),
+          Number(
+            layer.properties.find((prop) => prop.property === "startAngle")
+              ?.value,
+          ),
+          Number(
+            layer.properties.find((prop) => prop.property === "rotationAngle")
+              ?.value,
+          ),
+        );
+      } else if (layer.measure === "rotator-cpu-core-5") {
+        exporter.addLayer({
+          measure: {
+            type: "CPU",
+            name: "Measure" + layer.name,
+            options: {
+              Processor: "5",
+            },
+          },
+        });
+        addRotatorMeterLayerOneMeasure(
+          exporter,
+          layer,
+          adjustedX - layer.fabricObject.width / 2,
+          adjustedY - layer.fabricObject.height / 2,
+          layer.fabricObject.width * layer.fabricObject.scaleX,
+          layer.fabricObject.height * layer.fabricObject.scaleY,
+          "#@#Images/" +
+            imagesToCopy.findIndex((img) => img === layer.imageSrc).toString() +
+            ".png",
+          Number(
+            layer.properties.find((prop) => prop.property === "offsetX")?.value,
+          ),
+          Number(
+            layer.properties.find((prop) => prop.property === "offsetY")?.value,
+          ),
+          Number(
+            layer.properties.find((prop) => prop.property === "startAngle")
+              ?.value,
+          ),
+          Number(
+            layer.properties.find((prop) => prop.property === "rotationAngle")
+              ?.value,
+          ),
+        );
+      } else if (layer.measure === "rotator-cpu-core-6") {
+        exporter.addLayer({
+          measure: {
+            type: "CPU",
+            name: "Measure" + layer.name,
+            options: {
+              Processor: "6",
+            },
+          },
+        });
+        addRotatorMeterLayerOneMeasure(
+          exporter,
+          layer,
+          adjustedX - layer.fabricObject.width / 2,
+          adjustedY - layer.fabricObject.height / 2,
+          layer.fabricObject.width * layer.fabricObject.scaleX,
+          layer.fabricObject.height * layer.fabricObject.scaleY,
+          "#@#Images/" +
+            imagesToCopy.findIndex((img) => img === layer.imageSrc).toString() +
+            ".png",
+          Number(
+            layer.properties.find((prop) => prop.property === "offsetX")?.value,
+          ),
+          Number(
+            layer.properties.find((prop) => prop.property === "offsetY")?.value,
+          ),
+          Number(
+            layer.properties.find((prop) => prop.property === "startAngle")
+              ?.value,
+          ),
+          Number(
+            layer.properties.find((prop) => prop.property === "rotationAngle")
+              ?.value,
+          ),
+        );
+      } else if (layer.measure === "rotator-cpu-core-7") {
+        exporter.addLayer({
+          measure: {
+            type: "CPU",
+            name: "Measure" + layer.name,
+            options: {
+              Processor: "7",
+            },
+          },
+        });
+        addRotatorMeterLayerOneMeasure(
+          exporter,
+          layer,
+          adjustedX - layer.fabricObject.width / 2,
+          adjustedY - layer.fabricObject.height / 2,
+          layer.fabricObject.width * layer.fabricObject.scaleX,
+          layer.fabricObject.height * layer.fabricObject.scaleY,
+          "#@#Images/" +
+            imagesToCopy.findIndex((img) => img === layer.imageSrc).toString() +
+            ".png",
+          Number(
+            layer.properties.find((prop) => prop.property === "offsetX")?.value,
+          ),
+          Number(
+            layer.properties.find((prop) => prop.property === "offsetY")?.value,
+          ),
+          Number(
+            layer.properties.find((prop) => prop.property === "startAngle")
+              ?.value,
+          ),
+          Number(
+            layer.properties.find((prop) => prop.property === "rotationAngle")
+              ?.value,
+          ),
+        );
+      } else if (layer.measure === "rotator-cpu-core-8") {
+        exporter.addLayer({
+          measure: {
+            type: "CPU",
+            name: "Measure" + layer.name,
+            options: {
+              Processor: "8",
+            },
+          },
+        });
+        addRotatorMeterLayerOneMeasure(
+          exporter,
+          layer,
+          adjustedX - layer.fabricObject.width / 2,
+          adjustedY - layer.fabricObject.height / 2,
+          layer.fabricObject.width * layer.fabricObject.scaleX,
+          layer.fabricObject.height * layer.fabricObject.scaleY,
+          "#@#Images/" +
+            imagesToCopy.findIndex((img) => img === layer.imageSrc).toString() +
+            ".png",
+          Number(
+            layer.properties.find((prop) => prop.property === "offsetX")?.value,
+          ),
+          Number(
+            layer.properties.find((prop) => prop.property === "offsetY")?.value,
+          ),
+          Number(
+            layer.properties.find((prop) => prop.property === "startAngle")
+              ?.value,
+          ),
+          Number(
+            layer.properties.find((prop) => prop.property === "rotationAngle")
+              ?.value,
+          ),
+        );
+      } else if (layer.measure === "rotator-disk-c-usage") {
+        exporter.addLayer({
+          measure: {
+            type: "FreeDiskSpace",
+            name: "Measure" + layer.name + "Total",
+            options: {
+              Drive: "C:",
+              Total: "1",
+              UpdateDivider: "5",
+            },
+          },
+        });
+        exporter.addLayer({
+          measure: {
+            type: "FreeDiskSpace",
+            name: "Measure" + layer.name + "Used",
+            options: {
+              Drive: "C:",
+              InvertMeasure: "1",
+              UpdateDivider: "5",
+            },
+          },
+        });
+        exporter.addLayer({
+          measure: {
+            type: "Calc",
+            name: "Measure" + layer.name,
+            options: {
+              Formula:
+                "Measure" +
+                layer.name +
+                "Used / Measure" +
+                layer.name +
+                "Total",
+              UpdateDivider: "5",
+            },
+          },
+        });
+        addRotatorMeterLayerOneMeasure(
+          exporter,
+          layer,
+          adjustedX - layer.fabricObject.width / 2,
+          adjustedY - layer.fabricObject.height / 2,
+          layer.fabricObject.width * layer.fabricObject.scaleX,
+          layer.fabricObject.height * layer.fabricObject.scaleY,
+          "#@#Images/" +
+            imagesToCopy.findIndex((img) => img === layer.imageSrc).toString() +
+            ".png",
+          Number(
+            layer.properties.find((prop) => prop.property === "offsetX")?.value,
+          ),
+          Number(
+            layer.properties.find((prop) => prop.property === "offsetY")?.value,
+          ),
+          Number(
+            layer.properties.find((prop) => prop.property === "startAngle")
+              ?.value,
+          ),
+          Number(
+            layer.properties.find((prop) => prop.property === "rotationAngle")
+              ?.value,
+          ),
+        );
       }
-      else if (layer.measure === 'rotator-time-minute') {
-        exporter.addLayer({
-          measure: {
-            type: 'Time',
-            name: 'Measure' + layer.name,
-            options: {
-            }
-          }
-        })
-        addRotatorMeterLayerOneMeasure(
-          exporter,
-          layer,
-          adjustedX - layer.fabricObject.width / 2,
-          adjustedY - layer.fabricObject.height / 2,
-          layer.fabricObject.width * layer.fabricObject.scaleX,
-          layer.fabricObject.height * layer.fabricObject.scaleY,
-          '#@#Images/' + imagesToCopy.findIndex(img => img === layer.imageSrc).toString() + '.png',
-          Number(layer.properties.find(prop => prop.property === 'offsetX')?.value),
-          Number(layer.properties.find(prop => prop.property === 'offsetY')?.value),
-          Number(layer.properties.find(prop => prop.property === 'startAngle')?.value),
-          Number(layer.properties.find(prop => prop.property === 'rotationAngle')?.value),
-          3600
-        )
-      } else if (layer.measure === 'rotator-time-hour') {
-        exporter.addLayer({
-          measure: {
-            type: 'Time',
-            name: 'Measure' + layer.name,
-            options: {
-            }
-          }
-        })
-        addRotatorMeterLayerOneMeasure(
-          exporter,
-          layer,
-          adjustedX - layer.fabricObject.width / 2,
-          adjustedY - layer.fabricObject.height / 2,
-          layer.fabricObject.width * layer.fabricObject.scaleX,
-          layer.fabricObject.height * layer.fabricObject.scaleY,
-          '#@#Images/' + imagesToCopy.findIndex(img => img === layer.imageSrc).toString() + '.png',
-          Number(layer.properties.find(prop => prop.property === 'offsetX')?.value),
-          Number(layer.properties.find(prop => prop.property === 'offsetY')?.value),
-          Number(layer.properties.find(prop => prop.property === 'startAngle')?.value),
-          Number(layer.properties.find(prop => prop.property === 'rotationAngle')?.value),
-          43200
-        )
-      } else if (layer.measure === 'rotator-cpu-average') {
-        exporter.addLayer({
-          measure: {
-            type: 'CPU',
-            name: 'Measure' + layer.name,
-            options: {
-            }
-          }
-        })
-        addRotatorMeterLayerOneMeasure(
-          exporter,
-          layer,
-          adjustedX - layer.fabricObject.width / 2,
-          adjustedY - layer.fabricObject.height / 2,
-          layer.fabricObject.width * layer.fabricObject.scaleX,
-          layer.fabricObject.height * layer.fabricObject.scaleY,
-          '#@#Images/' + imagesToCopy.findIndex(img => img === layer.imageSrc).toString() + '.png',
-          Number(layer.properties.find(prop => prop.property === 'offsetX')?.value),
-          Number(layer.properties.find(prop => prop.property === 'offsetY')?.value),
-          Number(layer.properties.find(prop => prop.property === 'startAngle')?.value),
-          Number(layer.properties.find(prop => prop.property === 'rotationAngle')?.value),
-        )
-      } else if (layer.measure === 'rotator-cpu-core-1') {
-        exporter.addLayer({
-          measure: {
-            type: 'CPU',
-            name: 'Measure' + layer.name,
-            options: {
-              Processor: '1',
-            }
-          }
-        })
-        addRotatorMeterLayerOneMeasure(
-          exporter,
-          layer,
-          adjustedX - layer.fabricObject.width / 2,
-          adjustedY - layer.fabricObject.height / 2,
-          layer.fabricObject.width * layer.fabricObject.scaleX,
-          layer.fabricObject.height * layer.fabricObject.scaleY,
-          '#@#Images/' + imagesToCopy.findIndex(img => img === layer.imageSrc).toString() + '.png',
-          Number(layer.properties.find(prop => prop.property === 'offsetX')?.value),
-          Number(layer.properties.find(prop => prop.property === 'offsetY')?.value),
-          Number(layer.properties.find(prop => prop.property === 'startAngle')?.value),
-          Number(layer.properties.find(prop => prop.property === 'rotationAngle')?.value),
-        )
-      } else if (layer.measure === 'rotator-cpu-core-2') {
-        exporter.addLayer({
-          measure: {
-            type: 'CPU',
-            name: 'Measure' + layer.name,
-            options: {
-              Processor: '2',
-            }
-          }
-        })
-        addRotatorMeterLayerOneMeasure(
-          exporter,
-          layer,
-          adjustedX - layer.fabricObject.width / 2,
-          adjustedY - layer.fabricObject.height / 2,
-          layer.fabricObject.width * layer.fabricObject.scaleX,
-          layer.fabricObject.height * layer.fabricObject.scaleY,
-          '#@#Images/' + imagesToCopy.findIndex(img => img === layer.imageSrc).toString() + '.png',
-          Number(layer.properties.find(prop => prop.property === 'offsetX')?.value),
-          Number(layer.properties.find(prop => prop.property === 'offsetY')?.value),
-          Number(layer.properties.find(prop => prop.property === 'startAngle')?.value),
-          Number(layer.properties.find(prop => prop.property === 'rotationAngle')?.value),
-        )
-      } else if (layer.measure === 'rotator-cpu-core-3') {
-        exporter.addLayer({
-          measure: {
-            type: 'CPU',
-            name: 'Measure' + layer.name,
-            options: {
-              Processor: '3',
-            }
-          }
-        })
-        addRotatorMeterLayerOneMeasure(
-          exporter,
-          layer,
-          adjustedX - layer.fabricObject.width / 2,
-          adjustedY - layer.fabricObject.height / 2,
-          layer.fabricObject.width * layer.fabricObject.scaleX,
-          layer.fabricObject.height * layer.fabricObject.scaleY,
-          '#@#Images/' + imagesToCopy.findIndex(img => img === layer.imageSrc).toString() + '.png',
-          Number(layer.properties.find(prop => prop.property === 'offsetX')?.value),
-          Number(layer.properties.find(prop => prop.property === 'offsetY')?.value),
-          Number(layer.properties.find(prop => prop.property === 'startAngle')?.value),
-          Number(layer.properties.find(prop => prop.property === 'rotationAngle')?.value),
-        )
-      } else if (layer.measure === 'rotator-cpu-core-4') {
-        exporter.addLayer({
-          measure: {
-            type: 'CPU',
-            name: 'Measure' + layer.name,
-            options: {
-              Processor: '4',
-            }
-          }
-        })
-        addRotatorMeterLayerOneMeasure(
-          exporter,
-          layer,
-          adjustedX - layer.fabricObject.width / 2,
-          adjustedY - layer.fabricObject.height / 2,
-          layer.fabricObject.width * layer.fabricObject.scaleX,
-          layer.fabricObject.height * layer.fabricObject.scaleY,
-          '#@#Images/' + imagesToCopy.findIndex(img => img === layer.imageSrc).toString() + '.png',
-          Number(layer.properties.find(prop => prop.property === 'offsetX')?.value),
-          Number(layer.properties.find(prop => prop.property === 'offsetY')?.value),
-          Number(layer.properties.find(prop => prop.property === 'startAngle')?.value),
-          Number(layer.properties.find(prop => prop.property === 'rotationAngle')?.value),
-        )
-      } else if (layer.measure === 'rotator-cpu-core-5') {
-        exporter.addLayer({
-          measure: {
-            type: 'CPU',
-            name: 'Measure' + layer.name,
-            options: {
-              Processor: '5',
-            }
-          }
-        })
-        addRotatorMeterLayerOneMeasure(
-          exporter,
-          layer,
-          adjustedX - layer.fabricObject.width / 2,
-          adjustedY - layer.fabricObject.height / 2,
-          layer.fabricObject.width * layer.fabricObject.scaleX,
-          layer.fabricObject.height * layer.fabricObject.scaleY,
-          '#@#Images/' + imagesToCopy.findIndex(img => img === layer.imageSrc).toString() + '.png',
-          Number(layer.properties.find(prop => prop.property === 'offsetX')?.value),
-          Number(layer.properties.find(prop => prop.property === 'offsetY')?.value),
-          Number(layer.properties.find(prop => prop.property === 'startAngle')?.value),
-          Number(layer.properties.find(prop => prop.property === 'rotationAngle')?.value),
-        )
-      } else if (layer.measure === 'rotator-cpu-core-6') {
-        exporter.addLayer({
-          measure: {
-            type: 'CPU',
-            name: 'Measure' + layer.name,
-            options: {
-              Processor: '6',
-            }
-          }
-        })
-        addRotatorMeterLayerOneMeasure(
-          exporter,
-          layer,
-          adjustedX - layer.fabricObject.width / 2,
-          adjustedY - layer.fabricObject.height / 2,
-          layer.fabricObject.width * layer.fabricObject.scaleX,
-          layer.fabricObject.height * layer.fabricObject.scaleY,
-          '#@#Images/' + imagesToCopy.findIndex(img => img === layer.imageSrc).toString() + '.png',
-          Number(layer.properties.find(prop => prop.property === 'offsetX')?.value),
-          Number(layer.properties.find(prop => prop.property === 'offsetY')?.value),
-          Number(layer.properties.find(prop => prop.property === 'startAngle')?.value),
-          Number(layer.properties.find(prop => prop.property === 'rotationAngle')?.value),
-        )
-      } else if (layer.measure === 'rotator-cpu-core-7') {
-        exporter.addLayer({
-          measure: {
-            type: 'CPU',
-            name: 'Measure' + layer.name,
-            options: {
-              Processor: '7',
-            }
-          }
-        })
-        addRotatorMeterLayerOneMeasure(
-          exporter,
-          layer,
-          adjustedX - layer.fabricObject.width / 2,
-          adjustedY - layer.fabricObject.height / 2,
-          layer.fabricObject.width * layer.fabricObject.scaleX,
-          layer.fabricObject.height * layer.fabricObject.scaleY,
-          '#@#Images/' + imagesToCopy.findIndex(img => img === layer.imageSrc).toString() + '.png',
-          Number(layer.properties.find(prop => prop.property === 'offsetX')?.value),
-          Number(layer.properties.find(prop => prop.property === 'offsetY')?.value),
-          Number(layer.properties.find(prop => prop.property === 'startAngle')?.value),
-          Number(layer.properties.find(prop => prop.property === 'rotationAngle')?.value),
-        )
-      } else if (layer.measure === 'rotator-cpu-core-8') {
-        exporter.addLayer({
-          measure: {
-            type: 'CPU',
-            name: 'Measure' + layer.name,
-            options: {
-              Processor: '8',
-            }
-          }
-        })
-        addRotatorMeterLayerOneMeasure(
-          exporter,
-          layer,
-          adjustedX - layer.fabricObject.width / 2,
-          adjustedY - layer.fabricObject.height / 2,
-          layer.fabricObject.width * layer.fabricObject.scaleX,
-          layer.fabricObject.height * layer.fabricObject.scaleY,
-          '#@#Images/' + imagesToCopy.findIndex(img => img === layer.imageSrc).toString() + '.png',
-          Number(layer.properties.find(prop => prop.property === 'offsetX')?.value),
-          Number(layer.properties.find(prop => prop.property === 'offsetY')?.value),
-          Number(layer.properties.find(prop => prop.property === 'startAngle')?.value),
-          Number(layer.properties.find(prop => prop.property === 'rotationAngle')?.value),
-        )
-      } else if (layer.measure === 'rotator-disk-c-usage') {
-        exporter.addLayer({
-          measure: {
-            type: 'FreeDiskSpace',
-            name: 'Measure' + layer.name + 'Total',
-            options: {
-              Drive: 'C:',
-              Total: '1',
-              UpdateDivider: '5',
-            }
-          }
-        })
-        exporter.addLayer({
-          measure: {
-            type: 'FreeDiskSpace',
-            name: 'Measure' + layer.name + 'Used',
-            options: {
-              Drive: 'C:',
-              InvertMeasure: '1',
-              UpdateDivider: '5',
-            }
-          }
-        })
-        exporter.addLayer({
-          measure: {
-            type: 'Calc',
-            name: 'Measure' + layer.name,
-            options: {
-              Formula: "Measure" + layer.name + "Used / Measure" + layer.name + "Total",
-              UpdateDivider: '5',
-            }
-          }
-        })
-        addRotatorMeterLayerOneMeasure(
-          exporter,
-          layer,
-          adjustedX - layer.fabricObject.width / 2,
-          adjustedY - layer.fabricObject.height / 2,
-          layer.fabricObject.width * layer.fabricObject.scaleX,
-          layer.fabricObject.height * layer.fabricObject.scaleY,
-          '#@#Images/' + imagesToCopy.findIndex(img => img === layer.imageSrc).toString() + '.png',
-          Number(layer.properties.find(prop => prop.property === 'offsetX')?.value),
-          Number(layer.properties.find(prop => prop.property === 'offsetY')?.value),
-          Number(layer.properties.find(prop => prop.property === 'startAngle')?.value),
-          Number(layer.properties.find(prop => prop.property === 'rotationAngle')?.value),
-        )
-      }
-    } else if (layer.type === 'bar') {
+    } else if (layer.type === "bar") {
       if (layer.measure === "bar-cpu") {
         exporter.addLayer({
           measure: {
-            type: 'CPU',
-            name: 'Measure' + layer.name,
-            options: {
-            }
-          }
+            type: "CPU",
+            name: "Measure" + layer.name,
+            options: {},
+          },
         });
-        addBarMeterLayerOneMeasure(exporter, layer, adjustedX, adjustedY, layer.fabricObject.width, layer.fabricObject.height);
+        addBarMeterLayerOneMeasure(
+          exporter,
+          layer,
+          adjustedX,
+          adjustedY,
+          layer.fabricObject.width,
+          layer.fabricObject.height,
+        );
       } else if (layer.measure === "bar-disk") {
         exporter.addLayer({
           measure: {
-            type: 'FreeDiskSpace',
-            name: 'Measure' + layer.name,
+            type: "FreeDiskSpace",
+            name: "Measure" + layer.name,
             options: {
-              Drive: 'C:',
-              InvertMeasure: '1',
-              UpdateDivider: '5',
-            }
-          }
+              Drive: "C:",
+              InvertMeasure: "1",
+              UpdateDivider: "5",
+            },
+          },
         });
-        addBarMeterLayerOneMeasure(exporter, layer, adjustedX, adjustedY, layer.fabricObject.width, layer.fabricObject.height);
+        addBarMeterLayerOneMeasure(
+          exporter,
+          layer,
+          adjustedX,
+          adjustedY,
+          layer.fabricObject.width,
+          layer.fabricObject.height,
+        );
       }
-    } else if (layer.type === 'shape') {
-      const shapeType = layer.properties?.find(p => p.property === 'shapeType')?.value || 'rect';
+    } else if (layer.type === "shape") {
+      const shapeType =
+        layer.properties?.find((p) => p.property === "shapeType")?.value ||
+        "rect";
       const shape = layer.fabricObject;
       const strokeWidth = shape.strokeWidth || 0;
 
       // Parse fill color+opacity from rgba or hex
-      const fillColor = parseColorWithAlpha(shape.fill as string, shape.opacity ?? 1);
+      const fillColor = parseColorWithAlpha(
+        shape.fill as string,
+        shape.opacity ?? 1,
+      );
       // Parse stroke color+opacity from rgba or hex
       const strokeColor = parseColorWithAlpha(shape.stroke as string, 1);
 
-      let shapeDef = '';
+      let shapeDef = "";
       const w = Math.round(shape.width * shape.scaleX);
       const h = Math.round(shape.height * shape.scaleY);
       const extraOptions: Record<string, string> = {};
 
-      if (shapeType === 'rect') {
+      if (shapeType === "rect") {
         const rect = shape as Rect;
         const rx = rect.rx || 0;
         const ry = rect.ry || 0;
         shapeDef = `Rectangle 0,0,(${w} * #Scale#),(${h} * #Scale#),(${rx} * #Scale#),(${ry} * #Scale#)`;
-      } else if (shapeType === 'circle') {
+      } else if (shapeType === "circle") {
         const rx = Math.round(w / 2);
         const ry = Math.round(h / 2);
         shapeDef = `Ellipse (${rx} * #Scale#),(${ry} * #Scale#),(${rx} * #Scale#),(${ry} * #Scale#)`;
-      } else if (shapeType === 'triangle') {
+      } else if (shapeType === "triangle") {
         // Triangle: Path must be defined as a separate named option in Rainmeter
         const halfW = Math.round(w / 2);
-        const pathName = layer.name + 'Path';
+        const pathName = layer.name + "Path";
         shapeDef = `Path1 ${pathName}`;
-        extraOptions[pathName] = `(${halfW} * #Scale#),0 | LineTo (${w} * #Scale#),(${h} * #Scale#) | LineTo 0,(${h} * #Scale#) | ClosePath 1`;
-      } else if (shapeType === 'line') {
+        extraOptions[pathName] =
+          `(${halfW} * #Scale#),0 | LineTo (${w} * #Scale#),(${h} * #Scale#) | LineTo 0,(${h} * #Scale#) | ClosePath 1`;
+      } else if (shapeType === "line") {
         const line = shape as Line;
         const lineW = Math.round(line.width * line.scaleX);
         shapeDef = `Line 0,0,(${lineW} * #Scale#),0`;
       }
 
       // Fill attribute: skip for lines
-      const fillAttr = shapeType === 'line' ? '' : ` | Fill Color ${fillColor}`;
+      const fillAttr = shapeType === "line" ? "" : ` | Fill Color ${fillColor}`;
 
       // Stroke attribute: ALWAYS emit to suppress Rainmeter's default 1px black stroke
       let strokeAttr: string;
@@ -1225,7 +1751,7 @@ export const exportSkin = async (resourcePath: string, metadata: { name: string;
 
       // Rotation transform modifier
       const angle = shape.angle || 0;
-      const rotateAttr = angle !== 0 ? ` | Rotate ${angle}` : '';
+      const rotateAttr = angle !== 0 ? ` | Rotate ${angle}` : "";
 
       // Compute position using the shape's center point.
       // Rainmeter's Rotate modifier rotates around center (anchor 0.5, 0.5),
@@ -1239,15 +1765,15 @@ export const exportSkin = async (resourcePath: string, metadata: { name: string;
 
       exporter.addLayer({
         meter: {
-          type: 'Shape',
+          type: "Shape",
           name: layer.name,
           options: {
-            X: ('(' + shapeX.toString() + ' * #Scale#)'),
-            Y: ('(' + shapeY.toString() + ' * #Scale#)'),
+            X: "(" + shapeX.toString() + " * #Scale#)",
+            Y: "(" + shapeY.toString() + " * #Scale#)",
             Shape: shapeDef + fillAttr + strokeAttr + rotateAttr,
             ...extraOptions,
-          }
-        }
+          },
+        },
       });
     }
   });
@@ -1257,8 +1783,11 @@ export const exportSkin = async (resourcePath: string, metadata: { name: string;
     console.log(font);
     const fontExists = await fontExistsInPublic(font);
     if (fontExists) {
-      console.log
-      const sourcePath = await resourceDir() + `/_up_/public/fonts/${font}`;
+      console.log;
+      const sourcePath = localFontManager
+        .getCachedFonts()
+        .find((cachedFont) => cachedFont.src === font)?.path;
+      if (!sourcePath) continue;
       const destinationPath = `${resourcePath}/Fonts/${font}`;
       await copyFile(sourcePath, destinationPath);
     }
@@ -1269,7 +1798,7 @@ export const exportSkin = async (resourcePath: string, metadata: { name: string;
     console.log(image);
     // const imageExists = await imageExistsInPublic(image);
     const sourcePath = image;
-    const destinationPath = `${resourcePath}/Images/${index.toString() + '.png'}`;
+    const destinationPath = `${resourcePath}/Images/${index.toString() + ".png"}`;
     await copyFile(sourcePath, destinationPath);
   });
 
@@ -1277,26 +1806,34 @@ export const exportSkin = async (resourcePath: string, metadata: { name: string;
   const iniContent = exporter.export();
 
   return iniContent;
-}
+};
 
-export const handleCreateDirectory = async (metadata: { name: string; author: string; version: string; description: string },  allowScrollResize: boolean): Promise<boolean> => {
+export const handleCreateDirectory = async (
+  metadata: {
+    name: string;
+    author: string;
+    version: string;
+    description: string;
+  },
+  allowScrollResize: boolean,
+): Promise<boolean> => {
   // Open dialog for the user to select a directory
-  
+
   const selectedDirectory = await open({
-    title: 'Select a Directory',
+    title: "Select a Directory",
     directory: true,
   });
 
-  let newDirectoryName = 'rmEditorSkin';
+  let newDirectoryName = "rmEditorSkin";
 
   if (selectedDirectory) {
     // Specify the new directory name
-    if (metadata.name !== '') {
+    if (metadata.name !== "") {
       newDirectoryName = metadata.name;
     }
     const newDirectoryPath = `${selectedDirectory}/${newDirectoryName}`;
 
-    const resDirectory = '@Resources';
+    const resDirectory = "@Resources";
     const ResDirectoryPath = `${newDirectoryPath}/${resDirectory}`;
     const FontDirectoryPath = `${newDirectoryPath}/${resDirectory}/Fonts`;
     const ImageDirectoryPath = `${newDirectoryPath}/${resDirectory}/Images`;
@@ -1308,7 +1845,11 @@ export const handleCreateDirectory = async (metadata: { name: string; author: st
       await mkdir(FontDirectoryPath);
       await mkdir(ImageDirectoryPath);
 
-      const iniContent = await exportSkin(ResDirectoryPath, metadata, allowScrollResize);
+      const iniContent = await exportSkin(
+        ResDirectoryPath,
+        metadata,
+        allowScrollResize,
+      );
 
       // await copyFile(await resourceDir() + "/_up_/public/fonts/Tuesday Night.otf", `${FontDirectoryPath}/Tuesday Night.otf`);
 
@@ -1324,7 +1865,7 @@ export const handleCreateDirectory = async (metadata: { name: string; author: st
 
       return true;
     } catch (error) {
-      console.error('Failed to create directory or file:', error);
+      console.error("Failed to create directory or file:", error);
       return false;
     }
   }
@@ -1335,8 +1876,8 @@ export const handleCreateDirectory = async (metadata: { name: string; author: st
 function hexToRgb(hex: string | TFiller, opacity: number): string {
   // Remove the '#' character if present
   // if hex is string
-  if (typeof hex === 'string') {
-    hex = hex.replace(/^#/, '');
+  if (typeof hex === "string") {
+    hex = hex.replace(/^#/, "");
 
     // Parse the hex color
     const bigint = parseInt(hex, 16);
@@ -1356,13 +1897,18 @@ function hexToRgb(hex: string | TFiller, opacity: number): string {
 
 // Parse color from hex (#RRGGBB) or rgba(r,g,b,a) → Rainmeter "R,G,B,A" format
 // Used for shape fill/stroke which may carry independent opacity as rgba()
-function parseColorWithAlpha(color: string | TFiller | null, fallbackOpacity: number): string {
-  if (!color || typeof color !== 'string') {
+function parseColorWithAlpha(
+  color: string | TFiller | null,
+  fallbackOpacity: number,
+): string {
+  if (!color || typeof color !== "string") {
     return `0,0,0,${Math.round(fallbackOpacity * 255)}`;
   }
 
   // Try parsing rgba(r,g,b,a)
-  const rgbaMatch = color.match(/rgba?\(\s*(\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\s*\)/);
+  const rgbaMatch = color.match(
+    /rgba?\(\s*(\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\s*\)/,
+  );
   if (rgbaMatch) {
     const r = parseInt(rgbaMatch[1]);
     const g = parseInt(rgbaMatch[2]);

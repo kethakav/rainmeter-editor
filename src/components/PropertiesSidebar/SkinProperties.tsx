@@ -10,7 +10,7 @@ import { Card } from '../ui/card';
 const SkinProperties: React.FC = () => {
 
     const canvas = layerManager.getCanvas();
-    
+
     const [skinProperties, setSkinProperties] = useState({
         x: '',
         y: '',
@@ -58,35 +58,35 @@ const SkinProperties: React.FC = () => {
         }
         const numValue = Math.max(1, Number(value)); // Ensure minimum value is 1
         if (field === 'width') {
-            backgroundRect.set({ 
-            width: numValue,
-            left: 0,
-            top: 0
+            backgroundRect.set({
+                width: numValue,
+                left: 0,
+                top: 0
             }); // Update the rect's width
             // Update the group width while keeping the child objects positions the same
-            skinBackground.set({ width: numValue }); 
+            skinBackground.set({ width: numValue });
             setSkinProperties(prev => ({
-            ...prev,
-            width: numValue.toString()
+                ...prev,
+                width: numValue.toString()
             }));
         } if (field === 'height') {
-            backgroundRect.set({ 
-            height: numValue,
-            left: 0,
-            top: 0
+            backgroundRect.set({
+                height: numValue,
+                left: 0,
+                top: 0
             }); // Update the rect's height
             // Update the group height while keeping the child objects positions the same
             skinBackground.set({ height: numValue });
             setSkinProperties(prev => ({
-            ...prev,
-            height: numValue.toString()
+                ...prev,
+                height: numValue.toString()
             }));
         }
         if (field === 'backgroundColor') {
             // canvas?.set({ backgroundColor: value });
             backgroundRect.set({ fill: value });
         }
-    
+
         setSkinProperties(prev => ({ ...prev, [field]: value }));
         backgroundRect.setCoords();
         skinBackground.setCoords(); // Update the group's coordinates
@@ -115,35 +115,35 @@ const SkinProperties: React.FC = () => {
                 <SidebarGroupLabel>Transform</SidebarGroupLabel>
                 <div className="flex space-x-4 px-2 py-2">
                     {/* X Position */}
-                    <PropertyInput 
-                        id='skin-x' 
-                        label='X' 
-                        value={skinProperties.x} 
-                        onChange={value => handleInputChange('x', value)}   
-                    
+                    <PropertyInput
+                        id='skin-x'
+                        label='X'
+                        value={skinProperties.x}
+                        onChange={value => handleInputChange('x', value)}
+
                     />
 
                     {/* Y Position */}
-                    <PropertyInput 
-                        id='skin-y' 
-                        label='Y' 
-                        value={skinProperties.y} 
+                    <PropertyInput
+                        id='skin-y'
+                        label='Y'
+                        value={skinProperties.y}
                         onChange={value => handleInputChange('y', value)}
                     />
                 </div>
                 <div className="flex space-x-4 px-2 py-2">
                     {/* Width */}
-                    <PropertyInput 
-                        id='skin-width' 
-                        label='W' 
-                        value={skinProperties.width} 
+                    <PropertyInput
+                        id='skin-width'
+                        label='W'
+                        value={skinProperties.width}
                         onChange={value => handleInputChange('width', value)}
                     />
                     {/* Height */}
-                    <PropertyInput 
-                        id='skin-height' 
-                        label='H' 
-                        value={skinProperties.height} 
+                    <PropertyInput
+                        id='skin-height'
+                        label='H'
+                        value={skinProperties.height}
                         onChange={value => handleInputChange('height', value)}
                     />
                 </div>
@@ -154,11 +154,11 @@ const SkinProperties: React.FC = () => {
                 <div className='flex space-x-4 px-2 py-2'>
                     <div className="flex items-center rounded-md border border-input pl-2 w-24">
                         <Input
-                        id="skin-background-color"
-                        type="color"
-                        className="w-8 h-8 border-none rounded-full shadow-none pl-0 mb-0.5 focus-visible:ring-transparent"
-                        value={skinProperties.backgroundColor}
-                        onChange={e => handleInputChange('backgroundColor', e.target.value)}
+                            id="skin-background-color"
+                            type="color"
+                            className="w-8 h-8 border-none rounded-full shadow-none pl-0 mb-0.5 focus-visible:ring-transparent"
+                            value={skinProperties.backgroundColor}
+                            onChange={e => handleInputChange('backgroundColor', e.target.value)}
                         />
                         <Label className="text-xs mb-0.5">{skinProperties.backgroundColor.toUpperCase()}</Label>
                     </div>
@@ -179,31 +179,31 @@ const SkinProperties: React.FC = () => {
         //       <ScrollArea className="h-full">
         //         <div className="pb-4">
         //           <div className="space-y-4">
-                    // <div className="flex space-x-4">
-                    //   {/* X Position */}
-                    //   <div className='space-y-2'>
-                    //     <Label htmlFor='skin-x'>X</Label>
-                    //     <Input 
-                    //       id='skin-x' 
-                    //       placeholder='X' 
-                    //       value={skinProperties.x} 
-                    //       onChange={e => handleInputChange('x', e.target.value)}
-                    //       className='w-20' 
-                    //     />
-                    //   </div>
+        // <div className="flex space-x-4">
+        //   {/* X Position */}
+        //   <div className='space-y-2'>
+        //     <Label htmlFor='skin-x'>X</Label>
+        //     <Input 
+        //       id='skin-x' 
+        //       placeholder='X' 
+        //       value={skinProperties.x} 
+        //       onChange={e => handleInputChange('x', e.target.value)}
+        //       className='w-20' 
+        //     />
+        //   </div>
 
-                    //   {/* Y Position */}
-                    //   <div className='space-y-2'>
-                    //     <Label htmlFor='skin-y'>Y</Label>
-                    //     <Input 
-                    //       id='skin-y' 
-                    //       placeholder='Y' 
-                    //       value={skinProperties.y} 
-                    //       onChange={e => handleInputChange('y', e.target.value)} 
-                    //       className='w-20'
-                    //     />
-                    //   </div>
-                    // </div>
+        //   {/* Y Position */}
+        //   <div className='space-y-2'>
+        //     <Label htmlFor='skin-y'>Y</Label>
+        //     <Input 
+        //       id='skin-y' 
+        //       placeholder='Y' 
+        //       value={skinProperties.y} 
+        //       onChange={e => handleInputChange('y', e.target.value)} 
+        //       className='w-20'
+        //     />
+        //   </div>
+        // </div>
         //             <div className="flex space-x-4">
         //               {/* Width */}
         //               <div className='space-y-2'>
@@ -229,17 +229,17 @@ const SkinProperties: React.FC = () => {
         //               </div>
         //             </div>
         //             <Separator />
-                    // {/* Background Color */}
-                    // <div className="space-y-2">
-                    //   <Label htmlFor="skin-background-color">Background Color</Label>
-                    //   <Input
-                    //     id="skin-background-color"
-                    //     type="color"
-                    //     className="h-10 w-44"
-                    //     value={skinProperties.backgroundColor}
-                    //     onChange={e => handleInputChange('backgroundColor', e.target.value)}
-                    //   />
-                    // </div>
+        // {/* Background Color */}
+        // <div className="space-y-2">
+        //   <Label htmlFor="skin-background-color">Background Color</Label>
+        //   <Input
+        //     id="skin-background-color"
+        //     type="color"
+        //     className="h-10 w-44"
+        //     value={skinProperties.backgroundColor}
+        //     onChange={e => handleInputChange('backgroundColor', e.target.value)}
+        //   />
+        // </div>
         //           </div>
         //         </div>
         //       </ScrollArea>

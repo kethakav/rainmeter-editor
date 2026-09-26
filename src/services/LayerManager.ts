@@ -40,100 +40,100 @@ interface LayerConfig {
 }
 
 class LayerManager {
-    private static instance: LayerManager | null = null;
-    public canvas: Canvas | null = null;
-    private skinBackground: FabricObject | null = null;
+  private static instance: LayerManager | null = null;
+  public canvas: Canvas | null = null;
+  private skinBackground: FabricObject | null = null;
 
-    public activeTool: string = 'select';
-    public shapeSubType: ShapeSubType = 'rect';
-  
-    public layers: LayerConfig[] = [];
+  public activeTool: string = 'select';
+  public shapeSubType: ShapeSubType = 'rect';
 
-    private listeners: (() => void)[] = [];
-    
+  public layers: LayerConfig[] = [];
 
-    private layerCounts: { [key in LayerType]: number } = {
-      [LayerType.TEXT]: 0,
-      [LayerType.SHAPE]: 0,
-      [LayerType.IMAGE]: 0,
-      [LayerType.ROTATOR]: 0,
-      [LayerType.BAR]: 0,
-    };
-  
-    private constructor() {} // Make the constructor private
+  private listeners: (() => void)[] = [];
 
-    
-  
-    public static getInstance(): LayerManager {
-      if (!LayerManager.instance) {
-        LayerManager.instance = new LayerManager();
-      }
-      return LayerManager.instance;
+
+  private layerCounts: { [key in LayerType]: number } = {
+    [LayerType.TEXT]: 0,
+    [LayerType.SHAPE]: 0,
+    [LayerType.IMAGE]: 0,
+    [LayerType.ROTATOR]: 0,
+    [LayerType.BAR]: 0,
+  };
+
+  private constructor() { } // Make the constructor private
+
+
+
+  public static getInstance(): LayerManager {
+    if (!LayerManager.instance) {
+      LayerManager.instance = new LayerManager();
     }
-  
-    public setCanvas(canvas: Canvas) {
-      this.canvas = canvas;
+    return LayerManager.instance;
+  }
+
+  public setCanvas(canvas: Canvas) {
+    this.canvas = canvas;
+  }
+
+  public getCanvas() {
+    return this.canvas;
+  }
+
+  public setSkinBackground() {
+    if (this.canvas) {
+      const skinBackground = new Rect({
+        width: 400,
+        height: 300,
+        stroke: '#838383',
+        fill: '#ffffff',
+        strokeWidth: 1,
+        originX: 'center',
+        originY: 'center',
+        strokeDashArray: [5, 5],
+        hasControls: false,
+        hasBorders: false,
+      });
+
+      const backgroundText = new Text('Skin Background', {
+        lockScalingX: true,
+        lockScalingY: true,
+        fontSize: 18,
+        fontFamily: 'Arial',
+        fill: '#838383',
+        opacity: 1,
+        originX: 'center',
+        originY: 'center',
+        hasControls: false,
+        hasBorders: false,
+      });
+
+      const backgroundGroup = new Group([skinBackground, backgroundText], {
+        left: 400,
+        top: 200,
+        originX: 'left',
+        originY: 'top',
+        hasControls: false,
+        hasBorders: false,
+      });
+      backgroundGroup.setCoords();
+      // background group clipping so that it doesn't clip object when the objects are scaled
+
+      backgroundGroup.set({
+        visible: true,
+      });
+      this.skinBackground = backgroundGroup;
+
+      this.canvas.sendObjectToBack(backgroundGroup);
+      this.canvas.add(backgroundGroup);
+      this.canvas.renderAll();
     }
+  }
 
-    public getCanvas() {
-        return this.canvas;
-    }
+  public getSkinBackground() {
+    return this.skinBackground;
+  }
 
-    public setSkinBackground() {
-      if (this.canvas) {
-        const skinBackground = new Rect({
-          width: 400,
-          height: 300,
-          stroke: '#838383',
-          fill: '#ffffff',
-          strokeWidth: 1,
-          originX: 'center',
-          originY: 'center',
-          strokeDashArray: [5, 5],
-          hasControls: false,
-          hasBorders: false,
-        });
-
-        const backgroundText = new Text('Skin Background', {
-          lockScalingX: true,
-          lockScalingY: true,
-          fontSize: 18,
-          fontFamily: 'Arial',
-          fill: '#838383',
-          opacity: 1,
-          originX: 'center',
-          originY: 'center',
-          hasControls: false,
-          hasBorders: false,
-        });
-
-        const backgroundGroup = new Group([skinBackground, backgroundText], {
-          left: 400,
-          top: 200,        
-          originX: 'left',
-          originY: 'top',
-          hasControls: false,
-          hasBorders: false,
-        });
-        backgroundGroup.setCoords();
-        // background group clipping so that it doesn't clip object when the objects are scaled
-        
-        backgroundGroup.set({
-          visible: true,
-        });
-        this.skinBackground = backgroundGroup;
-
-        this.canvas.sendObjectToBack(backgroundGroup);
-        this.canvas.add(backgroundGroup);
-        this.canvas.renderAll();
-      }
-    }
-
-    public getSkinBackground() {
-      return this.skinBackground;
-    }
-
-    private toolChangeListeners: (() => void)[] = [];
+  private toolChangeListeners: (() => void)[] = [];
 
   setActiveTool(tool: string) {
     this.activeTool = tool;
@@ -155,7 +155,7 @@ class LayerManager {
   }
 
   addLayerWithMouse(x: number, y: number) {
-    if(this.canvas) {
+    if (this.canvas) {
       if (this.activeTool === 'text') {
         this.addTextLayer("Hello There!", x, y);
         this.setActiveTool('select');
@@ -216,7 +216,7 @@ class LayerManager {
       // Select the newly added layer
       this.selectLayer(newLayer.id);
 
-    //   return newLayer;
+      //   return newLayer;
     }
     // return null; // Return null if canvas is not set
   }
@@ -224,9 +224,9 @@ class LayerManager {
   // Add text layer
   async addTextLayer(text: string = 'Hello There!', x: number, y: number) {
     await SingleFontLoad('Abtera Bold');
-    
+
     if (this.canvas) {
-        const textObject = new IText(text, {
+      const textObject = new IText(text, {
         left: x,
         top: y,
         fill: 'black',
@@ -234,12 +234,12 @@ class LayerManager {
         textAlign: 'justify-left',
         fontSize: 24,
         hasControls: false,
-        });
-        console.log(this.layers);
+      });
+      console.log(this.layers);
 
-        this.addLayer(LayerType.TEXT, textObject);
+      this.addLayer(LayerType.TEXT, textObject);
     } else {
-        return null;
+      return null;
     }
   }
 
@@ -287,7 +287,7 @@ class LayerManager {
         // update properties Sidebar
         // this.updatePropertiesSidebar(activeLayer);
 
-        
+
         // offsetX: layer.properties.find(prop => prop.property === 'offsetX')?.value.toString() || '0',
 
         activeLayer?.UIElements.set({
@@ -297,7 +297,7 @@ class LayerManager {
         });
         activeLayer?.fabricObject.setCoords();
         this.canvas.renderAll(); // Re-render the canvas to reflect changes
-        
+
       }
     }
   }
@@ -426,50 +426,50 @@ class LayerManager {
 
   async addImageLayer(x: number, y: number) {
     if (this.canvas) {
-        // Open a file dialog to select an image
-        // const selectedFile = await open({
-        //     title: 'Select an Image',
-        //     filters: [
-        //         {
-        //             name: 'Images',
-        //             extensions: ['png'],
-        //         },
-        //     ],
-        // });
+      // Open a file dialog to select an image
+      // const selectedFile = await open({
+      //     title: 'Select an Image',
+      //     filters: [
+      //         {
+      //             name: 'Images',
+      //             extensions: ['png'],
+      //         },
+      //     ],
+      // });
 
-        const resPath = await resourceDir();
-        const sourcePath = await join(resPath, '_up_/public/images/image-placeholder.png');
-        
+      const resPath = await resourceDir();
+      const sourcePath = await join(resPath, '_up_/public/images/image-placeholder.png');
 
-        // Check if a file was selected
-        if (sourcePath) {
-            // Convert to the appropriate format (string if selectedFile is a File)
-            // const sourcePath = await join(selectedFile as string);
-            const assetUrl = convertFileSrc(sourcePath);
-            console.log(sourcePath);
-            console.log(assetUrl);
-            
-            // Use fromURL correctly with await
-            try {
-                const img: FabricImage = await FabricImage.fromURL(assetUrl, { crossOrigin: 'anonymous' });
-                img.set({
-                    left: x,
-                    top: y,
-                    outerHeight: img.height,
-                    outerWidth: img.width,
-                    scaleX: 1,
-                    scaleY: 1,
-                    originX: 'center',
-                    originY: 'center',
-                    hasControls: false,
-                });
-                this.addLayer(LayerType.IMAGE, img, sourcePath);
-            } catch (error) {
-                console.error("Error loading image:", error);
-            }
+
+      // Check if a file was selected
+      if (sourcePath) {
+        // Convert to the appropriate format (string if selectedFile is a File)
+        // const sourcePath = await join(selectedFile as string);
+        const assetUrl = convertFileSrc(sourcePath);
+        console.log(sourcePath);
+        console.log(assetUrl);
+
+        // Use fromURL correctly with await
+        try {
+          const img: FabricImage = await FabricImage.fromURL(assetUrl, { crossOrigin: 'anonymous' });
+          img.set({
+            left: x,
+            top: y,
+            outerHeight: img.height,
+            outerWidth: img.width,
+            scaleX: 1,
+            scaleY: 1,
+            originX: 'center',
+            originY: 'center',
+            hasControls: false,
+          });
+          this.addLayer(LayerType.IMAGE, img, sourcePath);
+        } catch (error) {
+          console.error("Error loading image:", error);
         }
+      }
     } else {
-        return null;
+      return null;
     }
   }
 
@@ -481,112 +481,112 @@ class LayerManager {
       const assetUrl = convertFileSrc(source);
       const backgroundAssetUrl = convertFileSrc(backgroundSourcePath);
       console.log(assetUrl);
-      
+
       // Use fromURL correctly with await
       try {
         const backgroundImg: FabricImage = await FabricImage.fromURL(backgroundAssetUrl, { crossOrigin: 'anonymous' });
-                backgroundImg.set({
-                    left: x,
-                    top: y,
-                    outerHeight: backgroundImg.height,
-                    outerWidth: backgroundImg.width,
-                    scaleX: 1,
-                    scaleY: 1,
-                    originX: 'center',
-                    originY: 'center',
-                    hasControls: false,
-                });
-                this.addLayer(LayerType.IMAGE, backgroundImg, backgroundSourcePath);
-          const img: FabricImage = await FabricImage.fromURL(assetUrl, { crossOrigin: 'anonymous' });
-          img.set({
-              left: x,
-              top: y,
-              outerHeight: img.height,
-              outerWidth: img.width,
-              originX: 'center',
-              originY: 'center',
-              centeredScaling: true,
-              centeredRotation: true,
-              angle: 0,
-              scaleX: 1,
-              scaleY: 1,
-              hasControls: false,
-          });
-          const rangeIndicator = new Circle({
-            radius: 40,
-            originX: 'center',
-            originY: 'center',
-            centeredScaling: true,
-            centeredRotation: true,
-            left: x,
-            top: y,
-            angle: -90,
-            startAngle: 0,
-            endAngle: 90,
-            stroke: '#0F0',
-            opacity: 0.5,
-            strokeWidth: 25,
-            fill: ''
-          });
-          const indLine = new Line([x, y, x + 50, y], {
-            stroke: '#000',
-            strokeWidth: 2,
-            opacity: 0,
-            hasControls: false,
-
-          });
-          const pivotPoint = new Circle({
-            radius: 5,
-            originX: 'center',
-            originY: 'center',
-            centeredScaling: true,
-            centeredRotation: true,
-            fill: '#FF0000',
-            opacity: 0.5,
-            left: x,
-            top: y,
-            hasControls: false,
+        backgroundImg.set({
+          left: x,
+          top: y,
+          outerHeight: backgroundImg.height,
+          outerWidth: backgroundImg.width,
+          scaleX: 1,
+          scaleY: 1,
+          originX: 'center',
+          originY: 'center',
+          hasControls: false,
         });
-          const UIElements = new Group([pivotPoint, rangeIndicator, indLine], {
-            visible: true,
-            hasControls: false,
-            interactive: false,
-            selectable: false,
-            perPixelTargetFind: true,
-            originX: 'center',
-            originY: 'center',
-            centeredScaling: true,
-            centeredRotation: true,
-          });
-          
-          // set the UIElements visible
+        this.addLayer(LayerType.IMAGE, backgroundImg, backgroundSourcePath);
+        const img: FabricImage = await FabricImage.fromURL(assetUrl, { crossOrigin: 'anonymous' });
+        img.set({
+          left: x,
+          top: y,
+          outerHeight: img.height,
+          outerWidth: img.width,
+          originX: 'center',
+          originY: 'center',
+          centeredScaling: true,
+          centeredRotation: true,
+          angle: 0,
+          scaleX: 1,
+          scaleY: 1,
+          hasControls: false,
+        });
+        const rangeIndicator = new Circle({
+          radius: 40,
+          originX: 'center',
+          originY: 'center',
+          centeredScaling: true,
+          centeredRotation: true,
+          left: x,
+          top: y,
+          angle: -90,
+          startAngle: 0,
+          endAngle: 90,
+          stroke: '#0F0',
+          opacity: 0.5,
+          strokeWidth: 25,
+          fill: ''
+        });
+        const indLine = new Line([x, y, x + 50, y], {
+          stroke: '#000',
+          strokeWidth: 2,
+          opacity: 0,
+          hasControls: false,
 
-          // add layerProperties
-          const layerProperties: LayerProperties[] = [
-            {
-              property: "offsetX",
-              value: '0'
-            },
-            {
-              property: "offsetY",
-              value: '0'
-            },
-            {
-              property: "startAngle",
-              value: "0"
-            },
-            {
-              property: "rotationAngle",
-              value: "90"
-            }
-          ];
-          this.addLayer(LayerType.ROTATOR, img, source, UIElements, layerProperties);
+        });
+        const pivotPoint = new Circle({
+          radius: 5,
+          originX: 'center',
+          originY: 'center',
+          centeredScaling: true,
+          centeredRotation: true,
+          fill: '#FF0000',
+          opacity: 0.5,
+          left: x,
+          top: y,
+          hasControls: false,
+        });
+        const UIElements = new Group([pivotPoint, rangeIndicator, indLine], {
+          visible: true,
+          hasControls: false,
+          interactive: false,
+          selectable: false,
+          perPixelTargetFind: true,
+          originX: 'center',
+          originY: 'center',
+          centeredScaling: true,
+          centeredRotation: true,
+        });
+
+        // set the UIElements visible
+
+        // add layerProperties
+        const layerProperties: LayerProperties[] = [
+          {
+            property: "offsetX",
+            value: '0'
+          },
+          {
+            property: "offsetY",
+            value: '0'
+          },
+          {
+            property: "startAngle",
+            value: "0"
+          },
+          {
+            property: "rotationAngle",
+            value: "90"
+          }
+        ];
+        this.addLayer(LayerType.ROTATOR, img, source, UIElements, layerProperties);
       } catch (error) {
-          console.error("Error loading image:", error);
+        console.error("Error loading image:", error);
       }
-        
+
     } else {
-        return null;
+      return null;
     }
   }
 
@@ -647,121 +647,121 @@ class LayerManager {
   // Notify subscribers of layer changes
   private notifyLayerChange() {
     this.listeners.forEach(listener => listener());
-}
+  }
 
   // Add shape layer
   addShapeLayer(type: ShapeSubType = 'rect', options: Partial<FabricObjectProps> = {}) {
     if (this.canvas) {
-        let shapeObject: FabricObject;
-        const defaultProps = {
-          hasControls: true,
-          strokeUniform: true,
-        };
-    
-        switch(type) {
+      let shapeObject: FabricObject;
+      const defaultProps = {
+        hasControls: true,
+        strokeUniform: true,
+      };
+
+      switch (type) {
         case 'rect':
-            shapeObject = new Rect({
-              width: 100,
-              height: 100,
-              fill: '#4A90D9',
-              stroke: '#2C5F8A',
-              strokeWidth: 2,
-              rx: 0,
-              ry: 0,
-              ...defaultProps,
-              ...options,
-            });
-            break;
+          shapeObject = new Rect({
+            width: 100,
+            height: 100,
+            fill: '#4A90D9',
+            stroke: '#2C5F8A',
+            strokeWidth: 2,
+            rx: 0,
+            ry: 0,
+            ...defaultProps,
+            ...options,
+          });
+          break;
         case 'circle':
-            shapeObject = new Circle({
-              radius: 50,
-              fill: '#50B86C',
-              stroke: '#2D7A42',
-              strokeWidth: 2,
-              ...defaultProps,
-              ...options,
-            });
-            break;
+          shapeObject = new Circle({
+            radius: 50,
+            fill: '#50B86C',
+            stroke: '#2D7A42',
+            strokeWidth: 2,
+            ...defaultProps,
+            ...options,
+          });
+          break;
         case 'triangle':
-            shapeObject = new Triangle({
-              width: 100,
-              height: 100,
-              fill: '#E05D5D',
-              stroke: '#9B2C2C',
-              strokeWidth: 2,
-              ...defaultProps,
-              ...options,
-            });
-            break;
+          shapeObject = new Triangle({
+            width: 100,
+            height: 100,
+            fill: '#E05D5D',
+            stroke: '#9B2C2C',
+            strokeWidth: 2,
+            ...defaultProps,
+            ...options,
+          });
+          break;
         case 'line':
-            shapeObject = new Line([0, 0, 150, 0], {
-              stroke: '#333333',
-              strokeWidth: 3,
-              left: options.left || 100,
-              top: options.top || 100,
-              ...defaultProps,
-            });
-            break;
+          shapeObject = new Line([0, 0, 150, 0], {
+            stroke: '#333333',
+            strokeWidth: 3,
+            left: options.left || 100,
+            top: options.top || 100,
+            ...defaultProps,
+          });
+          break;
         default:
-            shapeObject = new Rect({
-              width: 100,
-              height: 100,
-              fill: '#4A90D9',
-              stroke: '#2C5F8A',
-              strokeWidth: 2,
-              ...defaultProps,
-              ...options,
-            });
-        }
+          shapeObject = new Rect({
+            width: 100,
+            height: 100,
+            fill: '#4A90D9',
+            stroke: '#2C5F8A',
+            strokeWidth: 2,
+            ...defaultProps,
+            ...options,
+          });
+      }
 
-        // Store the shape sub-type in properties
-        const shapeProperties: LayerProperties[] = [
-          { property: 'shapeType', value: type },
-        ];
+      // Store the shape sub-type in properties
+      const shapeProperties: LayerProperties[] = [
+        { property: 'shapeType', value: type },
+      ];
 
-        this.addLayer(LayerType.SHAPE, shapeObject, '', new Group(), shapeProperties);
+      this.addLayer(LayerType.SHAPE, shapeObject, '', new Group(), shapeProperties);
     }
   }
 
   // Add image layer
-//   addImageLayer(imageSource: string): Promise<LayerConfig> {
-//     return new Promise((resolve, reject) => {
-//       fabric.Image.fromURL(imageSource, (img) => {
-//         img.set({
-//           left: 100,
-//           top: 100,
-//           scaleX: 0.5,
-//           scaleY: 0.5
-//         });
+  //   addImageLayer(imageSource: string): Promise<LayerConfig> {
+  //     return new Promise((resolve, reject) => {
+  //       fabric.Image.fromURL(imageSource, (img) => {
+  //         img.set({
+  //           left: 100,
+  //           top: 100,
+  //           scaleX: 0.5,
+  //           scaleY: 0.5
+  //         });
 
-//         const layer = this.addLayer(LayerType.IMAGE, img);
-//         resolve(layer);
-//       }, (error) => {
-//         console.error('Error loading image:', error);
-//         reject(error);
-//       });
-//     });
-//   }
+  //         const layer = this.addLayer(LayerType.IMAGE, img);
+  //         resolve(layer);
+  //       }, (error) => {
+  //         console.error('Error loading image:', error);
+  //         reject(error);
+  //       });
+  //     });
+  //   }
 
 
   // Remove a layer by ID
   removeLayer(layerId: string): void {
     if (this.canvas) {
-        const layerIndex = this.layers.findIndex(layer => layer.id === layerId);
-    
-        if (layerIndex !== -1) {
+      const layerIndex = this.layers.findIndex(layer => layer.id === layerId);
+
+      if (layerIndex !== -1) {
         const layer = this.layers[layerIndex];
-        
+
         // Remove from canvas
         this.canvas.remove(layer.fabricObject);
         this.canvas.remove(layer.UIElements);
-        
+
         // Remove from layers array
         this.layers.splice(layerIndex, 1);
-        
+
         // Render canvas
         this.canvas.renderAll();
-        }
+      }
     }
   }
 
@@ -777,36 +777,36 @@ class LayerManager {
     if (layerIndex === -1) return; // Layer not found
 
     if (direction === 'up' && layerIndex > 0) {
-        // Move layer up
-        const newOrder = arrayMove(this.layers, layerIndex, layerIndex - 1);
-        this.layers = newOrder;
+      // Move layer up
+      const newOrder = arrayMove(this.layers, layerIndex, layerIndex - 1);
+      this.layers = newOrder;
     } else if (direction === 'down' && layerIndex < this.layers.length - 1) {
-        // Move layer down
-        const newOrder = arrayMove(this.layers, layerIndex, layerIndex + 1);
-        this.layers = newOrder;
+      // Move layer down
+      const newOrder = arrayMove(this.layers, layerIndex, layerIndex + 1);
+      this.layers = newOrder;
     }
 
     console.log("tt");
     this.updateCanvasLayerOrder();
     // Notify any subscribers that layers have changed
     this.notifyLayerChange();
-}
+  }
 
   // Select a layer by ID
   public selectLayer(layerId: string): void {
     if (this.canvas) {
       console.log(layerId);
-        const layer = this.layers.find(l => l.id === layerId);
-    
-        if (layer) {
+      const layer = this.layers.find(l => l.id === layerId);
+
+      if (layer) {
         // Deselect all objects
         this.canvas.discardActiveObject();
-        
+
         // Select the specific object
         this.canvas.setActiveObject(layer.fabricObject);
-        
+
         this.canvas.renderAll();
-        }
+      }
     }
   }
 
@@ -819,26 +819,26 @@ class LayerManager {
   // Toggle layer visibility
   toggleLayerVisibility(layerId: string): void {
     if (this.canvas) {
-        const layer = this.layers.find(l => l.id === layerId);
-    
-        if (layer) {
+      const layer = this.layers.find(l => l.id === layerId);
+
+      if (layer) {
         layer.visible = !layer.visible;
         layer.fabricObject.set('visible', layer.visible);
         this.canvas.renderAll();
-        }
+      }
     }
   }
 
   // Lock/unlock layer
   toggleLayerLock(layerId: string): void {
     if (this.canvas) {
-        const layer = this.layers.find(l => l.id === layerId);
-    
-        if (layer) {
+      const layer = this.layers.find(l => l.id === layerId);
+
+      if (layer) {
         layer.locked = !layer.locked;
         layer.fabricObject.set('selectable', !layer.locked);
         this.canvas.renderAll();
-        }
+      }
     }
   }
 
@@ -848,32 +848,32 @@ class LayerManager {
     if (this.canvas) {
       // Remove all objects
       this.canvas.getObjects().forEach(obj => {
-        if(this.canvas) {
-            this.canvas.remove(obj)
+        if (this.canvas) {
+          this.canvas.remove(obj)
         }
-    });
-      
+      });
+
       // Re-add in the correct order
       this.layers.forEach(layer => {
         if (this.canvas) {
           this.canvas.add(layer.fabricObject)
         }
-    });
+      });
 
-    if (this.skinBackground) {
-      this.canvas.add(this.skinBackground);
-      this.canvas.sendObjectToBack(this.skinBackground);
-  }
+      if (this.skinBackground) {
+        this.canvas.add(this.skinBackground);
+        this.canvas.sendObjectToBack(this.skinBackground);
+      }
 
-    if(selected) {
-      this.canvas.setActiveObject(selected);
-    }
+      if (selected) {
+        this.canvas.setActiveObject(selected);
+      }
       this.canvas.renderAll();
     } else {
       console.warn('Canvas is not set. Unable to update layer order.');
     }
   }
-  
+
 
   // Generate unique ID for layers
   private generateUniqueId(): string {
@@ -902,7 +902,7 @@ class LayerManager {
       };
       label = typeLabels[type];
     }
-    
+
     return `${label}${this.layerCounts[type]}`;
   }
 

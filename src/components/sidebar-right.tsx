@@ -29,9 +29,9 @@ import { ModeToggle } from "./mode-toggle";
 export function SidebarRight({
   ...props
 }: React.ComponentProps<typeof Sidebar>) {
-    const { selectedLayer } = useLayerContext();
-    const selectedLayerId = selectedLayer?.id;
-    const [version, setVersion] = useState('1.0.0'); // Add version state
+  const { selectedLayer } = useLayerContext();
+  const selectedLayerId = selectedLayer?.id;
+  const [version, setVersion] = useState('1.0.0'); // Add version state
   const v = appVersion;
 
   useEffect(() => {
@@ -45,20 +45,20 @@ export function SidebarRight({
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const { toast } = useToast();
 
-  const handleExport = async (metadata: { name: string; author: string; version: string; description: string},  allowScrollResize: boolean ) => {
+  const handleExport = async (metadata: { name: string; author: string; version: string; description: string }, allowScrollResize: boolean) => {
     const success = await handleCreateDirectory(metadata, allowScrollResize);
 
     if (success) {
-        toast({
-            title: "Export Successful",
-            description: "Your Rainmeter skin has been exported successfully.",
-        });
+      toast({
+        title: "Export Successful",
+        description: "Your Rainmeter skin has been exported successfully.",
+      });
     } else {
-        toast({
-            title: "Export Failed",
-            description: "There was an error exporting your Rainmeter skin. Please try again. Most likely the skin already exists.",
-            variant: "destructive",
-        });
+      toast({
+        title: "Export Failed",
+        description: "There was an error exporting your Rainmeter skin. Please try again. Most likely the skin already exists.",
+        variant: "destructive",
+      });
     }
 
     return success;
@@ -73,15 +73,15 @@ export function SidebarRight({
         {/* <NavUser user={data.user} /> */}
         <ModeToggle />
         <Tooltip>
-            <TooltipTrigger asChild>
-              <Button className="w-fit" variant="default" onClick={() => setIsExportModalOpen(true)}>
-                Export
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Export Skin</p>
-            </TooltipContent>
-          </Tooltip>
+          <TooltipTrigger asChild>
+            <Button className="w-fit" variant="default" onClick={() => setIsExportModalOpen(true)}>
+              Export
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Export Skin</p>
+          </TooltipContent>
+        </Tooltip>
       </SidebarHeader>
       <SidebarContent>
         {/* <DatePicker /> */}
@@ -108,10 +108,10 @@ export function SidebarRight({
       <SidebarFooter className="h-fit flex flex-row justify-end border-b border-sidebar-border">
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button 
+            <Button
               variant="outline"
-              onClick={() => open("https://www.reddit.com/r/rainmetereditor/")} 
-              
+              onClick={() => open("https://www.reddit.com/r/rainmetereditor/")}
+
               className="hover:text-primary"
             >
               <FaReddit />
@@ -123,9 +123,9 @@ export function SidebarRight({
         </Tooltip>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button 
+            <Button
               variant="outline"
-              onClick={() => open("https://discord.gg/tzY82KkS4H")} 
+              onClick={() => open("https://discord.gg/tzY82KkS4H")}
               className="hover:text-primary"
             >
               <FaDiscord />
@@ -138,10 +138,10 @@ export function SidebarRight({
 
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button 
+            <Button
               variant="outline"
-              onClick={() => open("https://github.com/kethakav/rainmeter-editor/issues")} 
-              
+              onClick={() => open("https://github.com/kethakav/rainmeter-editor/issues")}
+
               className="hover:text-destructive"
             >
               <Bug />
@@ -153,8 +153,8 @@ export function SidebarRight({
         </Tooltip>
       </SidebarFooter>
       <ExportModal
-        onExport={handleExport} 
-        open={isExportModalOpen} 
+        onExport={handleExport}
+        open={isExportModalOpen}
         onOpenChange={setIsExportModalOpen}
       />
     </Sidebar>

@@ -19,15 +19,10 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self' ipc: http://ipc.localhost; img-src 'self' asset: http://asset.localhost",
+      "csp": "default-src 'self' ipc: http://ipc.localhost; img-src 'self' asset: http://asset.localhost; font-src 'self' asset: http://asset.localhost",
       "assetProtocol": {
         "enable": true,
-        "scope": [
-          "$APP_DIR/**",
-          "$HOME/**",
-          "$LOCALDATA/**",
-          "**"
-        ]
+        "scope": ["$APP_DIR/**", "$HOME/**", "$LOCALDATA/**", "**"]
       }
     },
     "withGlobalTauri": true
@@ -52,9 +47,6 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "resources": [
-      "../public/fonts/",
-      "../public/images/"
-    ]
+    "resources": ["../public/fonts/", "../public/images/"]
   }
 }

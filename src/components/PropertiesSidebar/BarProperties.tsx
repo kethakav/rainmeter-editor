@@ -32,7 +32,7 @@ const BarLayerProperties: React.FC = () => {
         const updateLayerProperties = () => {
             if (layer && layer.type === 'bar') {
                 const bar = layer.fabricObject;
-                    
+
                 if (layer.measure === '') {
                     layer.measure = 'bar-cpu';
                 }
@@ -42,15 +42,15 @@ const BarLayerProperties: React.FC = () => {
                 const foreground = barGroup._objects[1] as Rect
 
                 setBarLayerProperties({
-                x: bar.left?.toString() || '0',
-                y: bar.top?.toString() || '0',
-                height: (barGroup.height * barGroup.scaleY)?.toString() || '100',
-                width: (barGroup.width * barGroup.scaleX)?.toString() || '100',
-                backgroundFill: background.fill?.toString() || '#000000',
-                backgroundOpacity: background.opacity?.toString() || '1',
-                foregroundFill: foreground.fill?.toString() || '#000000',
-                foregroundOpacity: foreground.opacity?.toString() || '1',
-                measure: measure,
+                    x: bar.left?.toString() || '0',
+                    y: bar.top?.toString() || '0',
+                    height: (barGroup.height * barGroup.scaleY)?.toString() || '100',
+                    width: (barGroup.width * barGroup.scaleX)?.toString() || '100',
+                    backgroundFill: background.fill?.toString() || '#000000',
+                    backgroundOpacity: background.opacity?.toString() || '1',
+                    foregroundFill: foreground.fill?.toString() || '#000000',
+                    foregroundOpacity: foreground.opacity?.toString() || '1',
+                    measure: measure,
                 });
             }
         }
@@ -87,21 +87,21 @@ const BarLayerProperties: React.FC = () => {
                     bar.set({ left: Number(value) });
                 } else if (field === 'y') {
                     bar.set({ top: Number(value) });
-                } 
+                }
 
                 const numValue = Math.max(1, Number(value)); // Ensure minimum value is 1
                 if (field === 'width') {
                     bar.scaleX = numValue / (bar.width || 1);
                     setBarLayerProperties(prev => ({
-                      ...prev,
-                      width: numValue.toString()
+                        ...prev,
+                        width: numValue.toString()
                     }));
                 }
                 if (field === 'height') {
                     bar.scaleY = numValue / (bar.height || 1);
                     setBarLayerProperties(prev => ({
-                      ...prev,
-                      height: numValue.toString()
+                        ...prev,
+                        height: numValue.toString()
                     }));
                 }
                 if (field === 'backgroundFill') {
@@ -128,7 +128,7 @@ const BarLayerProperties: React.FC = () => {
         }
     }
 
-    return(
+    return (
         <div>
             <SidebarGroup>
                 <SidebarGroupLabel>Bar Properties</SidebarGroupLabel>
@@ -138,35 +138,35 @@ const BarLayerProperties: React.FC = () => {
                 <SidebarGroupLabel>Transform</SidebarGroupLabel>
                 <div className="flex space-x-4 px-2 py-2">
                     {/* X Position */}
-                    <PropertyInput 
-                        id='bar-x' 
-                        label='X' 
-                        value={barLayerProperties.x} 
-                        onChange={value => handleInputChange('x', value)}   
+                    <PropertyInput
+                        id='bar-x'
+                        label='X'
+                        value={barLayerProperties.x}
+                        onChange={value => handleInputChange('x', value)}
                     />
 
                     {/* Y Position */}
-                    <PropertyInput 
-                        id='bar-y' 
-                        label='Y' 
-                        value={barLayerProperties.y} 
+                    <PropertyInput
+                        id='bar-y'
+                        label='Y'
+                        value={barLayerProperties.y}
                         onChange={value => handleInputChange('y', value)}
                     />
                 </div>
                 <div className="flex space-x-4 px-2 py-2">
                     {/* Width */}
-                    <PropertyInput 
-                        id='bar-width' 
-                        label='W' 
-                        value={barLayerProperties.width} 
+                    <PropertyInput
+                        id='bar-width'
+                        label='W'
+                        value={barLayerProperties.width}
                         onChange={value => handleInputChange('width', value)}
                     />
 
                     {/* Height */}
-                    <PropertyInput 
-                        id='bar-height' 
-                        label='H' 
-                        value={barLayerProperties.height} 
+                    <PropertyInput
+                        id='bar-height'
+                        label='H'
+                        value={barLayerProperties.height}
                         onChange={value => handleInputChange('height', value)}
                     />
                 </div>
@@ -177,20 +177,20 @@ const BarLayerProperties: React.FC = () => {
                 <div className='flex space-x-4 px-2 py-2'>
                     <div className="flex items-center rounded-md border border-input pl-2 w-24">
                         <Input
-                        id="bar-foreground-color"
-                        type="color"
-                        className="w-8 h-8 border-none shadow-none pl-0 mx-0 mb-0.5 focus-visible:ring-transparent"
-                        value={barLayerProperties.foregroundFill}
-                        onChange={e => handleInputChange('foregroundFill', e.target.value)}
+                            id="bar-foreground-color"
+                            type="color"
+                            className="w-8 h-8 border-none shadow-none pl-0 mx-0 mb-0.5 focus-visible:ring-transparent"
+                            value={barLayerProperties.foregroundFill}
+                            onChange={e => handleInputChange('foregroundFill', e.target.value)}
                         />
                         <Label className="text-xs mb-0.5 pl-0">{barLayerProperties.foregroundFill.toUpperCase()}</Label>
                     </div>
                     {/* Opacity */}
                     <div className="relative flex items-center">
-                        <PropertyInput 
-                            id='bar-foreground-opacity' 
+                        <PropertyInput
+                            id='bar-foreground-opacity'
                             label='Opacity'
-                            icon={Blend} 
+                            icon={Blend}
                             value={(Number(barLayerProperties.foregroundOpacity) * 100).toString()} // Display as percentage
                             onChange={value => handleInputChange('foregroundOpacity', (Number(value) / 100).toString())} // Convert back to decimal
                         />
@@ -204,20 +204,20 @@ const BarLayerProperties: React.FC = () => {
                 <div className='flex space-x-4 px-2 py-2'>
                     <div className="flex items-center rounded-md border border-input pl-2 w-24">
                         <Input
-                        id="bar-background-color"
-                        type="color"
-                        className="w-8 h-8 border-none shadow-none pl-0 mx-0 mb-0.5 focus-visible:ring-transparent"
-                        value={barLayerProperties.backgroundFill}
-                        onChange={e => handleInputChange('backgroundFill', e.target.value)}
+                            id="bar-background-color"
+                            type="color"
+                            className="w-8 h-8 border-none shadow-none pl-0 mx-0 mb-0.5 focus-visible:ring-transparent"
+                            value={barLayerProperties.backgroundFill}
+                            onChange={e => handleInputChange('backgroundFill', e.target.value)}
                         />
                         <Label className="text-xs mb-0.5 pl-0">{barLayerProperties.backgroundFill.toUpperCase()}</Label>
                     </div>
                     {/* Opacity */}
                     <div className="relative flex items-center">
-                        <PropertyInput 
-                            id='bar-background-opacity' 
+                        <PropertyInput
+                            id='bar-background-opacity'
                             label='Opacity'
-                            icon={Blend} 
+                            icon={Blend}
                             value={(Number(barLayerProperties.backgroundOpacity) * 100).toString()} // Display as percentage
                             onChange={value => handleInputChange('backgroundOpacity', (Number(value) / 100).toString())} // Convert back to decimal
                         />

@@ -1,6 +1,7 @@
-import { layerManager } from '@/services/LayerManager';
-import { IText } from 'fabric';
-import { localFontManager } from './LocalFontManager';
+import { layerManager } from "@/services/LayerManager";
+import { IText } from "fabric";
+import { convertFileSrc } from "@tauri-apps/api/core";
+import { localFontManager } from "./LocalFontManager";
 
 export const SingleFontLoad = async (fontName: string) => {
   const customFonts = await localFontManager.scanLocalFonts();
@@ -13,7 +14,7 @@ export const SingleFontLoad = async (fontName: string) => {
 
   console.log("font to load", fontName);
 
-  const fontToLoad = customFonts.find(font => font.name === fontName);
+  const fontToLoad = customFonts.find((font) => font.name === fontName);
 
   if (!fontToLoad) {
     console.warn(`Font ${fontName} not found in custom fonts.`);
@@ -26,8 +27,8 @@ export const SingleFontLoad = async (fontName: string) => {
     // return loadedFontNames; // Skip loading this font
   }
 
-  const modSrc = `/fonts/${fontToLoad.src}`;
-  const fontFace = new FontFace(fontToLoad.name, `url(${modSrc})`);
+  const fontUrl = convertFileSrc(fontToLoad.path);
+  const fontFace = new FontFace(fontToLoad.name, `url("${fontUrl}")`);
 
   const properFontName = fontFace.status;
 
@@ -40,9 +41,9 @@ export const SingleFontLoad = async (fontName: string) => {
 
     const canvas = layerManager.getCanvas();
     if (canvas) {
-      canvas.getObjects().forEach(obj => {
+      canvas.getObjects().forEach((obj) => {
         const txt = obj as IText;
-        if (obj.type === 'text' && txt.fontFamily === fontToLoad.name) {
+        if (obj.type === "text" && txt.fontFamily === fontToLoad.name) {
           canvas.requestRenderAll();
         }
       });

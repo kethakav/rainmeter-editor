@@ -34,13 +34,13 @@ const RotatorLayerProperties: React.FC = () => {
 
     const getMeasureTypeAndCategory = (measure: string) => {
         if (measure.startsWith('rotator-time-')) {
-          return { type: 'time', category: '' };
+            return { type: 'time', category: '' };
         }
         if (measure.startsWith('rotator-cpu-')) {
-          return { type: 'cpu', category: '' };
+            return { type: 'cpu', category: '' };
         }
         if (measure.startsWith('rotator-disk-')) {
-          return { type: 'disk', category: '' };
+            return { type: 'disk', category: '' };
         }
         return { type: 'time', category: '' };
     };
@@ -102,10 +102,10 @@ const RotatorLayerProperties: React.FC = () => {
                 const rotatorUI = layer.UIElements;
                 if (field === 'x') {
                     rotatorLayer.set({ left: Number(value) });
-                    rotatorUI.set({ left: Number(value)} );
+                    rotatorUI.set({ left: Number(value) });
                 } else if (field === 'y') {
                     rotatorLayer.set({ top: Number(value) });
-                    rotatorUI.set({ top: Number(value)} );
+                    rotatorUI.set({ top: Number(value) });
                 }
 
 
@@ -113,14 +113,14 @@ const RotatorLayerProperties: React.FC = () => {
                 if (field === 'width') {
                     rotatorLayer.scaleX = numValue / (rotatorLayer.width || 1);
                     setRotatorLayerProperties(prev => ({
-                    ...prev,
-                    width: numValue.toString()
+                        ...prev,
+                        width: numValue.toString()
                     }));
                 } if (field === 'height') {
                     rotatorLayer.scaleY = numValue / (rotatorLayer.height || 1);
                     setRotatorLayerProperties(prev => ({
-                    ...prev,
-                    height: numValue.toString()
+                        ...prev,
+                        height: numValue.toString()
                     }));
                 }
 
@@ -206,7 +206,7 @@ const RotatorLayerProperties: React.FC = () => {
         }
     }
 
-    return(
+    return (
         <div>
             <SidebarGroup>
                 <SidebarGroupLabel>Rotator Properties</SidebarGroupLabel>
@@ -216,11 +216,11 @@ const RotatorLayerProperties: React.FC = () => {
                 <SidebarGroupLabel>Image</SidebarGroupLabel>
                 <div className="flex space-x-4 px-2 py-2">
                     {/* Source */}
-                    <Button 
-                        variant="outline" 
+                    <Button
+                        variant="outline"
                         onClick={handleImageSourceUpdate}
                         className="shadow-none"
-                        >
+                    >
                         Change Rotator Image
                     </Button>
                 </div>
@@ -230,18 +230,18 @@ const RotatorLayerProperties: React.FC = () => {
                 <SidebarGroupLabel>Transform</SidebarGroupLabel>
                 <div className="flex space-x-4 px-2 py-2">
                     {/* X Position */}
-                    <PropertyInput 
-                        id='rotator-x' 
-                        label='X' 
-                        value={rotatorLayerProperties.x} 
-                        onChange={value => handleInputChange('x', value)}   
+                    <PropertyInput
+                        id='rotator-x'
+                        label='X'
+                        value={rotatorLayerProperties.x}
+                        onChange={value => handleInputChange('x', value)}
                     />
 
                     {/* Y Position */}
-                    <PropertyInput 
-                        id='rotator-y' 
-                        label='Y' 
-                        value={rotatorLayerProperties.y} 
+                    <PropertyInput
+                        id='rotator-y'
+                        label='Y'
+                        value={rotatorLayerProperties.y}
                         onChange={value => handleInputChange('y', value)}
                     />
                 </div>
@@ -251,20 +251,20 @@ const RotatorLayerProperties: React.FC = () => {
                 <SidebarGroupLabel>Pivot Point</SidebarGroupLabel>
                 <div className="flex space-x-4 px-2 py-2">
                     {/* Offset X */}
-                    <PropertyInput 
-                        id='rotator-offset-x' 
-                        label='Offset X' 
+                    <PropertyInput
+                        id='rotator-offset-x'
+                        label='Offset X'
                         icon={UnfoldHorizontal}
-                        value={rotatorLayerProperties.offsetX} 
-                        onChange={value => handleInputChange('offsetX', value)}   
+                        value={rotatorLayerProperties.offsetX}
+                        onChange={value => handleInputChange('offsetX', value)}
                     />
 
                     {/* Offset Y */}
-                    <PropertyInput 
-                        id='rotator-offset-y' 
-                        label='Offset Y' 
+                    <PropertyInput
+                        id='rotator-offset-y'
+                        label='Offset Y'
                         icon={UnfoldVertical}
-                        value={rotatorLayerProperties.offsetY} 
+                        value={rotatorLayerProperties.offsetY}
                         onChange={value => handleInputChange('offsetY', value)}
                     />
                 </div>
@@ -274,20 +274,20 @@ const RotatorLayerProperties: React.FC = () => {
                 <SidebarGroupLabel>Rotation Angles</SidebarGroupLabel>
                 <div className="flex space-x-4 px-2 py-2">
                     {/* Start Angle */}
-                    <PropertyInput 
-                        id='rotator-start-angle' 
-                        label='Start Angle' 
+                    <PropertyInput
+                        id='rotator-start-angle'
+                        label='Start Angle'
                         icon={CircleArrowOutUpRight}
-                        value={rotatorLayerProperties.startAngle} 
+                        value={rotatorLayerProperties.startAngle}
                         onChange={value => handleInputChange('startAngle', value)}
                     />
 
                     {/* Rotation Angle */}
-                    <PropertyInput 
-                        id='rotator-rotation-angle' 
+                    <PropertyInput
+                        id='rotator-rotation-angle'
                         label='Rotation Angle'
-                        icon={RotateCw} 
-                        value={rotatorLayerProperties.rotationAngle} 
+                        icon={RotateCw}
+                        value={rotatorLayerProperties.rotationAngle}
                         onChange={value => handleInputChange('rotationAngle', value)}
                     />
                 </div>
