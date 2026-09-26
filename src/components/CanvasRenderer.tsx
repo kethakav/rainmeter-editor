@@ -1,10 +1,10 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { Canvas, FabricObject, Group, Point } from 'fabric';
-import { canvasManager } from '../services/CanvasManager';
-import { layerManager } from '@/services/LayerManager';
-import { useLayerContext } from '@/context/LayerContext';
-import { useTheme } from './theme-provider';
-import ZoomControl from './ZoomControl';
+import React, { useEffect, useRef, useState, useCallback } from "react";
+import { Canvas, FabricObject, Group, Point } from "fabric";
+import { canvasManager } from "../services/CanvasManager";
+import { layerManager } from "@/services/LayerManager";
+import { useLayerContext } from "@/context/LayerContext";
+import { useTheme } from "./theme-provider";
+import ZoomControl from "./ZoomControl";
 
 const MIN_ZOOM = 0.1;
 const MAX_ZOOM = 5;
@@ -26,31 +26,45 @@ const CanvasRenderer: React.FC = () => {
     s = Number(s);
     l = Number(l);
     if (isNaN(h) || isNaN(s) || isNaN(l)) {
-      console.warn('Invalid HSL values:', { h, s, l });
-      return '#000000';
+      console.warn("Invalid HSL values:", { h, s, l });
+      return "#000000";
     }
     s /= 100;
     l /= 100;
     const c = (1 - Math.abs(2 * l - 1)) * s;
-    const x = c * (1 - Math.abs((h / 60) % 2 - 1));
+    const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
     const m = l - c / 2;
-    let r = 0, g = 0, b = 0;
+    let r = 0,
+      g = 0,
+      b = 0;
     if (0 <= h && h < 60) {
-      r = c; g = x; b = 0;
+      r = c;
+      g = x;
+      b = 0;
     } else if (60 <= h && h < 120) {
-      r = x; g = c; b = 0;
+      r = x;
+      g = c;
+      b = 0;
     } else if (120 <= h && h < 180) {
-      r = 0; g = c; b = x;
+      r = 0;
+      g = c;
+      b = x;
     } else if (180 <= h && h < 240) {
-      r = 0; g = x; b = c;
+      r = 0;
+      g = x;
+      b = c;
     } else if (240 <= h && h < 300) {
-      r = x; g = 0; b = c;
+      r = x;
+      g = 0;
+      b = c;
     } else if (300 <= h && h < 360) {
-      r = c; g = 0; b = x;
+      r = c;
+      g = 0;
+      b = x;
     }
     const toHex = (n: number): string => {
       const hex = Math.round((n + m) * 255).toString(16);
-      return hex.length === 1 ? '0' + hex : hex;
+      return hex.length === 1 ? "0" + hex : hex;
     };
     return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
   }
@@ -63,35 +77,41 @@ const CanvasRenderer: React.FC = () => {
     const hslValue = getCSSVariableValue(variableName);
     const hslMatch = hslValue.match(/(\d+(\.\d+)?)/g);
     if (!hslMatch || hslMatch.length < 3) {
-      console.warn('Invalid HSL format:', hslValue);
-      return '#000000';
+      console.warn("Invalid HSL format:", hslValue);
+      return "#000000";
     }
     const [h, s, l] = hslMatch.map(Number);
     return hslToHex(h, s, l);
   }
 
-  const applyZoom = useCallback((canvas: Canvas, newZoom: number, pointX?: number, pointY?: number) => {
-    const clampedZoom = Math.min(Math.max(newZoom, MIN_ZOOM), MAX_ZOOM);
+  const applyZoom = useCallback(
+    (canvas: Canvas, newZoom: number, pointX?: number, pointY?: number) => {
+      const clampedZoom = Math.min(Math.max(newZoom, MIN_ZOOM), MAX_ZOOM);
 
-    if (pointX !== undefined && pointY !== undefined) {
-      // Zoom towards cursor position
-      canvas.zoomToPoint(new Point(pointX, pointY), clampedZoom);
-    } else {
-      // Zoom towards canvas center
-      const center = canvas.getCenterPoint();
-      canvas.zoomToPoint(new Point(center.x, center.y), clampedZoom);
-    }
+      if (pointX !== undefined && pointY !== undefined) {
+        // Zoom towards cursor position
+        canvas.zoomToPoint(new Point(pointX, pointY), clampedZoom);
+      } else {
+        // Zoom towards canvas center
+        const center = canvas.getCenterPoint();
+        canvas.zoomToPoint(new Point(center.x, center.y), clampedZoom);
+      }
 
-    canvas.renderAll();
-    setZoomLevel(clampedZoom);
-  }, []);
+      canvas.renderAll();
+      setZoomLevel(clampedZoom);
+    },
+    [],
+  );
 
-  const handleZoomFromControl = useCallback((newZoom: number) => {
-    const canvas = canvasInstanceRef.current;
-    if (canvas) {
-      applyZoom(canvas, newZoom);
-    }
-  }, [applyZoom]);
+  const handleZoomFromControl = useCallback(
+    (newZoom: number) => {
+      const canvas = canvasInstanceRef.current;
+      if (canvas) {
+        applyZoom(canvas, newZoom);
+      }
+    },
+    [applyZoom],
+  );
 
   const handleResetZoom = useCallback(() => {
     const canvas = canvasInstanceRef.current;
@@ -142,7 +162,7 @@ const CanvasRenderer: React.FC = () => {
         preserveObjectStacking: true,
         height: window.innerHeight - 7,
         width: window.innerWidth - 500,
-        backgroundColor: cssVariableToHex('--card'),
+        backgroundColor: cssVariableToHex("--card"),
       });
       canvasInstanceRef.current = canvas;
       canvasManager.setCanvas(canvas);
@@ -167,15 +187,18 @@ const CanvasRenderer: React.FC = () => {
           setSelectedLayer(layer);
           layer.UIElements.set({
             visible: true,
-          })
+          });
           const UIGroup = layer.UIElements as Group;
           canvas.bringObjectToFront(UIGroup);
           // set other layers' UIElements invisible
-          layerManager.getLayers().filter(l => l.id !== layer.id).forEach(l => {
-            l.UIElements.set({
-              visible: false,
+          layerManager
+            .getLayers()
+            .filter((l) => l.id !== layer.id)
+            .forEach((l) => {
+              l.UIElements.set({
+                visible: false,
+              });
             });
-          });
         } else {
           console.warn("No corresponding layer found for the selected object.");
         }
@@ -189,7 +212,7 @@ const CanvasRenderer: React.FC = () => {
           isPanningRef.current = true;
           lastPanPointRef.current = { x: e.clientX, y: e.clientY };
           canvas.selection = false;
-          canvas.setCursor('grabbing');
+          canvas.setCursor("grabbing");
         }
       };
 
@@ -213,7 +236,7 @@ const CanvasRenderer: React.FC = () => {
           isPanningRef.current = false;
           lastPanPointRef.current = null;
           canvas.selection = true;
-          canvas.setCursor('default');
+          canvas.setCursor("default");
         }
       };
 
@@ -225,17 +248,23 @@ const CanvasRenderer: React.FC = () => {
           isPanningRef.current = true;
           lastPanPointRef.current = { x: e.clientX, y: e.clientY };
           canvas.selection = false;
-          canvas.setCursor('grabbing');
+          canvas.setCursor("grabbing");
           e.preventDefault();
           return;
         }
 
-        const pointer = canvas.getPointer(event.e);
+        const pointer = canvas.getScenePoint(event.e);
 
-        if (layerManager.activeTool === 'select') {
-          const target = canvas.findTarget(event.e);
+        if (layerManager.activeTool === "select") {
+          const targetInfo = canvas.findTarget(event.e);
+          const target =
+            targetInfo && "target" in targetInfo
+              ? targetInfo.target
+              : targetInfo;
           if (target) {
-            const layer = layerManager.getLayers().find(layer => layer.fabricObject === target);
+            const layer = layerManager
+              .getLayers()
+              .find((layer) => layer.fabricObject === target);
             if (layer) {
               setSelectedLayer(layer);
             }
@@ -269,7 +298,7 @@ const CanvasRenderer: React.FC = () => {
           isPanningRef.current = false;
           lastPanPointRef.current = null;
           canvas.selection = true;
-          canvas.setCursor('default');
+          canvas.setCursor("default");
         }
       };
 
@@ -307,29 +336,28 @@ const CanvasRenderer: React.FC = () => {
         var x = event.e.movementX;
         var y = event.e.movementY;
         const movingObject = event.target;
-        console.log('Object moving:', movingObject);
+        console.log("Object moving:", movingObject);
         if (movingObject._objects) {
-          console.log('Multiple objects moving');
+          console.log("Multiple objects moving");
           movingObject._objects.forEach((obj: FabricObject) => {
             const layer = layerManager.getLayerByFabricObject(obj);
             if (layer?.UIElements) {
               layer.UIElements.set({
                 left: layer.UIElements.left + x,
-                top: layer.UIElements.top + y
+                top: layer.UIElements.top + y,
               });
               layer.UIElements.setCoords();
               canvas.renderAll();
             }
           });
-        }
-        else {
+        } else {
           const layer = layerManager.getLayerByFabricObject(movingObject);
 
           if (layer?.UIElements) {
             // Update UIElements position to match the fabric object
             layer.UIElements.set({
               left: layer.UIElements.left + x,
-              top: layer.UIElements.top + y
+              top: layer.UIElements.top + y,
             });
             layer.UIElements.setCoords();
             canvas.renderAll();
@@ -342,45 +370,45 @@ const CanvasRenderer: React.FC = () => {
         const currentHeight = canvas.getHeight();
 
         if (currentWidth < window.innerWidth - 500) {
-          canvas.setWidth(window.innerWidth - 500);
+          canvas.setDimensions({ width: window.innerWidth - 500 });
         }
-        if (currentHeight < (window.innerHeight - 7)) {
-          canvas.setHeight(window.innerHeight - 7);
+        if (currentHeight < window.innerHeight - 7) {
+          canvas.setDimensions({ height: window.innerHeight - 7 });
         }
         canvas.renderAll();
       };
 
       // Keyboard event handlers for space bar panning
       const handleKeyDown = (e: KeyboardEvent) => {
-        if (e.code === 'Space' && !spaceHeldRef.current) {
+        if (e.code === "Space" && !spaceHeldRef.current) {
           spaceHeldRef.current = true;
           if (canvas) {
-            canvas.setCursor('grab');
+            canvas.setCursor("grab");
             canvas.selection = false;
             // Temporarily disable all object selection
             canvas.forEachObject((obj) => {
-              obj.set('evented', false);
+              obj.set("evented", false);
             });
           }
         }
         // Ctrl+0 to reset zoom
-        if (e.key === '0' && (e.ctrlKey || e.metaKey)) {
+        if (e.key === "0" && (e.ctrlKey || e.metaKey)) {
           e.preventDefault();
           handleResetZoom();
         }
       };
 
       const handleKeyUp = (e: KeyboardEvent) => {
-        if (e.code === 'Space') {
+        if (e.code === "Space") {
           spaceHeldRef.current = false;
           isPanningRef.current = false;
           lastPanPointRef.current = null;
           if (canvas) {
-            canvas.setCursor('default');
+            canvas.setCursor("default");
             canvas.selection = true;
             // Re-enable object selection
             canvas.forEachObject((obj) => {
-              obj.set('evented', true);
+              obj.set("evented", true);
             });
           }
         }
@@ -389,39 +417,39 @@ const CanvasRenderer: React.FC = () => {
       // Attach native DOM listeners for middle-click panning on the wrapper
       const wrapper = wrapperRef.current;
       if (wrapper) {
-        wrapper.addEventListener('mousedown', handleNativeMouseDown);
-        wrapper.addEventListener('mousemove', handleNativeMouseMove);
-        wrapper.addEventListener('mouseup', handleNativeMouseUp);
+        wrapper.addEventListener("mousedown", handleNativeMouseDown);
+        wrapper.addEventListener("mousemove", handleNativeMouseMove);
+        wrapper.addEventListener("mouseup", handleNativeMouseUp);
       }
 
-      window.addEventListener('resize', handleResize);
-      window.addEventListener('keydown', handleKeyDown);
-      window.addEventListener('keyup', handleKeyUp);
+      window.addEventListener("resize", handleResize);
+      window.addEventListener("keydown", handleKeyDown);
+      window.addEventListener("keyup", handleKeyUp);
 
-      canvas.on('selection:created', handleSelectionEvent);
-      canvas.on('selection:updated', handleSelectionEvent);
-      canvas.on('mouse:down', handleMouseDown);
-      canvas.on('mouse:move', handleMouseMove);
-      canvas.on('mouse:up', handleMouseUp);
-      canvas.on('mouse:wheel', handleMouseWheel);
-      canvas.on('object:moving', handleObjectMoving);
+      canvas.on("selection:created", handleSelectionEvent);
+      canvas.on("selection:updated", handleSelectionEvent);
+      canvas.on("mouse:down", handleMouseDown);
+      canvas.on("mouse:move", handleMouseMove);
+      canvas.on("mouse:up", handleMouseUp);
+      canvas.on("mouse:wheel", handleMouseWheel);
+      canvas.on("object:moving", handleObjectMoving);
 
       return () => {
-        canvas.off('selection:created', handleSelectionEvent);
-        canvas.off('selection:updated', handleSelectionEvent);
-        canvas.off('mouse:down', handleMouseDown);
-        canvas.off('mouse:move', handleMouseMove);
-        canvas.off('mouse:up', handleMouseUp);
-        canvas.off('mouse:wheel', handleMouseWheel);
-        canvas.off('object:moving', handleObjectMoving);
+        canvas.off("selection:created", handleSelectionEvent);
+        canvas.off("selection:updated", handleSelectionEvent);
+        canvas.off("mouse:down", handleMouseDown);
+        canvas.off("mouse:move", handleMouseMove);
+        canvas.off("mouse:up", handleMouseUp);
+        canvas.off("mouse:wheel", handleMouseWheel);
+        canvas.off("object:moving", handleObjectMoving);
         canvas.dispose();
-        window.removeEventListener('resize', handleResize);
-        window.removeEventListener('keydown', handleKeyDown);
-        window.removeEventListener('keyup', handleKeyUp);
+        window.removeEventListener("resize", handleResize);
+        window.removeEventListener("keydown", handleKeyDown);
+        window.removeEventListener("keyup", handleKeyUp);
         if (wrapper) {
-          wrapper.removeEventListener('mousedown', handleNativeMouseDown);
-          wrapper.removeEventListener('mousemove', handleNativeMouseMove);
-          wrapper.removeEventListener('mouseup', handleNativeMouseUp);
+          wrapper.removeEventListener("mousedown", handleNativeMouseDown);
+          wrapper.removeEventListener("mousemove", handleNativeMouseMove);
+          wrapper.removeEventListener("mouseup", handleNativeMouseUp);
         }
         canvasInstanceRef.current = null;
       };
@@ -432,14 +460,23 @@ const CanvasRenderer: React.FC = () => {
   useEffect(() => {
     const canvas = canvasInstanceRef.current;
     if (canvas) {
-      canvas.set({ backgroundColor: cssVariableToHex('--card') });
+      canvas.set({ backgroundColor: cssVariableToHex("--card") });
       canvas.renderAll();
     }
   }, [theme]);
 
   return (
-    <div ref={wrapperRef} className="relative flex items-center justify-center bg-card h-full overflow-hidden">
-      <div className="max-h-full max-w-full" style={{ maxHeight: 'calc(100vh - 7px)', maxWidth: 'calc(100vw - 500px)' }}>
+    <div
+      ref={wrapperRef}
+      className="relative flex items-center justify-center bg-card h-full overflow-hidden"
+    >
+      <div
+        className="max-h-full max-w-full"
+        style={{
+          maxHeight: "calc(100vh - 7px)",
+          maxWidth: "calc(100vw - 500px)",
+        }}
+      >
         <canvas ref={canvasRef} className="w-full h-full" />
       </div>
       <ZoomControl
