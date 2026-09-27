@@ -395,21 +395,35 @@ export const exportSkin = async (
       // console.log('tt', font);
 
       let stringStyle = "normal";
-      let fontFace = text.fontFamily;
+      let fontFace = font?.familyName || text.fontFamily;
 
-      if (text.fontFamily.includes(" Bold")) {
-        stringStyle = "bold";
-        fontFace = text.fontFamily.replace(" Bold", "");
-      }
+      if (font) {
+        const fontSubfamily = font.subfamily.toLowerCase();
+        const isBold = fontSubfamily.includes("bold");
+        const isItalic = fontSubfamily.includes("italic");
+        stringStyle =
+          isBold && isItalic
+            ? "bolditalic"
+            : isBold
+              ? "bold"
+              : isItalic
+                ? "italic"
+                : "normal";
+      } else {
+        if (text.fontFamily.includes(" Bold")) {
+          stringStyle = "bold";
+          fontFace = text.fontFamily.replace(" Bold", "");
+        }
 
-      if (text.fontFamily.includes(" Italic")) {
-        stringStyle = "italic";
-        fontFace = text.fontFamily.replace(" Italic", "");
-      }
+        if (text.fontFamily.includes(" Italic")) {
+          stringStyle = "italic";
+          fontFace = text.fontFamily.replace(" Italic", "");
+        }
 
-      if (text.fontFamily.includes(" Regular")) {
-        stringStyle = "normal";
-        fontFace = text.fontFamily.replace(" Regular", "");
+        if (text.fontFamily.includes(" Regular")) {
+          stringStyle = "normal";
+          fontFace = text.fontFamily.replace(" Regular", "");
+        }
       }
 
       if (layer.measure === "custom-text") {

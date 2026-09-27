@@ -1,10 +1,16 @@
 import { readDir } from "@tauri-apps/plugin-fs";
 import { appLocalDataDir, join, resourceDir } from "@tauri-apps/api/path";
 import { mkdir } from "@tauri-apps/plugin-fs";
-import { getFontNameFromFile } from "./getFontName"; // Importing the function
+import { getFontMetadataFromFile } from "./getFontName";
 
 interface FontCache {
-  [key: string]: { name: string; src: string; path: string };
+  [key: string]: {
+    name: string;
+    familyName: string;
+    subfamily: string;
+    src: string;
+    path: string;
+  };
 }
 
 const fontCache: FontCache = {}; // Cache for font data
@@ -43,8 +49,11 @@ export const localFontManager = {
               return Promise.all(
                 fontFiles.map(async (entry) => {
                   const path = await join(fontPath, entry.name!);
+                  const metadata = await getFontMetadataFromFile(path);
                   return {
-                    name: (await getFontNameFromFile(path)) || "",
+                    name: metadata?.name || "",
+                    familyName: metadata?.familyName || "",
+                    subfamily: metadata?.subfamily || "",
                     src: entry.name!,
                     path,
                   };

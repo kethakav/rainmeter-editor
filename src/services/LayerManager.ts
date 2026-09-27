@@ -1,22 +1,34 @@
 //LayerManager.ts
 // import { useToolContext } from '@/context/ToolContext';
-import { arrayMove } from '@dnd-kit/sortable';
-import { join, resourceDir } from '@tauri-apps/api/path';
-import { Canvas, Circle, FabricObject, FabricObjectProps, Rect, Triangle, IText, FabricImage, Group, Line, Text } from 'fabric';
-import { convertFileSrc } from '@tauri-apps/api/core';
-import { SingleFontLoad } from './singleFontLoad';
+import { arrayMove } from "@dnd-kit/sortable";
+import { join, resourceDir } from "@tauri-apps/api/path";
+import {
+  Canvas,
+  Circle,
+  FabricObject,
+  FabricObjectProps,
+  Rect,
+  Triangle,
+  IText,
+  FabricImage,
+  Group,
+  Line,
+  Text,
+} from "fabric";
+import { convertFileSrc } from "@tauri-apps/api/core";
+import { SingleFontLoad } from "./singleFontLoad";
 
 // Enum for layer types
 enum LayerType {
-  TEXT = 'text',
-  SHAPE = 'shape',
-  IMAGE = 'image',
-  ROTATOR = 'rotator',
-  BAR = 'bar',
+  TEXT = "text",
+  SHAPE = "shape",
+  IMAGE = "image",
+  ROTATOR = "rotator",
+  BAR = "bar",
 }
 
 // Sub-types of shapes
-type ShapeSubType = 'rect' | 'circle' | 'triangle' | 'line';
+type ShapeSubType = "rect" | "circle" | "triangle" | "line";
 
 interface LayerProperties {
   property: string;
@@ -44,13 +56,12 @@ class LayerManager {
   public canvas: Canvas | null = null;
   private skinBackground: FabricObject | null = null;
 
-  public activeTool: string = 'select';
-  public shapeSubType: ShapeSubType = 'rect';
+  public activeTool: string = "select";
+  public shapeSubType: ShapeSubType = "rect";
 
   public layers: LayerConfig[] = [];
 
   private listeners: (() => void)[] = [];
-
 
   private layerCounts: { [key in LayerType]: number } = {
     [LayerType.TEXT]: 0,
@@ -60,9 +71,7 @@ class LayerManager {
     [LayerType.BAR]: 0,
   };
 
-  private constructor() { } // Make the constructor private
-
-
+  private constructor() {} // Make the constructor private
 
   public static getInstance(): LayerManager {
     if (!LayerManager.instance) {
@@ -84,25 +93,25 @@ class LayerManager {
       const skinBackground = new Rect({
         width: 400,
         height: 300,
-        stroke: '#838383',
-        fill: '#ffffff',
+        stroke: "#838383",
+        fill: "#ffffff",
         strokeWidth: 1,
-        originX: 'center',
-        originY: 'center',
+        originX: "center",
+        originY: "center",
         strokeDashArray: [5, 5],
         hasControls: false,
         hasBorders: false,
       });
 
-      const backgroundText = new Text('Skin Background', {
+      const backgroundText = new Text("Skin Background", {
         lockScalingX: true,
         lockScalingY: true,
         fontSize: 18,
-        fontFamily: 'Arial',
-        fill: '#838383',
+        fontFamily: "Arial",
+        fill: "#838383",
         opacity: 1,
-        originX: 'center',
-        originY: 'center',
+        originX: "center",
+        originY: "center",
         hasControls: false,
         hasBorders: false,
       });
@@ -110,8 +119,8 @@ class LayerManager {
       const backgroundGroup = new Group([skinBackground, backgroundText], {
         left: 400,
         top: 200,
-        originX: 'left',
-        originY: 'top',
+        originX: "left",
+        originY: "top",
         hasControls: false,
         hasBorders: false,
       });
@@ -138,7 +147,7 @@ class LayerManager {
   setActiveTool(tool: string) {
     this.activeTool = tool;
     // Notify tool change listeners
-    this.toolChangeListeners.forEach(listener => listener());
+    this.toolChangeListeners.forEach((listener) => listener());
   }
 
   setShapeSubType(subType: ShapeSubType) {
@@ -151,30 +160,32 @@ class LayerManager {
   }
 
   unsubscribeFromToolChanges(listener: () => void) {
-    this.toolChangeListeners = this.toolChangeListeners.filter(l => l !== listener);
+    this.toolChangeListeners = this.toolChangeListeners.filter(
+      (l) => l !== listener,
+    );
   }
 
   addLayerWithMouse(x: number, y: number) {
     if (this.canvas) {
-      if (this.activeTool === 'text') {
+      if (this.activeTool === "text") {
         this.addTextLayer("Hello There!", x, y);
-        this.setActiveTool('select');
+        this.setActiveTool("select");
       }
-      if (this.activeTool === 'image') {
+      if (this.activeTool === "image") {
         this.addImageLayer(x, y);
-        this.setActiveTool('select');
+        this.setActiveTool("select");
       }
-      if (this.activeTool === 'rotator') {
+      if (this.activeTool === "rotator") {
         this.addRotatorLayer(x, y);
-        this.setActiveTool('select');
+        this.setActiveTool("select");
       }
-      if (this.activeTool === 'bar') {
+      if (this.activeTool === "bar") {
         this.addBarLayer(x, y);
-        this.setActiveTool('select');
+        this.setActiveTool("select");
       }
-      if (this.activeTool === 'shape') {
+      if (this.activeTool === "shape") {
         this.addShapeLayer(this.shapeSubType, { left: x, top: y });
-        this.setActiveTool('select');
+        this.setActiveTool("select");
       }
     }
 
@@ -182,7 +193,13 @@ class LayerManager {
   }
 
   // Add a new layer to the stack
-  addLayer(type: LayerType, fabricObject: FabricObject, imageSrc: string = "", UIElements: FabricObject = new Group(), properties: LayerProperties[] = []) {
+  addLayer(
+    type: LayerType,
+    fabricObject: FabricObject,
+    imageSrc: string = "",
+    UIElements: FabricObject = new Group(),
+    properties: LayerProperties[] = [],
+  ) {
     if (this.canvas) {
       const newLayer: LayerConfig = {
         id: this.generateUniqueId(),
@@ -222,16 +239,16 @@ class LayerManager {
   }
 
   // Add text layer
-  async addTextLayer(text: string = 'Hello There!', x: number, y: number) {
-    await SingleFontLoad('Abtera Bold');
+  async addTextLayer(text: string = "Hello There!", x: number, y: number) {
+    await SingleFontLoad("Abtera Bold");
 
     if (this.canvas) {
       const textObject = new IText(text, {
         left: x,
         top: y,
-        fill: 'black',
-        fontFamily: 'Abtera Bold',
-        textAlign: 'justify-left',
+        fill: "black",
+        fontFamily: "Abtera Bold",
+        textAlign: "justify-left",
         fontSize: 24,
         hasControls: false,
       });
@@ -252,7 +269,7 @@ class LayerManager {
         if (activeLayer) {
           activeLayer.fontName = font; // Update the font
         }
-        activeObject.set('fontFamily', font); // Update the font
+        activeObject.set("fontFamily", font); // Update the font
         this.canvas.renderAll(); // Re-render the canvas to reflect changes
       }
     }
@@ -273,13 +290,17 @@ class LayerManager {
         await fabricImage.setSrc(assetUrl);
         if (activeLayer) {
           activeLayer.imageSrc = imageSource; // Update the image source
-          const offsetX = activeLayer.properties.find(prop => prop.property === 'offsetX');
-          const offsetY = activeLayer.properties.find(prop => prop.property === 'offsetY');
+          const offsetX = activeLayer.properties.find(
+            (prop) => prop.property === "offsetX",
+          );
+          const offsetY = activeLayer.properties.find(
+            (prop) => prop.property === "offsetY",
+          );
           if (offsetX) {
-            offsetX.value = '0';
+            offsetX.value = "0";
           }
           if (offsetY) {
-            offsetY.value = '0';
+            offsetY.value = "0";
           }
           // setSelectedLayerId(activeLayer.id);
           // setSelectedLayer(activeLayer);
@@ -287,27 +308,24 @@ class LayerManager {
         // update properties Sidebar
         // this.updatePropertiesSidebar(activeLayer);
 
-
         // offsetX: layer.properties.find(prop => prop.property === 'offsetX')?.value.toString() || '0',
 
         activeLayer?.UIElements.set({
           visible: true,
           left: activeLayer.fabricObject.left,
-          top: activeLayer.fabricObject.top
+          top: activeLayer.fabricObject.top,
         });
         activeLayer?.fabricObject.setCoords();
         this.canvas.renderAll(); // Re-render the canvas to reflect changes
-
       }
     }
   }
 
   public getLayerByFabricObject(fabricObject: FabricObject) {
-    return this.layers.find(layer => layer.fabricObject === fabricObject);
+    return this.layers.find((layer) => layer.fabricObject === fabricObject);
   }
 
   public updateMeasureForSelectedLayer(measure: string) {
-
     if (this.canvas) {
       console.log("update measure", measure);
       const activeObject = this.canvas.getActiveObject();
@@ -317,100 +335,100 @@ class LayerManager {
           actLayer.measure = measure; // Update the measure in the layerConfig
           // Time ========================================================================
           if (measure === "time-hour-minute-24") {
-            activeObject.set('text', "15:15");
+            activeObject.set("text", "15:15");
           }
           if (measure === "time-hour-minute-12") {
-            activeObject.set('text', "03:15 PM");
+            activeObject.set("text", "03:15 PM");
           }
           if (measure === "time-hour-24") {
-            activeObject.set('text', "15");
+            activeObject.set("text", "15");
           }
           if (measure === "time-hour-12") {
-            activeObject.set('text', "03");
+            activeObject.set("text", "03");
           }
           if (measure === "time-minute") {
-            activeObject.set('text', "30");
+            activeObject.set("text", "30");
           }
           if (measure === "time-second") {
-            activeObject.set('text', "45");
+            activeObject.set("text", "45");
           }
           if (measure === "time-am-pm") {
-            activeObject.set('text', "PM");
+            activeObject.set("text", "PM");
           }
           // Date ========================================================================
           if (measure === "date-yyyy-mm-dd") {
-            activeObject.set('text', "2025-01-01");
+            activeObject.set("text", "2025-01-01");
           }
           if (measure === "date-mm-dd-yy") {
-            activeObject.set('text', "01/01/25");
+            activeObject.set("text", "01/01/25");
           }
           if (measure === "custom-text") {
-            activeObject.set('text', "Custom Text");
+            activeObject.set("text", "Custom Text");
           }
           if (measure === "date-month-number") {
-            activeObject.set('text', "01");
+            activeObject.set("text", "01");
           }
           if (measure === "date-month-full") {
-            activeObject.set('text', "January");
+            activeObject.set("text", "January");
           }
           if (measure === "date-month-short") {
-            activeObject.set('text', "Jan");
+            activeObject.set("text", "Jan");
           }
           if (measure === "date-day-number") {
-            activeObject.set('text', "01");
+            activeObject.set("text", "01");
           }
           if (measure === "date-day-full") {
-            activeObject.set('text', "Monday");
+            activeObject.set("text", "Monday");
           }
           if (measure === "date-day-short") {
-            activeObject.set('text', "Mon");
+            activeObject.set("text", "Mon");
           }
           if (measure === "date-year-short") {
-            activeObject.set('text', "25");
+            activeObject.set("text", "25");
           }
           if (measure === "date-year-full") {
-            activeObject.set('text', "2025");
+            activeObject.set("text", "2025");
           }
           // CPU =============================================================================
           if (measure === "cpu-average") {
-            activeObject.set('text', "69%");
+            activeObject.set("text", "69%");
           }
           if (measure === "cpu-core-1") {
-            activeObject.set('text', "10%");
+            activeObject.set("text", "10%");
           }
           if (measure === "cpu-core-2") {
-            activeObject.set('text', "20%");
+            activeObject.set("text", "20%");
           }
           if (measure === "cpu-core-3") {
-            activeObject.set('text', "30%");
+            activeObject.set("text", "30%");
           }
           if (measure === "cpu-core-4") {
-            activeObject.set('text', "40%");
+            activeObject.set("text", "40%");
           }
           if (measure === "cpu-core-5") {
-            activeObject.set('text', "50%");
+            activeObject.set("text", "50%");
           }
           if (measure === "cpu-core-6") {
-            activeObject.set('text', "60%");
+            activeObject.set("text", "60%");
           }
           if (measure === "cpu-core-7") {
-            activeObject.set('text', "70%");
+            activeObject.set("text", "70%");
           }
           if (measure === "cpu-core-8") {
-            activeObject.set('text', "80%");
+            activeObject.set("text", "80%");
           }
           // DISK ==============================================================================
           if (measure === "disk-c-label") {
-            activeObject.set('text', "Windows");
+            activeObject.set("text", "Windows");
           }
           if (measure === "disk-c-total-space") {
-            activeObject.set('text', "123456789 B");
+            activeObject.set("text", "123456789 B");
           }
           if (measure === "disk-c-free-space") {
-            activeObject.set('text', "123456789 B");
+            activeObject.set("text", "123456789 B");
           }
           if (measure === "disk-c-used-space") {
-            activeObject.set('text', "123456789 B");
+            activeObject.set("text", "123456789 B");
           }
           // RAM =============================================================================
 
@@ -438,8 +456,10 @@ class LayerManager {
       // });
 
       const resPath = await resourceDir();
-      const sourcePath = await join(resPath, '_up_/public/images/image-placeholder.png');
-
+      const sourcePath = await join(
+        resPath,
+        "_up_/public/images/image-placeholder.png",
+      );
 
       // Check if a file was selected
       if (sourcePath) {
@@ -451,7 +471,9 @@ class LayerManager {
 
         // Use fromURL correctly with await
         try {
-          const img: FabricImage = await FabricImage.fromURL(assetUrl, { crossOrigin: 'anonymous' });
+          const img: FabricImage = await FabricImage.fromURL(assetUrl, {
+            crossOrigin: "anonymous",
+          });
           img.set({
             left: x,
             top: y,
@@ -459,8 +481,8 @@ class LayerManager {
             outerWidth: img.width,
             scaleX: 1,
             scaleY: 1,
-            originX: 'center',
-            originY: 'center',
+            originX: "center",
+            originY: "center",
             hasControls: false,
           });
           this.addLayer(LayerType.IMAGE, img, sourcePath);
@@ -476,15 +498,21 @@ class LayerManager {
   async addRotatorLayer(x: number, y: number) {
     if (this.canvas) {
       const resPath = await resourceDir();
-      const source = await join(resPath, '_up_/public/images/Needle.png');
-      const backgroundSourcePath = await join(resPath, '_up_/public/images/RotatorBackground2.png');
+      const source = await join(resPath, "_up_/public/images/Needle.png");
+      const backgroundSourcePath = await join(
+        resPath,
+        "_up_/public/images/RotatorBackground2.png",
+      );
       const assetUrl = convertFileSrc(source);
       const backgroundAssetUrl = convertFileSrc(backgroundSourcePath);
       console.log(assetUrl);
 
       // Use fromURL correctly with await
       try {
-        const backgroundImg: FabricImage = await FabricImage.fromURL(backgroundAssetUrl, { crossOrigin: 'anonymous' });
+        const backgroundImg: FabricImage = await FabricImage.fromURL(
+          backgroundAssetUrl,
+          { crossOrigin: "anonymous" },
+        );
         backgroundImg.set({
           left: x,
           top: y,
@@ -492,19 +520,21 @@ class LayerManager {
           outerWidth: backgroundImg.width,
           scaleX: 1,
           scaleY: 1,
-          originX: 'center',
-          originY: 'center',
+          originX: "center",
+          originY: "center",
           hasControls: false,
         });
         this.addLayer(LayerType.IMAGE, backgroundImg, backgroundSourcePath);
-        const img: FabricImage = await FabricImage.fromURL(assetUrl, { crossOrigin: 'anonymous' });
+        const img: FabricImage = await FabricImage.fromURL(assetUrl, {
+          crossOrigin: "anonymous",
+        });
         img.set({
           left: x,
           top: y,
           outerHeight: img.height,
           outerWidth: img.width,
-          originX: 'center',
-          originY: 'center',
+          originX: "center",
+          originY: "center",
           centeredScaling: true,
           centeredRotation: true,
           angle: 0,
@@ -514,8 +544,8 @@ class LayerManager {
         });
         const rangeIndicator = new Circle({
           radius: 40,
-          originX: 'center',
-          originY: 'center',
+          originX: "center",
+          originY: "center",
           centeredScaling: true,
           centeredRotation: true,
           left: x,
@@ -523,25 +553,24 @@ class LayerManager {
           angle: -90,
           startAngle: 0,
           endAngle: 90,
-          stroke: '#0F0',
+          stroke: "#0F0",
           opacity: 0.5,
           strokeWidth: 25,
-          fill: ''
+          fill: "",
         });
         const indLine = new Line([x, y, x + 50, y], {
-          stroke: '#000',
+          stroke: "#000",
           strokeWidth: 2,
           opacity: 0,
           hasControls: false,
-
         });
         const pivotPoint = new Circle({
           radius: 5,
-          originX: 'center',
-          originY: 'center',
+          originX: "center",
+          originY: "center",
           centeredScaling: true,
           centeredRotation: true,
-          fill: '#FF0000',
+          fill: "#FF0000",
           opacity: 0.5,
           left: x,
           top: y,
@@ -553,8 +582,8 @@ class LayerManager {
           interactive: false,
           selectable: false,
           perPixelTargetFind: true,
-          originX: 'center',
-          originY: 'center',
+          originX: "center",
+          originY: "center",
           centeredScaling: true,
           centeredRotation: true,
         });
@@ -565,26 +594,31 @@ class LayerManager {
         const layerProperties: LayerProperties[] = [
           {
             property: "offsetX",
-            value: '0'
+            value: "0",
           },
           {
             property: "offsetY",
-            value: '0'
+            value: "0",
           },
           {
             property: "startAngle",
-            value: "0"
+            value: "0",
           },
           {
             property: "rotationAngle",
-            value: "90"
-          }
+            value: "90",
+          },
         ];
-        this.addLayer(LayerType.ROTATOR, img, source, UIElements, layerProperties);
+        this.addLayer(
+          LayerType.ROTATOR,
+          img,
+          source,
+          UIElements,
+          layerProperties,
+        );
       } catch (error) {
         console.error("Error loading image:", error);
       }
-
     } else {
       return null;
     }
@@ -598,7 +632,7 @@ class LayerManager {
           top: y,
           width: 200,
           height: 50,
-          fill: '#000000',
+          fill: "#000000",
           hasControls: false,
         });
         const foreground = new Rect({
@@ -606,7 +640,7 @@ class LayerManager {
           top: y,
           width: 150,
           height: 50,
-          fill: '#FFA500',
+          fill: "#FFA500",
           hasControls: false,
         });
         const bar = new Group([background, foreground], {
@@ -637,20 +671,23 @@ class LayerManager {
   }
 
   unsubscribeFromLayerChanges(listener: () => void) {
-    this.listeners = this.listeners.filter(l => l !== listener);
+    this.listeners = this.listeners.filter((l) => l !== listener);
   }
 
   private notifyListeners() {
-    this.listeners.forEach(listener => listener());
+    this.listeners.forEach((listener) => listener());
   }
 
   // Notify subscribers of layer changes
   private notifyLayerChange() {
-    this.listeners.forEach(listener => listener());
+    this.listeners.forEach((listener) => listener());
   }
 
   // Add shape layer
-  addShapeLayer(type: ShapeSubType = 'rect', options: Partial<FabricObjectProps> = {}) {
+  addShapeLayer(
+    type: ShapeSubType = "rect",
+    options: Partial<FabricObjectProps> = {},
+  ) {
     if (this.canvas) {
       let shapeObject: FabricObject;
       const defaultProps = {
@@ -659,12 +696,12 @@ class LayerManager {
       };
 
       switch (type) {
-        case 'rect':
+        case "rect":
           shapeObject = new Rect({
             width: 100,
             height: 100,
-            fill: '#4A90D9',
-            stroke: '#2C5F8A',
+            fill: "#4A90D9",
+            stroke: "#2C5F8A",
             strokeWidth: 2,
             rx: 0,
             ry: 0,
@@ -672,30 +709,30 @@ class LayerManager {
             ...options,
           });
           break;
-        case 'circle':
+        case "circle":
           shapeObject = new Circle({
             radius: 50,
-            fill: '#50B86C',
-            stroke: '#2D7A42',
+            fill: "#50B86C",
+            stroke: "#2D7A42",
             strokeWidth: 2,
             ...defaultProps,
             ...options,
           });
           break;
-        case 'triangle':
+        case "triangle":
           shapeObject = new Triangle({
             width: 100,
             height: 100,
-            fill: '#E05D5D',
-            stroke: '#9B2C2C',
+            fill: "#E05D5D",
+            stroke: "#9B2C2C",
             strokeWidth: 2,
             ...defaultProps,
             ...options,
           });
           break;
-        case 'line':
+        case "line":
           shapeObject = new Line([0, 0, 150, 0], {
-            stroke: '#333333',
+            stroke: "#333333",
             strokeWidth: 3,
             left: options.left || 100,
             top: options.top || 100,
@@ -706,8 +743,8 @@ class LayerManager {
           shapeObject = new Rect({
             width: 100,
             height: 100,
-            fill: '#4A90D9',
-            stroke: '#2C5F8A',
+            fill: "#4A90D9",
+            stroke: "#2C5F8A",
             strokeWidth: 2,
             ...defaultProps,
             ...options,
@@ -716,10 +753,16 @@ class LayerManager {
 
       // Store the shape sub-type in properties
       const shapeProperties: LayerProperties[] = [
-        { property: 'shapeType', value: type },
+        { property: "shapeType", value: type },
       ];
 
-      this.addLayer(LayerType.SHAPE, shapeObject, '', new Group(), shapeProperties);
+      this.addLayer(
+        LayerType.SHAPE,
+        shapeObject,
+        "",
+        new Group(),
+        shapeProperties,
+      );
     }
   }
 
@@ -743,11 +786,10 @@ class LayerManager {
   //     });
   //   }
 
-
   // Remove a layer by ID
   removeLayer(layerId: string): void {
     if (this.canvas) {
-      const layerIndex = this.layers.findIndex(layer => layer.id === layerId);
+      const layerIndex = this.layers.findIndex((layer) => layer.id === layerId);
 
       if (layerIndex !== -1) {
         const layer = this.layers[layerIndex];
@@ -767,20 +809,22 @@ class LayerManager {
 
   public getSelectedLayerId(): string | null {
     const activeObject = this.canvas?.getActiveObject();
-    const layer = this.layers.find(layer => layer.fabricObject === activeObject);
+    const layer = this.layers.find(
+      (layer) => layer.fabricObject === activeObject,
+    );
     return layer?.id ?? null;
   }
 
   // Method to move a layer in the layers array
-  public moveLayer(layerId: string, direction: 'up' | 'down') {
-    const layerIndex = this.layers.findIndex(layer => layer.id === layerId);
+  public moveLayer(layerId: string, direction: "up" | "down") {
+    const layerIndex = this.layers.findIndex((layer) => layer.id === layerId);
     if (layerIndex === -1) return; // Layer not found
 
-    if (direction === 'up' && layerIndex > 0) {
+    if (direction === "up" && layerIndex > 0) {
       // Move layer up
       const newOrder = arrayMove(this.layers, layerIndex, layerIndex - 1);
       this.layers = newOrder;
-    } else if (direction === 'down' && layerIndex < this.layers.length - 1) {
+    } else if (direction === "down" && layerIndex < this.layers.length - 1) {
       // Move layer down
       const newOrder = arrayMove(this.layers, layerIndex, layerIndex + 1);
       this.layers = newOrder;
@@ -796,7 +840,7 @@ class LayerManager {
   public selectLayer(layerId: string): void {
     if (this.canvas) {
       console.log(layerId);
-      const layer = this.layers.find(l => l.id === layerId);
+      const layer = this.layers.find((l) => l.id === layerId);
 
       if (layer) {
         // Deselect all objects
@@ -812,18 +856,20 @@ class LayerManager {
 
   // Accepts reordered layers array and updates the internal layers order
   public reorderLayers(newOrder: string[]): void {
-    this.layers = newOrder.map(id => this.layers.find(layer => layer.id === id)!);
+    this.layers = newOrder.map(
+      (id) => this.layers.find((layer) => layer.id === id)!,
+    );
     this.notifyLayerChange(); // Notify subscribers about the updated order
   }
 
   // Toggle layer visibility
   toggleLayerVisibility(layerId: string): void {
     if (this.canvas) {
-      const layer = this.layers.find(l => l.id === layerId);
+      const layer = this.layers.find((l) => l.id === layerId);
 
       if (layer) {
         layer.visible = !layer.visible;
-        layer.fabricObject.set('visible', layer.visible);
+        layer.fabricObject.set("visible", layer.visible);
         this.canvas.renderAll();
       }
     }
@@ -832,11 +878,11 @@ class LayerManager {
   // Lock/unlock layer
   toggleLayerLock(layerId: string): void {
     if (this.canvas) {
-      const layer = this.layers.find(l => l.id === layerId);
+      const layer = this.layers.find((l) => l.id === layerId);
 
       if (layer) {
         layer.locked = !layer.locked;
-        layer.fabricObject.set('selectable', !layer.locked);
+        layer.fabricObject.set("selectable", !layer.locked);
         this.canvas.renderAll();
       }
     }
@@ -847,16 +893,16 @@ class LayerManager {
     const selected = this.canvas?.getActiveObject();
     if (this.canvas) {
       // Remove all objects
-      this.canvas.getObjects().forEach(obj => {
+      this.canvas.getObjects().forEach((obj) => {
         if (this.canvas) {
-          this.canvas.remove(obj)
+          this.canvas.remove(obj);
         }
       });
 
       // Re-add in the correct order
-      this.layers.forEach(layer => {
+      this.layers.forEach((layer) => {
         if (this.canvas) {
-          this.canvas.add(layer.fabricObject)
+          this.canvas.add(layer.fabricObject);
         }
       });
 
@@ -870,10 +916,9 @@ class LayerManager {
       }
       this.canvas.renderAll();
     } else {
-      console.warn('Canvas is not set. Unable to update layer order.');
+      console.warn("Canvas is not set. Unable to update layer order.");
     }
   }
-
 
   // Generate unique ID for layers
   private generateUniqueId(): string {
@@ -886,19 +931,19 @@ class LayerManager {
     let label: string;
     if (type === LayerType.SHAPE) {
       const subTypeLabels: Record<ShapeSubType, string> = {
-        'rect': 'Rectangle',
-        'circle': 'Circle',
-        'triangle': 'Triangle',
-        'line': 'Line',
+        rect: "Rectangle",
+        circle: "Circle",
+        triangle: "Triangle",
+        line: "Line",
       };
-      label = subTypeLabels[this.shapeSubType] || 'Shape';
+      label = subTypeLabels[this.shapeSubType] || "Shape";
     } else {
       const typeLabels = {
-        [LayerType.TEXT]: 'Text',
-        [LayerType.SHAPE]: 'Shape',
-        [LayerType.IMAGE]: 'Image',
-        [LayerType.ROTATOR]: 'Rotator',
-        [LayerType.BAR]: 'Bar',
+        [LayerType.TEXT]: "Text",
+        [LayerType.SHAPE]: "Shape",
+        [LayerType.IMAGE]: "Image",
+        [LayerType.ROTATOR]: "Rotator",
+        [LayerType.BAR]: "Bar",
       };
       label = typeLabels[type];
     }

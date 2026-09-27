@@ -1,26 +1,47 @@
-import { readFile } from '@tauri-apps/plugin-fs';
+import { readFile } from "@tauri-apps/plugin-fs";
 // import { Font } from 'opentype.js';
 // const FontName = require('fontname');
-import * as FontName from 'fontname';
+import * as FontName from "fontname";
 
-export const getFontNameFromFile = async (filePath: string): Promise<string | null> => {
+export interface FontMetadata {
+  name: string;
+  familyName: string;
+  subfamily: string;
+}
+
+export const getFontMetadataFromFile = async (
+  filePath: string,
+): Promise<FontMetadata | null> => {
   try {
-    // Read the font file
     const fontData = await readFile(filePath);
-
-    // Parse the font to get metadata
     const fontMeta = FontName.parse(fontData)[0];
-
     console.log("fontMeta", fontMeta);
 
-    // Check if fontMeta is defined and return the font name
-    if (fontMeta && fontMeta.fullName) {
-      return fontMeta.fullName;
-    } else {
-      throw new Error('Font name metadata is not available.');
+    const runtimeMetadata = fontMeta as typeof fontMeta & {
+      fontFamily?: string;
+      fontSubfamily?: string;
+    };
+    const familyName = runtimeMetadata?.fontFamily || fontMeta?.family;
+    const name = fontMeta?.fullName || familyName;
+
+    if (name && familyName) {
+      return {
+        name,
+        familyName,
+        subfamily: runtimeMetadata.fontSubfamily || fontMeta.style || "",
+      };
     }
+
+    throw new Error("Font name metadata is not available.");
   } catch (error) {
-    console.error('Error reading font file:', error);
+    console.error("Error reading font file:", error);
     return null;
   }
+};
+
+export const getFontNameFromFile = async (
+  filePath: string,
+): Promise<string | null> => {
+  const metadata = await getFontMetadataFromFile(filePath);
+  return metadata?.name || null;
 };
